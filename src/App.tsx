@@ -1,0 +1,342 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { PrepBrief } from "./components/PrepBrief";
+import type { PrepBriefData } from "./types";
+
+const EXAMPLES = [
+  { company: "Stripe", title: "Product Manager" },
+  { company: "JPMorgan Chase", title: "Quantitative Analyst" },
+  { company: "Ford Motor Company", title: "Manufacturing Engineer" },
+  { company: "Johnson & Johnson", title: "Clinical Trial Manager" },
+  { company: "Walmart", title: "Supply Chain Director" },
+  { company: "Goldman Sachs", title: "Investment Banking Associate" },
+  { company: "Boeing", title: "Aerospace Engineer" },
+  { company: "Procter & Gamble", title: "Brand Manager" },
+  { company: "General Electric", title: "Operations Manager" },
+  { company: "OpenAI", title: "Machine Learning Researcher" },
+  { company: "Target", title: "Retail Operations Lead" },
+  { company: "Pfizer", title: "Regulatory Affairs Specialist" },
+  { company: "Caterpillar", title: "Mechanical Engineer" },
+  { company: "Bank of America", title: "Financial Advisor" },
+  { company: "Airbnb", title: "Senior Software Engineer" }
+];
+
+export default function Page() {
+  // Core Inputs
+  const [companyName, setCompanyName] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
+
+  // MCQ Inputs
+  const [round, setRound] = useState("");
+  const [familiarity, setFamiliarity] = useState("");
+  const [timeToPrep, setTimeToPrep] = useState("");
+  const [biggestGap, setBiggestGap] = useState("");
+
+  // UI State
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [output, setOutput] = useState<PrepBriefData | null>(null);
+  const [hasKey, setHasKey] = useState(true);
+  const [isEditor, setIsEditor] = useState(false);
+  const [placeholders, setPlaceholders] = useState({ company: "Stripe", title: "Product Manager" });
+
+  useEffect(() => {
+    const randomExample = EXAMPLES[Math.floor(Math.random() * EXAMPLES.length)];
+    setPlaceholders(randomExample);
+    
+}, []);
+
+  useEffect(() => {
+    const checkKey = async () => {
+      const aistudio = (window as any).aistudio;
+      if (aistudio) {
+        setIsEditor(true);
+        if (aistudio.hasSelectedApiKey) {
+          const has = await aistudio.hasSelectedApiKey();
+          setHasKey(has);
+        }
+      }
+    };
+    checkKey();
+  }, []);
+
+  const handleSelectKey = async () => {
+    const aistudio = (window as any).aistudio;
+    if (aistudio && aistudio.openSelectKey) {
+      await aistudio.openSelectKey();
+      setHasKey(true);
+    }
+  };
+
+  // Derived State
+  const showMCQs = jobDescription.trim().length > 10;
+  const isFormValid =
+    companyName.trim() !== "" &&
+    jobTitle.trim() !== "" &&
+    jobDescription.trim() !== "" &&
+    round !== "" &&
+    familiarity !== "" &&
+    timeToPrep !== "" &&
+    biggestGap !== "";
+
+  const handleGenerate = async () => {
+    if (!isFormValid) return;
+    
+    setIsGenerating(true);
+    
+    try {
+      const res = await fetch('/api/generate-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyName, jobTitle, jobDescription, round, familiarity, timeToPrep, biggestGap }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setOutput(data);
+      
+} catch (error: any) {
+      console.error("Error generating brief:", error);
+      if (error.message?.includes("Rate limit exceeded")) {
+        alert("You've reached your 5-brief daily limit. Try again tomorrow.");
+      } else {
+        alert(error.message || "Something went wrong. Please try again.");
+      }
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const mcqOptions = {
+    round: ["First screen", "Hiring manager", "Panel", "Final", "Not sure"],
+    familiarity: ["Never heard of them", "Know of them", "Know them well", "Used their product"],
+    timeToPrep: ["Under 1 hour", "1-3 hours", "Full day", "1+ days"],
+    biggestGap: ["Industry knowledge", "Technical skills", "Seniority jump", "Culture fit", "No obvious gap"],
+  };
+
+  if (!hasKey) {
+    return (
+      <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-zinc-200/60 text-center">
+          <h2 className="text-2xl font-bold text-zinc-900 mb-3">Connect API Key</h2>
+          <p className="text-zinc-600 mb-8">
+            To use the advanced gemini-3.1-pro-preview model, please select your Google Cloud API key.
+          </p>
+          <button
+            onClick={handleSelectKey}
+            className="w-full py-3 px-4 bg-zinc-900 text-white font-medium rounded-xl hover:bg-zinc-800 transition-colors"
+          >
+            Select API Key
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans selection:bg-zinc-200">
+      <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
+        
+        {/* Header */}
+        <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2">
+              Interview Intel
+            </h1>
+            <p className="text-zinc-600 text-lg">
+              Prep briefs that show what the company actually needs.
+            </p>
+          </div>
+          {isEditor && (
+            <button
+              onClick={handleSelectKey}
+              className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors font-medium shadow-sm"
+            >
+              Connect / Change API Key
+            </button>
+          )}
+        </header>
+
+        {!output ? (
+          <div className="space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-zinc-200/60">
+            
+            {/* Core Inputs */}
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                  Company name
+                </label>
+                <input
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder={`e.g. ${placeholders.company}`}
+                  className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                  Job title
+                </label>
+                <input
+                  type="text"
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  placeholder={`e.g. ${placeholders.title}`}
+                  className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                  Job description
+                </label>
+                <textarea
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  placeholder="Paste the full job description here..."
+                  rows={6}
+                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors resize-y"
+                />
+              </div>
+            </div>
+
+            {/* MCQ Section (Conditional) */}
+            {showMCQs && (
+              <div className="pt-6 border-t border-zinc-100 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div>
+                  <h2 className="text-lg font-semibold text-zinc-900 mb-1">Quick context</h2>
+                  <p className="text-sm text-zinc-500 mb-6">Help us tailor the brief to your specific situation.</p>
+                </div>
+
+                {/* Question 1 */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-zinc-800">
+                    Which interview round is this for?
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {mcqOptions.round.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => setRound(option)}
+                        className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                          round === option
+                            ? "bg-zinc-900 text-white border-zinc-900"
+                            : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Question 2 */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-zinc-800">
+                    How familiar are you with this company?
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {mcqOptions.familiarity.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => setFamiliarity(option)}
+                        className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                          familiarity === option
+                            ? "bg-zinc-900 text-white border-zinc-900"
+                            : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Question 3 */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-zinc-800">
+                    How much time do you have to prep?
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {mcqOptions.timeToPrep.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => setTimeToPrep(option)}
+                        className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                          timeToPrep === option
+                            ? "bg-zinc-900 text-white border-zinc-900"
+                            : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Question 4 */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-zinc-800">
+                    What's your biggest gap for this role?
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {mcqOptions.biggestGap.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => setBiggestGap(option)}
+                        className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                          biggestGap === option
+                            ? "bg-zinc-900 text-white border-zinc-900"
+                            : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-4 space-y-3">
+                  <button
+                    onClick={handleGenerate}
+                    disabled={!isFormValid || isGenerating}
+                    className="w-full flex items-center justify-center py-3.5 px-4 bg-zinc-900 text-white font-medium rounded-xl hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Analyzing Role...
+                      </>
+                    ) : (
+                      "Generate My Prep Brief"
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <PrepBrief data={output} />
+            
+            <div className="flex justify-center pt-8 print:hidden">
+              <button 
+                onClick={() => setOutput(null)}
+                className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Start Over
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

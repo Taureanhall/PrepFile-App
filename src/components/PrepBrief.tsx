@@ -1,0 +1,231 @@
+import React, { useState } from "react";
+import type { PrepBriefData } from "../types";
+
+interface PrepBriefProps {
+  data: PrepBriefData;
+}
+
+export function PrepBrief({ data }: PrepBriefProps) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  if (!data) return null;
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setStatus("loading");
+    try {
+      const res = await fetch('/api/send-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, data }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setStatus("success");
+      setEmail("");
+    } catch (error) {
+      console.error("Failed to save:", error);
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-zinc-200/60 max-w-4xl mx-auto print:shadow-none print:border-none print:p-0">
+      
+      {/* Blind Spots Callout */}
+      {data.blindSpots && data.blindSpots.length > 0 && (
+        <div className="mb-10 p-5 bg-amber-50 border border-amber-200 rounded-xl">
+          <h3 className="text-amber-800 font-semibold flex items-center gap-2 mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            Blind Spots
+          </h3>
+          <ul className="list-disc pl-5 space-y-1 text-amber-900/80 text-sm">
+            {data.blindSpots.map((spot, i) => (
+              <li key={i}>{spot}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="space-y-12">
+        {/* Section 1 */}
+        <section>
+          <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+            1. Company Snapshot
+          </h2>
+          <div className="space-y-4">
+            <p className="text-zinc-700 leading-relaxed">{data.companySnapshot?.overview}</p>
+            
+            {data.companySnapshot?.keyMetrics && data.companySnapshot.keyMetrics.length > 0 && (
+              <div className="flex flex-wrap gap-2 my-4">
+                {data.companySnapshot.keyMetrics.map((metric, i) => (
+                  <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-800 border border-zinc-200">
+                    {metric}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {data.companySnapshot?.recentSignals?.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">Recent Signals</h4>
+                <ul className="space-y-2">
+                  {data.companySnapshot.recentSignals.map((point, i) => (
+                    <li key={i} className="flex items-start gap-3 text-zinc-700">
+                      <span className="text-zinc-400 mt-1.5 text-xs">■</span>
+                      <span className="leading-relaxed">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {data.companySnapshot?.risksAndUnknowns?.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">Risks & Unknowns</h4>
+                <ul className="space-y-2">
+                  {data.companySnapshot.risksAndUnknowns.map((point, i) => (
+                    <li key={i} className="flex items-start gap-3 text-zinc-700">
+                      <span className="text-zinc-400 mt-1.5 text-xs">■</span>
+                      <span className="leading-relaxed">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Section 2 */}
+        <section>
+          <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+            2. Role Intelligence
+          </h2>
+          <div className="space-y-4">
+            <p className="text-zinc-700 leading-relaxed"><span className="font-semibold text-zinc-900">Core Mandate:</span> {data.roleIntelligence?.coreMandate}</p>
+            
+            {data.roleIntelligence?.success90Days?.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">90-Day Success Metrics</h4>
+                <ul className="space-y-2">
+                  {data.roleIntelligence.success90Days.map((point, i) => (
+                    <li key={i} className="flex items-start gap-3 text-zinc-700">
+                      <span className="text-zinc-400 mt-1.5 text-xs">■</span>
+                      <span className="leading-relaxed">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {data.roleIntelligence?.commonFailureModes?.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">Common Failure Modes</h4>
+                <ul className="space-y-2">
+                  {data.roleIntelligence.commonFailureModes.map((point, i) => (
+                    <li key={i} className="flex items-start gap-3 text-zinc-700">
+                      <span className="text-zinc-400 mt-1.5 text-xs">■</span>
+                      <span className="leading-relaxed">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Section 3 */}
+        <section>
+          <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+            3. Round Expectations
+          </h2>
+          <div className="space-y-4">
+            <p className="text-zinc-700 leading-relaxed">{data.roundExpectations?.overview}</p>
+            
+            {data.roundExpectations?.whatTripsPeopleUp?.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">What Trips People Up</h4>
+                <ul className="space-y-2">
+                  {data.roundExpectations.whatTripsPeopleUp.map((point, i) => (
+                    <li key={i} className="flex items-start gap-3 text-zinc-700">
+                      <span className="text-zinc-400 mt-1.5 text-xs">■</span>
+                      <span className="leading-relaxed">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {data.roundExpectations?.howToShowUpStrong?.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">How to Show Up Strong</h4>
+                <ul className="space-y-2">
+                  {data.roundExpectations.howToShowUpStrong.map((point, i) => (
+                    <li key={i} className="flex items-start gap-3 text-zinc-700">
+                      <span className="text-zinc-400 mt-1.5 text-xs">■</span>
+                      <span className="leading-relaxed">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Section 4 */}
+        <section>
+          <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+            4. Questions to Ask
+          </h2>
+          <ul className="space-y-3">
+            {data.questionsToAsk?.map((point, i) => (
+              <li key={i} className="flex items-start gap-3 text-zinc-700">
+                <span className="text-zinc-400 mt-1.5 text-xs">■</span>
+                <span className="leading-relaxed">{point}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+
+      {/* Email Capture (Hidden in Print) */}
+      <div className="mt-16 pt-10 border-t border-zinc-100 print:hidden">
+        <div className="max-w-md mx-auto text-center">
+          <h3 className="text-lg font-semibold text-zinc-900 mb-2">Save My Guide</h3>
+          <p className="text-zinc-500 text-sm mb-6">
+            Get a copy of this brief sent directly to your inbox so you can review it before the interview.
+          </p>
+          
+          {status === "success" ? (
+            <div className="bg-emerald-50 text-emerald-800 p-4 rounded-xl border border-emerald-200 flex flex-col items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+              <span className="font-medium">Brief sent! Check your inbox.</span>
+            </div>
+          ) : (
+            <form onSubmit={handleSave} className="flex gap-2">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="flex-1 px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors"
+              />
+              <button
+                type="submit"
+                disabled={status === "loading" || !email}
+                className="px-6 py-2.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+              >
+                {status === "loading" ? "Sending..." : "Send to Me"}
+              </button>
+            </form>
+          )}
+          {status === "error" && (
+            <p className="text-red-600 text-sm mt-3">Failed to send. Please try again.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

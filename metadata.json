@@ -1,0 +1,5 @@
+{
+  "name": "PrepFlow Interview Intel",
+  "description": "An interview prep tool that generates a single-page structured prep brief using the Gemini API.",
+  "requestFramePermissions": []
+}
