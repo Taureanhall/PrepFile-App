@@ -81,6 +81,8 @@ export async function generateBrief(inputs: {
     BLIND SPOTS: 1-3 honest flags about where data was thin, the JD was vague, or the analysis is speculative.
 
     Keep the tone direct, specific, and confident. Cut all filler. Every sentence should be load-bearing.
+
+    FORMATTING RULES: Do not use inline citation numbers, footnotes, or reference markers (e.g. [1], [2], (1)) anywhere in the output. Write in clean prose and bullet points only.
   `;
 
   const response = await ai.models.generateContent({
