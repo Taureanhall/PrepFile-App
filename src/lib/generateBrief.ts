@@ -43,11 +43,7 @@ export async function generateBrief(inputs: {
     - Barriers and silos: are there signals of broken handoffs between departments (sales overpromises ops, engineering ignores customer feedback)? This affects how cross-functional this role will actually need to be.
     - Implication for the role: given the Deming diagnosis, what systemic forces will this person be swimming against or with?
 
-    LENS 3 — STRATEGIC COHERENCE CHECK:
-    - Is the company's stated strategy (what they say) consistent with their revealed strategy (what they actually invest in, hire for, and measure)? Note any gaps.
-    - Is the role designed to reinforce their core competitive advantage, or does it look like a gap-fill or reaction to a crisis?
-
-    LENS 4 — ROLE TRANSLATION:
+    LENS 3 — ROLE TRANSLATION:
     Synthesize lenses 1-3 into a single clear statement of what this role is REALLY for — the unstated strategic mandate behind the job description.
 
     CRITICAL TRANSLATION RULE: NEVER use academic terms (Porter, Deming, Five Forces, Value Chain, Generic Strategy, etc.) in the visible output sections. Translate everything into the plain language of the candidate's role and industry.
@@ -103,7 +99,6 @@ export async function generateBrief(inputs: {
               valueChainPosition: { type: Type.STRING },
               activitySystemFit: { type: Type.STRING },
               demingDiagnosis: { type: Type.STRING },
-              strategicCoherenceGap: { type: Type.STRING },
               roleRealMandate: { type: Type.STRING },
             },
           },
