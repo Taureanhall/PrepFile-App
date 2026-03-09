@@ -3,6 +3,20 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import { generateBrief } from "./src/lib/generateBrief.js";
 
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + 24 * 60 * 60 * 1000 });
+    return true;
+  }
+  if (entry.count >= 5) return false;
+  entry.count++;
+  return true;
+}
+
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -16,7 +30,18 @@ async function startServer() {
 
   app.post("/api/generate-brief", async (req, res) => {
     try {
-        const data = await generateBrief(req.body);
+      const bypassKey = process.env.BYPASS_KEY;
+      const clientKey = req.headers["x-bypass-key"];
+      const isBypassed = bypassKey && clientKey === bypassKey;
+
+      if (!isBypassed) {
+        const ip = req.ip || "unknown";
+        if (!checkRateLimit(ip)) {
+          return res.status(429).json({ error: "Rate limit exceeded. You can generate 5 briefs per day." });
+        }
+      }
+
+      const data = await generateBrief(req.body);
       res.json(data);
     } catch (err: any) {
       res.status(500).json({ error: err.message || "Failed to generate brief" });

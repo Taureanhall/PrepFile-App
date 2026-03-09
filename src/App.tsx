@@ -86,9 +86,10 @@ export default function Page() {
     setIsGenerating(true);
     
     try {
+      const bypassKey = localStorage.getItem("bypass_key") || "";
       const res = await fetch('/api/generate-brief', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(bypassKey && { 'x-bypass-key': bypassKey }) },
         body: JSON.stringify({ companyName, jobTitle, jobDescription, round, familiarity, timeToPrep, biggestGap }),
       });
       if (!res.ok) throw new Error(await res.text());
