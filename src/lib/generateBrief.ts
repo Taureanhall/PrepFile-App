@@ -27,6 +27,12 @@ export async function generateBrief(inputs: {
     JOB DESCRIPTION:
     ${inputs.jobDescription}
 
+    SPECIFICITY MANDATE:
+    Every question, insight, and recommendation must be anchored to ${inputs.companyName} and the ${inputs.jobTitle} role specifically.
+    Generic interview advice (e.g., "Tell me about a time you led a team") is forbidden.
+    Every interview question must reflect something a ${inputs.companyName} interviewer would actually ask given their specific competitive pressures, operational realities, and this role's actual responsibilities.
+    Do not produce generic industry observations. If you don't have enough data on the company, say so in blindSpots — but do not pad the output with generic advice.
+
     INSTRUCTIONS & CHAIN OF THOUGHT:
     Work through the following four lenses in the '_internalStrategicAnalysis' object before writing anything visible to the candidate.
 
@@ -44,7 +50,7 @@ export async function generateBrief(inputs: {
     - Implication for the role: given the Deming diagnosis, what systemic forces will this person be swimming against or with?
 
     LENS 3 — ROLE TRANSLATION:
-    Synthesize lenses 1-3 into a single clear statement of what this role is REALLY for — the unstated strategic mandate behind the job description.
+    Synthesize lenses 1-2 into a single clear statement of what this role is REALLY for — the unstated strategic mandate behind the job description.
 
     CRITICAL TRANSLATION RULE: NEVER use academic terms (Porter, Deming, Five Forces, Value Chain, Generic Strategy, etc.) in the visible output sections. Translate everything into the plain language of the candidate's role and industry.
 
@@ -57,22 +63,45 @@ export async function generateBrief(inputs: {
     Now generate the final structured JSON with the following visible sections:
 
     COMPANY SNAPSHOT:
-    - Overview: what the company is actually optimizing for right now, based on the full strategic analysis. Not a Wikipedia summary — a strategic read.
+    - overview: What the company is actually optimizing for right now, based on the full strategic analysis. Not a Wikipedia summary — a strategic read.
     - keyMetrics: Use Google Search to find 2-4 hard, current, quantitative metrics (revenue, AUM, funding, headcount, growth rate, market share). Exact numbers for public/large companies. Omit if unreliable.
     - recentSignals: 2-4 recent developments that reveal strategic direction or pressure (hiring patterns, product launches, leadership changes, earnings signals, press).
     - risksAndUnknowns: 2-4 honest risks — market threats, execution risks, cultural signals, unknowns in the JD.
 
     ROLE INTELLIGENCE:
-    - coreMandate: The real job behind the job description — synthesized from all four lenses. What problem does this role exist to solve at the system level?
+    - coreMandate: The real job behind the job description — synthesized from all lenses. What problem does this role exist to solve at the system level?
     - success90Days: 3-4 concrete, measurable things that would make this hire look like a home run in the first 90 days.
     - commonFailureModes: 3-4 specific ways people fail in this exact role at this type of company — not generic advice.
 
+    LIKELY INTERVIEW THEMES (Porter-derived):
+    Generate 3-4 interview themes directly derived from the competitive analysis. Each theme must be specific to ${inputs.companyName}'s actual strategic situation — not generic industry themes.
+    For each theme:
+    - theme: A specific, named theme tied to this company's real pressures (e.g., "Winning accounts while AWS commoditizes the infrastructure layer" — not just "Competition")
+    - whyItMatters: Why this theme is live RIGHT NOW at ${inputs.companyName} based on the strategic analysis — 1-2 sentences, no jargon
+    - questions: 3-5 concrete interview questions a ${inputs.companyName} interviewer would likely ask about this theme for the ${inputs.jobTitle} role. Phrased as the interviewer would ask them. These are strategic/situational questions, not behavioral STAR prompts.
+
+    PROCESS & OPERATIONAL QUESTIONS (Deming-derived):
+    Based on the operational/systems analysis of ${inputs.companyName}:
+    - context: How this company actually manages processes, quality, and failure — and what that means for how the ${inputs.jobTitle} role will be evaluated. No jargon. 2-3 sentences.
+    - questions: 4-6 specific process/operational questions the interviewer will likely ask for this role, derived from how ${inputs.companyName} actually operates. These should reveal the interviewer's real concerns about process maturity, cross-functional execution, and operational discipline.
+
+    BEHAVIORAL QUESTION BANK:
+    Identify 3-4 core competencies that the ${inputs.jobTitle} role at ${inputs.companyName} actually tests — based on the JD and what the strategic analysis reveals about how they operate.
+    For each:
+    - competency: The specific competency (tied to what ${inputs.companyName} actually values — e.g., "Influencing roadmap without direct authority in a matrix org" not just "Leadership")
+    - questions: 2-3 behavioral questions a ${inputs.companyName} interviewer would actually ask to probe this competency. Phrased in STAR format prompts. Make them specific — reference the type of situation this candidate will face at this company.
+
     ROUND EXPECTATIONS:
-    - Overview: what this specific round (${inputs.round}) is actually evaluating, and what format to expect.
+    - overview: What this specific round (${inputs.round}) is actually evaluating at ${inputs.companyName}, and what format to expect.
     - whatTripsPeopleUp: 3 specific mistakes candidates make in this round at this type of company.
     - howToShowUpStrong: 3 specific things that make candidates stand out in this round.
 
-    QUESTIONS TO ASK: 5 sharp questions that signal the candidate has thought deeply about the company's real strategic situation. At least one question must probe the system/process maturity of the organization. At least one must probe the coherence between stated and revealed strategy. All must be translated into the natural language of the role — no MBA jargon.
+    QUESTIONS TO ASK: 5 sharp questions for the candidate to ask the interviewer that signal they've thought deeply about ${inputs.companyName}'s real strategic situation. At least one must probe the system/process maturity of the organization. At least one must probe the coherence between stated and revealed strategy. All must be translated into the natural language of the role — no MBA jargon.
+
+    RECOMMENDED READING:
+    3-5 specific resources that would give the candidate genuine insight into ${inputs.companyName}'s current strategic situation. Use Google Search to find actual recent articles, earnings call transcripts, press releases, or industry reports. For each:
+    - title: The specific resource (article title, report name, or precise description if exact title unknown)
+    - why: Why this specific resource matters for this interview — what insight it gives that generic research won't. 1-2 sentences.
 
     BLIND SPOTS: 1-3 honest flags about where data was thin, the JD was vague, or the analysis is speculative.
 
@@ -121,6 +150,37 @@ export async function generateBrief(inputs: {
             },
             required: ["coreMandate", "success90Days", "commonFailureModes"],
           },
+          interviewThemes: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                theme: { type: Type.STRING },
+                whyItMatters: { type: Type.STRING },
+                questions: { type: Type.ARRAY, items: { type: Type.STRING } },
+              },
+              required: ["theme", "whyItMatters", "questions"],
+            },
+          },
+          processOperationalQuestions: {
+            type: Type.OBJECT,
+            properties: {
+              context: { type: Type.STRING },
+              questions: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+            required: ["context", "questions"],
+          },
+          behavioralQuestionBank: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                competency: { type: Type.STRING },
+                questions: { type: Type.ARRAY, items: { type: Type.STRING } },
+              },
+              required: ["competency", "questions"],
+            },
+          },
           roundExpectations: {
             type: Type.OBJECT,
             properties: {
@@ -134,6 +194,17 @@ export async function generateBrief(inputs: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
           },
+          recommendedReading: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                title: { type: Type.STRING },
+                why: { type: Type.STRING },
+              },
+              required: ["title", "why"],
+            },
+          },
           blindSpots: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
@@ -142,8 +213,12 @@ export async function generateBrief(inputs: {
         required: [
           "companySnapshot",
           "roleIntelligence",
+          "interviewThemes",
+          "processOperationalQuestions",
+          "behavioralQuestionBank",
           "roundExpectations",
           "questionsToAsk",
+          "recommendedReading",
           "blindSpots",
         ],
       },
@@ -156,7 +231,7 @@ export async function generateBrief(inputs: {
   } catch {
     throw new Error("Gemini returned malformed JSON: " + (response.text?.slice(0, 200) ?? ""));
   }
-  const required = ["companySnapshot", "roleIntelligence", "roundExpectations", "questionsToAsk"];
+  const required = ["companySnapshot", "roleIntelligence", "interviewThemes", "processOperationalQuestions", "behavioralQuestionBank", "roundExpectations", "questionsToAsk", "recommendedReading"];
   for (const key of required) {
     if (!parsed[key]) throw new Error("Gemini response missing required field: " + key);
   }

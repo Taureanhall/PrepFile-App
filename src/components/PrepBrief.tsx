@@ -3,9 +3,11 @@ import type { PrepBriefData } from "../types";
 
 interface PrepBriefProps {
   data: PrepBriefData;
+  onRegenerate?: () => void;
+  isRegenerating?: boolean;
 }
 
-export function PrepBrief({ data }: PrepBriefProps) {
+export function PrepBrief({ data, onRegenerate, isRegenerating }: PrepBriefProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
@@ -32,7 +34,7 @@ export function PrepBrief({ data }: PrepBriefProps) {
 
   return (
     <div className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-zinc-200/60 max-w-4xl mx-auto print:shadow-none print:border-none print:p-0">
-      
+
       {/* Blind Spots Callout */}
       {data.blindSpots && data.blindSpots.length > 0 && (
         <div className="mb-10 p-5 bg-amber-50 border border-amber-200 rounded-xl">
@@ -49,14 +51,15 @@ export function PrepBrief({ data }: PrepBriefProps) {
       )}
 
       <div className="space-y-12">
-        {/* Section 1 */}
+
+        {/* Section 1 — Company Snapshot */}
         <section>
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
             1. Company Snapshot
           </h2>
           <div className="space-y-4">
             <p className="text-zinc-700 leading-relaxed">{data.companySnapshot?.overview}</p>
-            
+
             {data.companySnapshot?.keyMetrics && data.companySnapshot.keyMetrics.length > 0 && (
               <div className="flex flex-wrap gap-2 my-4">
                 {data.companySnapshot.keyMetrics.map((metric, i) => (
@@ -97,14 +100,14 @@ export function PrepBrief({ data }: PrepBriefProps) {
           </div>
         </section>
 
-        {/* Section 2 */}
+        {/* Section 2 — Role Intelligence */}
         <section>
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
             2. Role Intelligence
           </h2>
           <div className="space-y-4">
             <p className="text-zinc-700 leading-relaxed"><span className="font-semibold text-zinc-900">Core Mandate:</span> {data.roleIntelligence?.coreMandate}</p>
-            
+
             {data.roleIntelligence?.success90Days?.length > 0 && (
               <div>
                 <h4 className="font-semibold text-zinc-900 mb-2 text-sm">90-Day Success Metrics</h4>
@@ -135,14 +138,85 @@ export function PrepBrief({ data }: PrepBriefProps) {
           </div>
         </section>
 
-        {/* Section 3 */}
+        {/* Section 3 — Likely Interview Themes */}
+        {data.interviewThemes && data.interviewThemes.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+              3. Likely Interview Themes
+            </h2>
+            <div className="space-y-8">
+              {data.interviewThemes.map((theme, i) => (
+                <div key={i} className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-zinc-900">{theme.theme}</h3>
+                    <p className="text-zinc-500 text-sm mt-1">{theme.whyItMatters}</p>
+                  </div>
+                  <ul className="space-y-2">
+                    {theme.questions.map((q, j) => (
+                      <li key={j} className="flex items-start gap-3">
+                        <span className="text-zinc-400 mt-1.5 shrink-0 text-xs font-medium">{j + 1}.</span>
+                        <span className="text-zinc-700 leading-relaxed">{q}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Section 4 — Process & Operational Questions */}
+        {data.processOperationalQuestions && (
+          <section>
+            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+              4. Process & Operational Questions
+            </h2>
+            <div className="space-y-4">
+              <p className="text-zinc-600 text-sm leading-relaxed italic">{data.processOperationalQuestions.context}</p>
+              <ul className="space-y-2">
+                {data.processOperationalQuestions.questions.map((q, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="text-zinc-400 mt-1.5 shrink-0 text-xs font-medium">{i + 1}.</span>
+                    <span className="text-zinc-700 leading-relaxed">{q}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+
+        {/* Section 5 — Behavioral Question Bank */}
+        {data.behavioralQuestionBank && data.behavioralQuestionBank.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+              5. Behavioral Question Bank
+            </h2>
+            <div className="space-y-8">
+              {data.behavioralQuestionBank.map((item, i) => (
+                <div key={i} className="space-y-3">
+                  <h3 className="font-semibold text-zinc-900">{item.competency}</h3>
+                  <ul className="space-y-2">
+                    {item.questions.map((q, j) => (
+                      <li key={j} className="flex items-start gap-3">
+                        <span className="text-zinc-400 mt-1.5 shrink-0 text-xs font-medium">{j + 1}.</span>
+                        <span className="text-zinc-700 leading-relaxed">{q}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Section 6 — Round Expectations */}
         <section>
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-            3. Round Expectations
+            6. Round Expectations
           </h2>
           <div className="space-y-4">
             <p className="text-zinc-700 leading-relaxed">{data.roundExpectations?.overview}</p>
-            
+
             {data.roundExpectations?.whatTripsPeopleUp?.length > 0 && (
               <div>
                 <h4 className="font-semibold text-zinc-900 mb-2 text-sm">What Trips People Up</h4>
@@ -173,10 +247,10 @@ export function PrepBrief({ data }: PrepBriefProps) {
           </div>
         </section>
 
-        {/* Section 4 */}
+        {/* Section 7 — Questions to Ask */}
         <section>
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-            4. Questions to Ask
+            7. Questions to Ask Them
           </h2>
           <ul className="space-y-3">
             {data.questionsToAsk?.map((point, i) => (
@@ -187,16 +261,66 @@ export function PrepBrief({ data }: PrepBriefProps) {
             ))}
           </ul>
         </section>
+
+        {/* Section 8 — Recommended Reading */}
+        {data.recommendedReading && data.recommendedReading.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+              8. Recommended Reading
+            </h2>
+            <ul className="space-y-4">
+              {data.recommendedReading.map((item, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="text-zinc-400 mt-1 shrink-0 text-xs">■</span>
+                  <div>
+                    <span className="font-medium text-zinc-900">{item.title}</span>
+                    <p className="text-zinc-500 text-sm mt-0.5">{item.why}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
       </div>
 
-      {/* Email Capture (Hidden in Print) */}
-      <div className="mt-16 pt-10 border-t border-zinc-100 print:hidden">
+      {/* Regenerate + Email Capture */}
+      <div className="mt-16 pt-10 border-t border-zinc-100 print:hidden space-y-10">
+
+        {/* Regenerate */}
+        {onRegenerate && (
+          <div className="text-center">
+            <button
+              onClick={onRegenerate}
+              disabled={isRegenerating}
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-50 hover:border-zinc-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isRegenerating ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Regenerating...
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                  Regenerate Brief
+                </>
+              )}
+            </button>
+            <p className="text-xs text-zinc-400 mt-2">Uses one of your daily briefs</p>
+          </div>
+        )}
+
+        {/* Email Capture */}
         <div className="max-w-md mx-auto text-center">
           <h3 className="text-lg font-semibold text-zinc-900 mb-2">Save My Guide</h3>
           <p className="text-zinc-500 text-sm mb-6">
             Get a copy of this brief sent directly to your inbox so you can review it before the interview.
           </p>
-          
+
           {status === "success" ? (
             <div className="bg-emerald-50 text-emerald-800 p-4 rounded-xl border border-emerald-200 flex flex-col items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>

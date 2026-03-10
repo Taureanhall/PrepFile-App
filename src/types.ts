@@ -1,3 +1,19 @@
+export interface InterviewTheme {
+  theme: string;
+  whyItMatters: string;
+  questions: string[];
+}
+
+export interface BehavioralQuestion {
+  competency: string;
+  questions: string[];
+}
+
+export interface RecommendedReading {
+  title: string;
+  why: string;
+}
+
 export interface PrepBriefData {
   companySnapshot: {
     overview: string;
@@ -10,11 +26,18 @@ export interface PrepBriefData {
     success90Days: string[];
     commonFailureModes: string[];
   };
+  interviewThemes: InterviewTheme[];
+  processOperationalQuestions: {
+    context: string;
+    questions: string[];
+  };
+  behavioralQuestionBank: BehavioralQuestion[];
   roundExpectations: {
     overview: string;
     whatTripsPeopleUp: string[];
     howToShowUpStrong: string[];
   };
   questionsToAsk: string[];
+  recommendedReading: RecommendedReading[];
   blindSpots: string[];
 }

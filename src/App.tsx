@@ -535,7 +535,11 @@ export default function Page() {
           </div>
         ) : (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <PrepBrief data={output} />
+            <PrepBrief
+              data={output}
+              onRegenerate={handleGenerate}
+              isRegenerating={isGenerating}
+            />
 
             <div className="flex justify-center pt-8 print:hidden">
               <button
