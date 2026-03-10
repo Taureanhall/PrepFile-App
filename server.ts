@@ -461,9 +461,11 @@ async function startServer() {
       });
 
       // Persist brief for authenticated users
+      let savedBriefId: string | undefined;
       if (user) {
         try {
           const briefId = saveBrief(user.id, req.body.companyName || "", req.body.jobTitle || "", data);
+          savedBriefId = briefId;
 
           // Send onboarding email after first brief
           const briefCount = getBriefCountForUser(user.id);
@@ -522,7 +524,7 @@ async function startServer() {
         });
       }
 
-      res.json(data);
+      res.json({ ...data, briefId: savedBriefId });
     } catch (err: any) {
       res.status(500).json({ error: err.message || "Failed to generate brief" });
     }

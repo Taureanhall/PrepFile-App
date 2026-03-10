@@ -4,13 +4,18 @@ import type { PrepBriefData, BridgingAnalysis } from "../types";
 interface PrepBriefProps {
   data: PrepBriefData;
   user: { id: string; email: string } | null;
+  briefId?: string | null;
   onRegenerate?: () => void;
   isRegenerating?: boolean;
 }
 
-export function PrepBrief({ data, user, onRegenerate, isRegenerating }: PrepBriefProps) {
+export function PrepBrief({ data, user, briefId, onRegenerate, isRegenerating }: PrepBriefProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  // Share state
+  const [isPublic, setIsPublic] = useState(false);
+  const [shareStatus, setShareStatus] = useState<"idle" | "loading" | "copied">("idle");
 
   // Resume enhancement state
   const [bridging, setBridging] = useState<BridgingAnalysis | null>(null);
@@ -103,6 +108,31 @@ export function PrepBrief({ data, user, onRegenerate, isRegenerating }: PrepBrie
     } catch (err: any) {
       setEnhanceStatus("error");
       setEnhanceError(err.message || "Something went wrong. Please try again.");
+    }
+  };
+
+  const handleShare = async () => {
+    if (!briefId || !user) return;
+    setShareStatus("loading");
+    const nextPublic = !isPublic;
+    try {
+      const res = await fetch(`/api/briefs/${briefId}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublic: nextPublic }),
+      });
+      if (!res.ok) throw new Error("Failed to update share settings");
+      setIsPublic(nextPublic);
+      if (nextPublic) {
+        const url = `${window.location.origin}/b/${briefId}`;
+        await navigator.clipboard.writeText(url);
+        setShareStatus("copied");
+        setTimeout(() => setShareStatus("idle"), 2500);
+      } else {
+        setShareStatus("idle");
+      }
+    } catch {
+      setShareStatus("idle");
     }
   };
 
@@ -450,6 +480,49 @@ export function PrepBrief({ data, user, onRegenerate, isRegenerating }: PrepBrie
               )}
             </button>
             <p className="text-xs text-zinc-400 mt-2">Uses one of your daily briefs</p>
+          </div>
+        )}
+
+        {/* Share Button — only for authenticated users with a saved brief */}
+        {user && briefId && (
+          <div className="text-center">
+            <button
+              onClick={handleShare}
+              disabled={shareStatus === "loading"}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium border rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                isPublic
+                  ? "border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-800"
+                  : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300"
+              }`}
+            >
+              {shareStatus === "loading" ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Updating...
+                </>
+              ) : shareStatus === "copied" ? (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                  Link copied!
+                </>
+              ) : isPublic ? (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                  Shared — make private
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  Share this brief
+                </>
+              )}
+            </button>
+            <p className="text-xs text-zinc-400 mt-2">
+              {isPublic ? `Shareable link: ${window.location.origin}/b/${briefId}` : "Creates a read-only link anyone can view"}
+            </p>
           </div>
         )}
 
