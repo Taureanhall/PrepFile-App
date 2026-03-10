@@ -26,7 +26,6 @@ import {
   setBriefPublic,
   getAdminMetrics,
 } from "./src/lib/db.js";
-import db from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
 import { OAuth2Client } from "google-auth-library";
@@ -621,17 +620,6 @@ async function startServer() {
   });
 
   // Admin dashboard — password-gated via ADMIN_PASSWORD env var (HTTP Basic Auth)
-  app.post("/api/admin/grant-pro", (req, res) => {
-    const bypassKey = process.env.BYPASS_KEY;
-    if (!bypassKey || req.headers["x-bypass-key"] !== bypassKey) return res.status(401).json({ error: "Unauthorized" });
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: "email required" });
-    const user = db.prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(?)").get(email) as { id: string } | undefined;
-    if (!user) return res.status(404).json({ error: "User not found" });
-    upsertSubscription(user.id, "pro", null, null);
-    res.json({ success: true, userId: user.id, plan: "pro" });
-  });
-
   app.get("/admin", (req, res) => {
     const adminPassword = process.env.ADMIN_PASSWORD;
     if (!adminPassword) return res.status(503).send("Admin dashboard not configured (ADMIN_PASSWORD not set).");
