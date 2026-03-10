@@ -11,21 +11,11 @@ import {
   saveBrief,
   getBriefsByUser,
   getBriefById,
+  checkAndIncrementRateLimit,
 } from "./src/lib/db.js";
 
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + 24 * 60 * 60 * 1000 });
-    return true;
-  }
-  if (entry.count >= 5) return false;
-  entry.count++;
-  return true;
-}
+const RATE_LIMIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
+const RATE_LIMIT_MAX = 1; // 1 brief per week for free tier
 
 function getSessionUser(req: express.Request) {
   const token = req.cookies?.session;
@@ -139,9 +129,9 @@ async function startServer() {
       }
 
       if (!isBypassed) {
-        const ip = req.ip || "unknown";
-        if (!checkRateLimit(ip)) {
-          return res.status(429).json({ error: "Rate limit exceeded. You can generate 5 briefs per day." });
+        const identifier = user ? `user:${user.id}` : `ip:${req.ip || "unknown"}`;
+        if (!checkAndIncrementRateLimit(identifier, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
+          return res.status(429).json({ error: "Rate limit exceeded. Free tier allows 1 brief per week. Sign in for access." });
         }
       }
 

@@ -35,6 +35,17 @@ db.exec(`
     brief_data TEXT NOT NULL,
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS rate_limits (
+    id TEXT PRIMARY KEY,
+    identifier TEXT NOT NULL,
+    count INTEGER NOT NULL DEFAULT 0,
+    window_start TEXT NOT NULL,
+    window_end TEXT NOT NULL
+  );
+
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_rate_limits_identifier_window
+    ON rate_limits(identifier, window_start);
 `);
 
 export function createMagicLink(email: string): string {
@@ -112,6 +123,46 @@ export function getBriefById(id: string, userId: string): { id: string; company_
   return db.prepare(
     "SELECT * FROM briefs WHERE id = ? AND user_id = ?"
   ).get(id, userId) as any;
+}
+
+/**
+ * Check and increment rate limit for an identifier within a rolling window.
+ * Returns true if the request is allowed, false if the limit is exceeded.
+ * Cleans up expired windows on each call for the given identifier.
+ */
+export function checkAndIncrementRateLimit(
+  identifier: string,
+  limitPerWindow: number,
+  windowMs: number
+): boolean {
+  const now = new Date();
+  const windowStart = now.toISOString();
+  const windowEnd = new Date(now.getTime() + windowMs).toISOString();
+
+  // Remove expired windows for this identifier
+  db.prepare(
+    "DELETE FROM rate_limits WHERE identifier = ? AND window_end <= ?"
+  ).run(identifier, now.toISOString());
+
+  // Find active window
+  const existing = db.prepare(
+    "SELECT * FROM rate_limits WHERE identifier = ? AND window_end > ? ORDER BY window_start ASC LIMIT 1"
+  ).get(identifier, now.toISOString()) as any;
+
+  if (!existing) {
+    // No active window — create one
+    db.prepare(
+      "INSERT INTO rate_limits (id, identifier, count, window_start, window_end) VALUES (?, ?, 1, ?, ?)"
+    ).run(crypto.randomUUID(), identifier, windowStart, windowEnd);
+    return true;
+  }
+
+  if (existing.count >= limitPerWindow) {
+    return false;
+  }
+
+  db.prepare("UPDATE rate_limits SET count = count + 1 WHERE id = ?").run(existing.id);
+  return true;
 }
 
 export default db;
