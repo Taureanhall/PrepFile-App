@@ -6,7 +6,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onGetStarted }: LandingPageProps) {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans">
+    <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans">
       {/* Nav */}
       <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center">
         <span className="text-lg font-bold tracking-tight">PrepFile</span>
@@ -93,7 +93,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             </ul>
             <button
               onClick={onGetStarted}
-              className="w-full py-2.5 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors"
+              className="w-full py-3 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors"
             >
               Get started free
             </button>
@@ -113,7 +113,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             </ul>
             <button
               onClick={onGetStarted}
-              className="w-full py-2.5 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors"
+              className="w-full py-3 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors"
             >
               Buy pack
             </button>
@@ -133,7 +133,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             </ul>
             <button
               onClick={onGetStarted}
-              className="w-full py-2.5 bg-white text-zinc-900 rounded-xl text-sm font-medium hover:bg-zinc-100 transition-colors"
+              className="w-full py-3 bg-white text-zinc-900 rounded-xl text-sm font-medium hover:bg-zinc-100 transition-colors"
             >
               Get Pro
             </button>

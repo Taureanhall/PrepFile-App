@@ -33,7 +33,7 @@ export function PrepBrief({ data, onRegenerate, isRegenerating }: PrepBriefProps
   };
 
   return (
-    <div className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-zinc-200/60 max-w-4xl mx-auto print:shadow-none print:border-none print:p-0">
+    <div className="bg-white p-5 md:p-8 lg:p-12 rounded-2xl shadow-sm border border-zinc-200/60 max-w-4xl mx-auto print:shadow-none print:border-none print:p-0">
 
       {/* Blind Spots Callout */}
       {data.blindSpots && data.blindSpots.length > 0 && (
@@ -327,19 +327,19 @@ export function PrepBrief({ data, onRegenerate, isRegenerating }: PrepBriefProps
               <span className="font-medium">Brief sent! Check your inbox.</span>
             </div>
           ) : (
-            <form onSubmit={handleSave} className="flex gap-2">
+            <form onSubmit={handleSave} className="flex flex-col sm:flex-row gap-2">
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="flex-1 px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors"
+                className="flex-1 px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors text-base sm:text-sm"
               />
               <button
                 type="submit"
                 disabled={status === "loading" || !email}
-                className="px-6 py-2.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                className="px-6 py-3 sm:py-2.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
               >
                 {status === "loading" ? "Sending..." : "Send to Me"}
               </button>

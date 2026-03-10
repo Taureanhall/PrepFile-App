@@ -59,7 +59,7 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
         </div>
         <button
           onClick={onDismiss}
-          className="text-zinc-500 hover:text-zinc-300 transition-colors text-xs mt-0.5 shrink-0"
+          className="text-zinc-500 hover:text-zinc-300 transition-colors text-xs shrink-0 min-h-[44px] flex items-center"
           aria-label="Dismiss"
         >
           Try free →
@@ -69,7 +69,7 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
       {/* Google OAuth — primary */}
       <a
         href="/api/auth/google"
-        className="flex items-center justify-center gap-3 w-full px-4 py-2.5 bg-white text-zinc-900 font-medium text-sm rounded-lg hover:bg-zinc-100 transition-colors"
+        className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-white text-zinc-900 font-medium text-sm rounded-lg hover:bg-zinc-100 transition-colors"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
@@ -100,7 +100,7 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
         <button
           type="submit"
           disabled={status === "loading"}
-          className="w-full sm:w-auto px-4 py-2.5 bg-zinc-700 text-white font-medium text-sm rounded-lg hover:bg-zinc-600 disabled:opacity-50 transition-colors"
+          className="w-full sm:w-auto px-4 py-3 bg-zinc-700 text-white font-medium text-sm rounded-lg hover:bg-zinc-600 disabled:opacity-50 transition-colors"
         >
           {status === "loading" ? "Sending…" : "Email link"}
         </button>

@@ -276,7 +276,7 @@ export default function Page() {
 
   if (!hasKey) {
     return (
-      <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-6">
+      <div className="min-h-[100dvh] bg-zinc-50 flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-zinc-200/60 text-center">
           <h2 className="text-2xl font-bold text-zinc-900 mb-3">Connect API Key</h2>
           <p className="text-zinc-600 mb-8">
@@ -294,7 +294,7 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans selection:bg-zinc-200">
+    <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans selection:bg-zinc-200">
       <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
 
         {/* Header */}
@@ -333,20 +333,20 @@ export default function Page() {
                   <button
                     onClick={handleManageSubscription}
                     disabled={portalLoading}
-                    className="text-sm px-3 py-1.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors disabled:opacity-50"
+                    className="text-sm px-3 py-2.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors disabled:opacity-50"
                   >
                     {portalLoading ? "Loading..." : "Manage Plan"}
                   </button>
                 )}
                 <button
                   onClick={() => { setShowHistory(true); setOutput(null); }}
-                  className="text-sm px-3 py-1.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors"
+                  className="text-sm px-3 py-2.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors"
                 >
                   My Briefs
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="text-sm px-3 py-1.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors"
+                  className="text-sm px-3 py-2.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors"
                 >
                   Sign out
                 </button>
@@ -458,7 +458,7 @@ export default function Page() {
                           <button
                             key={option}
                             onClick={() => setRound(option)}
-                            className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                            className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
                               round === option
                                 ? "bg-zinc-900 text-white border-zinc-900"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
@@ -480,7 +480,7 @@ export default function Page() {
                           <button
                             key={option}
                             onClick={() => setFamiliarity(option)}
-                            className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                            className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
                               familiarity === option
                                 ? "bg-zinc-900 text-white border-zinc-900"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
@@ -502,7 +502,7 @@ export default function Page() {
                           <button
                             key={option}
                             onClick={() => setTimeToPrep(option)}
-                            className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                            className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
                               timeToPrep === option
                                 ? "bg-zinc-900 text-white border-zinc-900"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
@@ -524,7 +524,7 @@ export default function Page() {
                           <button
                             key={option}
                             onClick={() => setBiggestGap(option)}
-                            className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                            className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
                               biggestGap === option
                                 ? "bg-zinc-900 text-white border-zinc-900"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
