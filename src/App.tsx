@@ -7,6 +7,7 @@ import { SignInGate } from "./components/SignInGate";
 import { MyBriefs } from "./components/MyBriefs";
 import { UpgradePrompt } from "./components/UpgradePrompt";
 import { LandingPage } from "./components/LandingPage";
+import { PublicBrief } from "./components/PublicBrief";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin } from "./lib/analytics";
 
@@ -40,6 +41,12 @@ interface Subscription {
 }
 
 export default function Page() {
+  // Route: /b/:id — public brief view
+  const publicBriefId = window.location.pathname.match(/^\/b\/([^/]+)$/)?.[1] ?? null;
+  if (publicBriefId) {
+    return <PublicBrief briefId={publicBriefId} />;
+  }
+
   // Auth state
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -66,6 +73,7 @@ export default function Page() {
   // UI State
   const [isGenerating, setIsGenerating] = useState(false);
   const [output, setOutput] = useState<PrepBriefData | null>(null);
+  const [briefId, setBriefId] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [hasKey, setHasKey] = useState(true);
   const [isEditor, setIsEditor] = useState(false);
@@ -220,8 +228,10 @@ export default function Page() {
 
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
+      const { briefId: newBriefId, ...briefData } = data;
       trackBriefGenerated(companyName, jobTitle);
-      setOutput(data);
+      setOutput(briefData as PrepBriefData);
+      setBriefId(newBriefId ?? null);
     } catch (error: any) {
       console.error("Error generating brief:", error);
       if (error.message?.includes("Rate limit exceeded")) {
@@ -566,13 +576,14 @@ export default function Page() {
             <PrepBrief
               data={output}
               user={user}
+              briefId={briefId}
               onRegenerate={handleGenerate}
               isRegenerating={isGenerating}
             />
 
             <div className="flex justify-center pt-8 print:hidden">
               <button
-                onClick={() => setOutput(null)}
+                onClick={() => { setOutput(null); setBriefId(null); }}
                 className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-2"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>

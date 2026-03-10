@@ -417,10 +417,10 @@ async function startServer() {
 
       const { companyName, jobTitle, jobDescription, round, familiarity, timeToPrep, biggestGap } = req.body;
 
-      const VALID_ROUNDS = ["phone_screen", "technical", "behavioral", "final", "onsite", "hiring_manager", "recruiter"];
-      const VALID_FAMILIARITY = ["first_time_heard", "know_the_name", "used_their_product", "follow_them_closely", "insider_knowledge"];
-      const VALID_TIME_TO_PREP = ["under_1_hour", "a_few_hours", "1_day", "2_3_days", "a_week_plus"];
-      const VALID_BIGGEST_GAP = ["company_knowledge", "role_clarity", "technical_skills", "behavioral_prep", "questions_to_ask"];
+      const VALID_ROUNDS = ["First screen", "Hiring manager", "Panel", "Final", "Not sure"];
+      const VALID_FAMILIARITY = ["Never heard of them", "Know of them", "Know them well", "Used their product"];
+      const VALID_TIME_TO_PREP = ["Under 1 hour", "1-3 hours", "Full day", "1+ days"];
+      const VALID_BIGGEST_GAP = ["Industry knowledge", "Technical skills", "Seniority jump", "Culture fit", "No obvious gap"];
 
       if (!companyName || typeof companyName !== "string" || companyName.trim().length === 0) {
         return res.status(400).json({ error: "companyName is required" });
@@ -461,9 +461,11 @@ async function startServer() {
       });
 
       // Persist brief for authenticated users
+      let savedBriefId: string | undefined;
       if (user) {
         try {
           const briefId = saveBrief(user.id, req.body.companyName || "", req.body.jobTitle || "", data);
+          savedBriefId = briefId;
 
           // Send onboarding email after first brief
           const briefCount = getBriefCountForUser(user.id);
@@ -522,7 +524,7 @@ async function startServer() {
         });
       }
 
-      res.json(data);
+      res.json({ ...data, briefId: savedBriefId });
     } catch (err: any) {
       res.status(500).json({ error: err.message || "Failed to generate brief" });
     }

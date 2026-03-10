@@ -2,7 +2,8 @@ import Database from "better-sqlite3";
 import path from "path";
 import crypto from "crypto";
 
-const db = new Database(path.join(process.cwd(), "prepflow.db"));
+const dbPath = process.env.DB_PATH || path.join(process.cwd(), "prepflow.db");
+const db = new Database(dbPath);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
