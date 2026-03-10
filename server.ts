@@ -173,7 +173,11 @@ async function startServer() {
     const user = getSessionUser(req);
     if (!user) return res.status(401).json({ error: "Not authenticated" });
     const sub = getUserSubscription(user.id);
-    res.json({ plan: sub.plan, pack_briefs_remaining: sub.pack_briefs_remaining });
+    res.json({
+      plan: sub.plan,
+      pack_briefs_remaining: sub.pack_briefs_remaining,
+      has_stripe_customer: !!sub.stripe_customer_id,
+    });
   });
 
   // Stripe: create checkout session
@@ -217,7 +221,7 @@ async function startServer() {
   });
 
   // Stripe: customer portal (manage subscription)
-  app.post("/api/stripe/portal", async (req, res) => {
+  const handlePortalSession = async (req: express.Request, res: express.Response) => {
     const user = getSessionUser(req);
     if (!user) return res.status(401).json({ error: "Not authenticated" });
 
@@ -234,7 +238,9 @@ async function startServer() {
       console.error("Portal session error:", err);
       res.status(500).json({ error: "Failed to create portal session" });
     }
-  });
+  };
+  app.post("/api/stripe/portal", handlePortalSession);
+  app.post("/api/stripe/create-portal-session", handlePortalSession);
 
   // Generate brief — authenticated OR 1 free brief via cookie
   app.post("/api/generate-brief", async (req, res) => {

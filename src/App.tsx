@@ -32,6 +32,12 @@ interface User {
   email: string;
 }
 
+interface Subscription {
+  plan: "free" | "pro" | "pack";
+  pack_briefs_remaining: number;
+  has_stripe_customer: boolean;
+}
+
 export default function Page() {
   // Auth state
   const [user, setUser] = useState<User | null>(null);
@@ -40,6 +46,8 @@ export default function Page() {
   const [needsSignIn, setNeedsSignIn] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<"free_limit" | "pack_exhausted" | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   // Core Inputs
   const [companyName, setCompanyName] = useState("");
@@ -86,6 +94,11 @@ export default function Page() {
     if (params.get("payment") === "success") {
       setPaymentSuccess(true);
       window.history.replaceState({}, "", "/");
+      // Refresh subscription after successful payment
+      fetch("/api/stripe/status")
+        .then((r) => r.ok ? r.json() : null)
+        .then((d) => d && setSubscription(d))
+        .catch(() => {});
     }
   }, []);
 
@@ -93,11 +106,22 @@ export default function Page() {
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((d) => {
+      .then(async (d) => {
         const loadedUser = d.user || null;
         setUser(loadedUser);
         setShowAuthPanel(!loadedUser);
-        if (loadedUser) identifyUser(loadedUser.id);
+        if (loadedUser) {
+          identifyUser(loadedUser.id);
+          try {
+            const subRes = await fetch("/api/stripe/status");
+            if (subRes.ok) {
+              const subData = await subRes.json();
+              setSubscription(subData);
+            }
+          } catch {
+            // non-fatal — subscription info is display-only
+          }
+        }
       })
       .catch(() => setShowAuthPanel(true))
       .finally(() => setAuthLoading(false));
@@ -107,8 +131,23 @@ export default function Page() {
     await fetch("/api/auth/logout", { method: "POST" });
     resetUser();
     setUser(null);
+    setSubscription(null);
     setShowAuthPanel(true);
     setNeedsSignIn(false);
+  };
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/create-portal-session", { method: "POST" });
+      if (!res.ok) throw new Error("Failed to open portal");
+      const { url } = await res.json();
+      window.location.href = url;
+    } catch {
+      alert("Unable to open subscription portal. Please try again.");
+    } finally {
+      setPortalLoading(false);
+    }
   };
 
   const handleSelectKey = async () => {
@@ -212,7 +251,34 @@ export default function Page() {
           <div className="flex items-center gap-3">
             {!authLoading && user && (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-zinc-500 hidden sm:block">{user.email}</span>
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-sm text-zinc-500">{user.email}</span>
+                  {subscription && (
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      subscription.plan === "pro"
+                        ? "bg-zinc-900 text-white"
+                        : subscription.plan === "pack"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-zinc-100 text-zinc-500"
+                    }`}>
+                      {subscription.plan === "pro" ? "Pro" : subscription.plan === "pack" ? "Pack" : "Free"}
+                    </span>
+                  )}
+                  {subscription?.plan === "pack" && (
+                    <span className="text-xs text-zinc-400">
+                      {subscription.pack_briefs_remaining} briefs left
+                    </span>
+                  )}
+                </div>
+                {subscription?.plan === "pro" && subscription.has_stripe_customer && (
+                  <button
+                    onClick={handleManageSubscription}
+                    disabled={portalLoading}
+                    className="text-sm px-3 py-1.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors disabled:opacity-50"
+                  >
+                    {portalLoading ? "Loading..." : "Manage Plan"}
+                  </button>
+                )}
                 <button
                   onClick={() => { setShowHistory(true); setOutput(null); }}
                   className="text-sm px-3 py-1.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors"
