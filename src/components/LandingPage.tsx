@@ -86,9 +86,11 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <div className="text-sm text-zinc-400 mt-1">3 briefs / week</div>
             </div>
             <ul className="text-sm text-zinc-600 space-y-2 flex-1">
-              <li className="flex gap-2"><span className="text-zinc-400">✓</span> Full prep brief</li>
               <li className="flex gap-2"><span className="text-zinc-400">✓</span> Company snapshot</li>
               <li className="flex gap-2"><span className="text-zinc-400">✓</span> Role intelligence</li>
+              <li className="flex gap-2"><span className="text-zinc-400">✓</span> Questions to ask</li>
+              <li className="flex gap-2"><span className="text-zinc-300">—</span> <span className="text-zinc-400">Resume match</span></li>
+              <li className="flex gap-2"><span className="text-zinc-300">—</span> <span className="text-zinc-400">Brief history</span></li>
             </ul>
             <button
               onClick={onGetStarted}
@@ -106,9 +108,10 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <div className="text-sm text-zinc-400 mt-1">5 briefs, one-time</div>
             </div>
             <ul className="text-sm text-zinc-600 space-y-2 flex-1">
-              <li className="flex gap-2"><span className="text-zinc-400">✓</span> Everything in Free</li>
-              <li className="flex gap-2"><span className="text-zinc-400">✓</span> 5 briefs to use anytime</li>
+              <li className="flex gap-2"><span className="text-zinc-400">✓</span> Full comprehensive brief</li>
+              <li className="flex gap-2"><span className="text-zinc-400">✓</span> Resume match & insights</li>
               <li className="flex gap-2"><span className="text-zinc-400">✓</span> Brief history saved</li>
+              <li className="flex gap-2"><span className="text-zinc-400">✓</span> No subscription</li>
             </ul>
             <button
               onClick={onGetStarted}
@@ -127,8 +130,10 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             </div>
             <ul className="text-sm text-zinc-300 space-y-2 flex-1">
               <li className="flex gap-2"><span className="text-zinc-500">✓</span> Unlimited briefs</li>
+              <li className="flex gap-2"><span className="text-zinc-500">✓</span> Full comprehensive brief</li>
+              <li className="flex gap-2"><span className="text-zinc-500">✓</span> Resume match & insights</li>
               <li className="flex gap-2"><span className="text-zinc-500">✓</span> Brief history saved</li>
-              <li className="flex gap-2"><span className="text-zinc-500">✓</span> Priority generation</li>
+              <li className="flex gap-2"><span className="text-zinc-500">✓</span> Cancel anytime</li>
             </ul>
             <button
               onClick={onGetStarted}
