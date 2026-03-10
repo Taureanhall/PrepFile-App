@@ -9,7 +9,7 @@ export async function generateBrief(inputs: {
   familiarity: string;
   timeToPrep: string;
   biggestGap: string;
-}) {
+}, tier: "free" | "pro" = "pro") {
   const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
   const ai = new GoogleGenAI({ apiKey });
 
@@ -65,9 +65,10 @@ export async function generateBrief(inputs: {
 
     COMPANY SNAPSHOT:
     - overview: What the company is actually optimizing for right now, based on the full strategic analysis. Not a Wikipedia summary — a strategic read.
-    - keyMetrics: Use Google Search to find 2-4 hard, current, quantitative metrics (revenue, AUM, funding, headcount, growth rate, market share). Exact numbers for public/large companies. Omit if unreliable.
-    - recentSignals: 2-4 recent developments that reveal strategic direction or pressure (hiring patterns, product launches, leadership changes, earnings signals, press).
-    - risksAndUnknowns: 2-4 honest risks — market threats, execution risks, cultural signals, unknowns in the JD.
+    ${tier === "free"
+      ? "- recentSignals: Exactly 2 recent developments that reveal strategic direction or pressure (hiring patterns, product launches, leadership changes, earnings signals, press). Return exactly 2 items, no more.\n    - Do NOT include keyMetrics or risksAndUnknowns."
+      : "- keyMetrics: Use Google Search to find 2-4 hard, current, quantitative metrics (revenue, AUM, funding, headcount, growth rate, market share). Exact numbers for public/large companies. Omit if unreliable.\n    - recentSignals: 2-4 recent developments that reveal strategic direction or pressure (hiring patterns, product launches, leadership changes, earnings signals, press).\n    - risksAndUnknowns: 2-4 honest risks — market threats, execution risks, cultural signals, unknowns in the JD."
+    }
 
     ROLE INTELLIGENCE:
     - coreMandate: The real job behind the job description — synthesized from all lenses. What problem does this role exist to solve at the system level?
@@ -92,10 +93,10 @@ export async function generateBrief(inputs: {
     - competency: The specific competency (tied to what ${inputs.companyName} actually values — e.g., "Influencing roadmap without direct authority in a matrix org" not just "Leadership")
     - questions: 2-3 behavioral questions a ${inputs.companyName} interviewer would actually ask to probe this competency. Phrased in STAR format prompts. Make them specific — reference the type of situation this candidate will face at this company.
 
-    ROUND EXPECTATIONS:
+    ${tier === "pro" ? `ROUND EXPECTATIONS:
     - overview: What this specific round (${inputs.round}) is actually evaluating at ${inputs.companyName}, and what format to expect.
     - whatTripsPeopleUp: 3 specific mistakes candidates make in this round at this type of company.
-    - howToShowUpStrong: 3 specific things that make candidates stand out in this round.
+    - howToShowUpStrong: 3 specific things that make candidates stand out in this round.` : "Do NOT include a roundExpectations section."}
 
     QUESTIONS TO ASK: 5 sharp questions for the candidate to ask the interviewer that signal they've thought deeply about ${inputs.companyName}'s real strategic situation. At least one must probe the system/process maturity of the organization. At least one must probe the coherence between stated and revealed strategy. All must be translated into the natural language of the role — no MBA jargon.
 
@@ -136,11 +137,11 @@ export async function generateBrief(inputs: {
             type: Type.OBJECT,
             properties: {
               overview: { type: Type.STRING },
-              keyMetrics: { type: Type.ARRAY, items: { type: Type.STRING } },
+              ...(tier === "pro" ? { keyMetrics: { type: Type.ARRAY, items: { type: Type.STRING } } } : {}),
               recentSignals: { type: Type.ARRAY, items: { type: Type.STRING } },
-              risksAndUnknowns: { type: Type.ARRAY, items: { type: Type.STRING } },
+              ...(tier === "pro" ? { risksAndUnknowns: { type: Type.ARRAY, items: { type: Type.STRING } } } : {}),
             },
-            required: ["overview", "recentSignals", "risksAndUnknowns"],
+            required: tier === "pro" ? ["overview", "recentSignals", "risksAndUnknowns"] : ["overview", "recentSignals"],
           },
           roleIntelligence: {
             type: Type.OBJECT,
@@ -182,15 +183,17 @@ export async function generateBrief(inputs: {
               required: ["competency", "questions"],
             },
           },
-          roundExpectations: {
-            type: Type.OBJECT,
-            properties: {
-              overview: { type: Type.STRING },
-              whatTripsPeopleUp: { type: Type.ARRAY, items: { type: Type.STRING } },
-              howToShowUpStrong: { type: Type.ARRAY, items: { type: Type.STRING } },
+          ...(tier === "pro" ? {
+            roundExpectations: {
+              type: Type.OBJECT,
+              properties: {
+                overview: { type: Type.STRING },
+                whatTripsPeopleUp: { type: Type.ARRAY, items: { type: Type.STRING } },
+                howToShowUpStrong: { type: Type.ARRAY, items: { type: Type.STRING } },
+              },
+              required: ["overview", "whatTripsPeopleUp", "howToShowUpStrong"],
             },
-            required: ["overview", "whatTripsPeopleUp", "howToShowUpStrong"],
-          },
+          } : {}),
           questionsToAsk: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
@@ -217,7 +220,7 @@ export async function generateBrief(inputs: {
           "interviewThemes",
           "processOperationalQuestions",
           "behavioralQuestionBank",
-          "roundExpectations",
+          ...(tier === "pro" ? ["roundExpectations"] : []),
           "questionsToAsk",
           "recommendedReading",
           "blindSpots",
@@ -232,10 +235,25 @@ export async function generateBrief(inputs: {
   } catch {
     throw new Error("Gemini returned malformed JSON: " + (response.text?.slice(0, 200) ?? ""));
   }
-  const required = ["companySnapshot", "roleIntelligence", "interviewThemes", "processOperationalQuestions", "behavioralQuestionBank", "roundExpectations", "questionsToAsk", "recommendedReading"];
+  const required = tier === "pro"
+    ? ["companySnapshot", "roleIntelligence", "interviewThemes", "processOperationalQuestions", "behavioralQuestionBank", "roundExpectations", "questionsToAsk", "recommendedReading"]
+    : ["companySnapshot", "roleIntelligence", "interviewThemes", "processOperationalQuestions", "behavioralQuestionBank", "questionsToAsk"];
   for (const key of required) {
     if (!parsed[key]) throw new Error("Gemini response missing required field: " + key);
   }
+
+  // Enforce free tier gating server-side regardless of what Gemini returned
+  if (tier === "free") {
+    delete parsed.roundExpectations;
+    if (parsed.companySnapshot) {
+      delete parsed.companySnapshot.keyMetrics;
+      delete parsed.companySnapshot.risksAndUnknowns;
+      if (Array.isArray(parsed.companySnapshot.recentSignals) && parsed.companySnapshot.recentSignals.length > 2) {
+        parsed.companySnapshot.recentSignals = parsed.companySnapshot.recentSignals.slice(0, 2);
+      }
+    }
+  }
+
   return stripCitations(parsed);
 }
 

@@ -52,7 +52,7 @@ export default function Page() {
   const [authLoading, setAuthLoading] = useState(true);
   const [showAuthPanel, setShowAuthPanel] = useState(false);
   const [needsSignIn, setNeedsSignIn] = useState(false);
-  const [upgradeReason, setUpgradeReason] = useState<"free_limit" | "pack_exhausted" | null>(null);
+  const [upgradeReason, setUpgradeReason] = useState<"free_limit" | "pack_exhausted" | "pro_required" | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentCancel, setPaymentCancel] = useState(false);
   const [paymentPlan, setPaymentPlan] = useState<string | null>(null);
@@ -576,10 +576,27 @@ export default function Page() {
             <PrepBrief
               data={output}
               user={user}
+              userPlan={subscription?.plan}
               briefId={briefId}
               onRegenerate={handleGenerate}
               isRegenerating={isGenerating}
+              onUpgradeClick={() => setUpgradeReason("pro_required")}
             />
+
+            {/* Post-brief upgrade nudge — free users only, shown after brief renders */}
+            {(!user || subscription?.plan === "free") && (
+              <div className="print:hidden bg-zinc-50 border border-zinc-200 rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                <p className="text-sm text-zinc-600 flex-1">
+                  Want the full picture? Pro users get company signals, round expectations, and resume match.
+                </p>
+                <button
+                  onClick={() => setUpgradeReason("pro_required")}
+                  className="shrink-0 text-sm font-medium text-zinc-900 underline underline-offset-2 hover:text-zinc-600 transition-colors whitespace-nowrap"
+                >
+                  View plan comparison
+                </button>
+              </div>
+            )}
 
             <div className="flex justify-center pt-8 print:hidden">
               <button

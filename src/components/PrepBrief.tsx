@@ -4,12 +4,14 @@ import type { PrepBriefData, BridgingAnalysis } from "../types";
 interface PrepBriefProps {
   data: PrepBriefData;
   user: { id: string; email: string } | null;
+  userPlan?: "free" | "pro" | "pack";
   briefId?: string | null;
   onRegenerate?: () => void;
   isRegenerating?: boolean;
+  onUpgradeClick?: () => void;
 }
 
-export function PrepBrief({ data, user, briefId, onRegenerate, isRegenerating }: PrepBriefProps) {
+export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegenerating, onUpgradeClick }: PrepBriefProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
@@ -90,6 +92,11 @@ export function PrepBrief({ data, user, briefId, onRegenerate, isRegenerating }:
       if (res.status === 401) {
         setEnhanceStatus("error");
         setEnhanceError("Please sign in to enhance your brief.");
+        return;
+      }
+      if (res.status === 403) {
+        setEnhanceStatus("idle");
+        onUpgradeClick?.();
         return;
       }
       if (res.status === 413) {
@@ -315,46 +322,67 @@ export function PrepBrief({ data, user, briefId, onRegenerate, isRegenerating }:
 
         {/* Resume Enhancement CTA — placed above Round Expectations */}
         {!bridging ? (
-          <div className="print:hidden rounded-xl border border-zinc-200 bg-zinc-50 p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex-1">
-                <h3 className="font-semibold text-zinc-900 text-sm">Personalize this brief with your resume</h3>
-                <p className="text-zinc-500 text-sm mt-0.5">
-                  Upload your resume to get tailored talking points, bridging analysis, and personalized blind spots.
-                </p>
+          userPlan === "free" || (!user && !userPlan) ? (
+            /* Free tier: upgrade callout instead of upload button */
+            <div className="print:hidden rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-zinc-900 text-sm">Resume match is available on Pro and Pack</h3>
+                  <p className="text-zinc-500 text-sm mt-0.5">
+                    See how your resume stacks up against this role — tailored talking points, gap analysis, and personalized blind spots.
+                  </p>
+                </div>
+                <button
+                  onClick={onUpgradeClick}
+                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors whitespace-nowrap"
+                >
+                  See plans
+                </button>
               </div>
-              <button
-                onClick={handleEnhanceClick}
-                disabled={enhanceStatus === "loading"}
-                className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
-              >
-                {enhanceStatus === "loading" ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Analyzing your resume...
-                  </>
-                ) : (
-                  <>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Upload Resume
-                  </>
-                )}
-              </button>
             </div>
-            {enhanceError && (
-              <p className="mt-3 text-sm text-red-600">{enhanceError}</p>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.docx"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-          </div>
+          ) : (
+            /* Pro/Pack: show upload button */
+            <div className="print:hidden rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-zinc-900 text-sm">Personalize this brief with your resume</h3>
+                  <p className="text-zinc-500 text-sm mt-0.5">
+                    Upload your resume to get tailored talking points, bridging analysis, and personalized blind spots.
+                  </p>
+                </div>
+                <button
+                  onClick={handleEnhanceClick}
+                  disabled={enhanceStatus === "loading"}
+                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                >
+                  {enhanceStatus === "loading" ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Analyzing your resume...
+                    </>
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      Upload Resume
+                    </>
+                  )}
+                </button>
+              </div>
+              {enhanceError && (
+                <p className="mt-3 text-sm text-red-600">{enhanceError}</p>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.docx"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+          )
         ) : (
           /* Resume Match section — shown after successful enhancement */
           <section className="border-l-4 border-blue-400 pl-5 bg-blue-50/40 rounded-r-xl py-5 pr-5">
