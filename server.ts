@@ -23,7 +23,7 @@ import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
 
 const RATE_LIMIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
-const RATE_LIMIT_MAX = 1; // 1 brief per week for free tier
+const RATE_LIMIT_MAX = 3; // 3 briefs per week for free tier
 
 function getSessionUser(req: express.Request) {
   const token = req.cookies?.session;
@@ -272,7 +272,7 @@ async function startServer() {
           } else {
             // Free tier
             if (!checkAndIncrementRateLimit(`user:${user.id}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
-              return res.status(402).json({ error: "rate_limit_exceeded", message: "Free tier allows 1 brief per week. Upgrade for more." });
+              return res.status(402).json({ error: "rate_limit_exceeded", message: "Free tier allows 3 briefs per week. Upgrade for more." });
             }
           }
         }
@@ -322,7 +322,7 @@ async function startServer() {
                     ${isFreeTier ? `
                     <div style="background:#f4f4f5;border-radius:8px;padding:16px;margin-top:8px">
                       <p style="color:#3f3f46;font-size:14px;margin:0 0 8px">
-                        <strong>On the free plan?</strong> You get 1 brief per week. Upgrade to Pro for unlimited briefs at $9.99/month,
+                        <strong>On the free plan?</strong> You get 3 briefs per week. Upgrade to Pro for unlimited briefs at $9.99/month,
                         or grab an Interview Pack (5 briefs) for $4.99.
                       </p>
                       <a href="${appUrl}" style="color:#18181b;font-size:14px;font-weight:500">See upgrade options →</a>
