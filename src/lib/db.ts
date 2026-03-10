@@ -46,6 +46,17 @@ db.exec(`
 
   CREATE UNIQUE INDEX IF NOT EXISTS idx_rate_limits_identifier_window
     ON rate_limits(identifier, window_start);
+
+  CREATE TABLE IF NOT EXISTS subscriptions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT UNIQUE NOT NULL REFERENCES users(id),
+    plan TEXT NOT NULL DEFAULT 'free',
+    stripe_customer_id TEXT,
+    stripe_subscription_id TEXT,
+    pack_briefs_remaining INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 export function createMagicLink(email: string): string {
@@ -162,6 +173,52 @@ export function checkAndIncrementRateLimit(
   }
 
   db.prepare("UPDATE rate_limits SET count = count + 1 WHERE id = ?").run(existing.id);
+  return true;
+}
+
+// Plan: 'free' | 'pro' | 'pack'
+export interface UserSubscription {
+  plan: string;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  pack_briefs_remaining: number;
+}
+
+export function getUserSubscription(userId: string): UserSubscription {
+  const row = db.prepare("SELECT * FROM subscriptions WHERE user_id = ?").get(userId) as any;
+  if (!row) return { plan: "free", stripe_customer_id: null, stripe_subscription_id: null, pack_briefs_remaining: 0 };
+  return row;
+}
+
+export function upsertSubscription(
+  userId: string,
+  plan: string,
+  stripeCustomerId: string | null,
+  stripeSubscriptionId: string | null,
+  packBriefsRemaining?: number
+): void {
+  const existing = db.prepare("SELECT id FROM subscriptions WHERE user_id = ?").get(userId) as any;
+  if (existing) {
+    db.prepare(`
+      UPDATE subscriptions
+      SET plan = ?, stripe_customer_id = ?, stripe_subscription_id = ?,
+          pack_briefs_remaining = COALESCE(?, pack_briefs_remaining),
+          updated_at = datetime('now')
+      WHERE user_id = ?
+    `).run(plan, stripeCustomerId, stripeSubscriptionId, packBriefsRemaining ?? null, userId);
+  } else {
+    db.prepare(`
+      INSERT INTO subscriptions (id, user_id, plan, stripe_customer_id, stripe_subscription_id, pack_briefs_remaining)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(crypto.randomUUID(), userId, plan, stripeCustomerId, stripeSubscriptionId, packBriefsRemaining ?? 0);
+  }
+}
+
+/** Decrement pack briefs. Returns false if none remaining. */
+export function usePackBrief(userId: string): boolean {
+  const row = db.prepare("SELECT pack_briefs_remaining FROM subscriptions WHERE user_id = ?").get(userId) as any;
+  if (!row || row.pack_briefs_remaining <= 0) return false;
+  db.prepare("UPDATE subscriptions SET pack_briefs_remaining = pack_briefs_remaining - 1, updated_at = datetime('now') WHERE user_id = ?").run(userId);
   return true;
 }
 

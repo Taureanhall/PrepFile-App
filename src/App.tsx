@@ -5,6 +5,7 @@ import { PrepBrief } from "./components/PrepBrief";
 import { AuthPanel } from "./components/AuthPanel";
 import { SignInGate } from "./components/SignInGate";
 import { MyBriefs } from "./components/MyBriefs";
+import { UpgradePrompt } from "./components/UpgradePrompt";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser } from "./lib/analytics";
 
@@ -37,6 +38,8 @@ export default function Page() {
   const [authLoading, setAuthLoading] = useState(true);
   const [showAuthPanel, setShowAuthPanel] = useState(false);
   const [needsSignIn, setNeedsSignIn] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState<"free_limit" | "pack_exhausted" | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   // Core Inputs
   const [companyName, setCompanyName] = useState("");
@@ -76,9 +79,14 @@ export default function Page() {
     checkKey();
   }, []);
 
-  // Track page view on mount
+  // Track page view on mount; handle Stripe return params
   useEffect(() => {
     trackPageView();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "success") {
+      setPaymentSuccess(true);
+      window.history.replaceState({}, "", "/");
+    }
   }, []);
 
   // Load auth state on mount
@@ -136,12 +144,13 @@ export default function Page() {
       });
 
       if (res.status === 401) {
-        const d = await res.json();
-        if (d.error === "free_brief_used") {
-          setNeedsSignIn(true);
-          return;
-        }
         setNeedsSignIn(true);
+        return;
+      }
+
+      if (res.status === 402) {
+        const d = await res.json();
+        setUpgradeReason(d.error === "pack_exhausted" ? "pack_exhausted" : "free_limit");
         return;
       }
 
@@ -238,8 +247,18 @@ export default function Page() {
               <AuthPanel onDismiss={() => setShowAuthPanel(false)} />
             )}
 
-            {/* Sign-in gate — shown when free brief is used up */}
-            {needsSignIn ? (
+            {/* Payment success banner */}
+            {paymentSuccess && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-sm flex justify-between items-center">
+                <span>Payment successful! Your plan has been upgraded.</span>
+                <button onClick={() => setPaymentSuccess(false)} className="text-green-600 hover:text-green-800 ml-4">✕</button>
+              </div>
+            )}
+
+            {/* Upgrade prompt — shown when plan limit hit */}
+            {upgradeReason ? (
+              <UpgradePrompt reason={upgradeReason} onDismiss={() => setUpgradeReason(null)} />
+            ) : needsSignIn ? (
               <SignInGate />
             ) : (
               <div className="space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-zinc-200/60">

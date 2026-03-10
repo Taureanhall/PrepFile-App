@@ -12,8 +12,12 @@ import {
   getBriefsByUser,
   getBriefById,
   checkAndIncrementRateLimit,
+  getUserSubscription,
+  upsertSubscription,
+  usePackBrief,
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
+import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
 
 const RATE_LIMIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
 const RATE_LIMIT_MAX = 1; // 1 brief per week for free tier
@@ -28,6 +32,54 @@ async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
+
+  // Stripe webhook — must be registered with raw body BEFORE express.json()
+  app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+    const sig = req.headers["stripe-signature"];
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!sig || !webhookSecret) return res.status(400).send("Missing signature or secret");
+
+    let event: any;
+    try {
+      event = getStripe().webhooks.constructEvent(req.body, sig, webhookSecret);
+    } catch (err: any) {
+      console.error("Webhook signature error:", err.message);
+      return res.status(400).send(`Webhook error: ${err.message}`);
+    }
+
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as any;
+      const userId = session.metadata?.user_id;
+      const product = session.metadata?.product as "pro" | "pack";
+      if (!userId || !product) return res.sendStatus(200);
+
+      if (product === "pro") {
+        upsertSubscription(userId, "pro", session.customer, session.subscription);
+      } else if (product === "pack") {
+        upsertSubscription(userId, "pack", session.customer, null, PACK_BRIEF_COUNT);
+      }
+    }
+
+    if (event.type === "customer.subscription.deleted") {
+      const sub = event.data.object as any;
+      // Find user by stripe_customer_id and downgrade
+      const stripe = getStripe();
+      const customer = await stripe.customers.retrieve(sub.customer) as any;
+      if (customer && !customer.deleted) {
+        // We store customer_id in subscriptions; find user by scanning (small dataset)
+        // Better: store customer_id in metadata when creating customer
+        const email = customer.email;
+        if (email) {
+          // Downgrade any user with this stripe_customer_id
+          const db = (await import("./src/lib/db.js")).default;
+          const row = db.prepare("SELECT user_id FROM subscriptions WHERE stripe_customer_id = ?").get(sub.customer) as any;
+          if (row) upsertSubscription(row.user_id, "free", sub.customer, null, 0);
+        }
+      }
+    }
+
+    res.sendStatus(200);
+  });
 
   app.use(express.json());
   app.use(cookieParser());
@@ -115,6 +167,74 @@ async function startServer() {
     res.json({ success: true });
   });
 
+  // Stripe: get current plan
+  app.get("/api/stripe/status", (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Not authenticated" });
+    const sub = getUserSubscription(user.id);
+    res.json({ plan: sub.plan, pack_briefs_remaining: sub.pack_briefs_remaining });
+  });
+
+  // Stripe: create checkout session
+  app.post("/api/stripe/create-checkout-session", async (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Not authenticated" });
+
+    const { product } = req.body as { product: "pro" | "pack" };
+    if (product !== "pro" && product !== "pack") {
+      return res.status(400).json({ error: "Invalid product" });
+    }
+
+    try {
+      const stripe = getStripe();
+      const priceConfig = PRICES[product];
+      const isSubscription = product === "pro";
+
+      const sessionParams: any = {
+        mode: isSubscription ? "subscription" : "payment",
+        payment_method_types: ["card"],
+        line_items: [{ price_data: priceConfig, quantity: 1 }],
+        success_url: `${APP_URL}/?payment=success`,
+        cancel_url: `${APP_URL}/?payment=cancel`,
+        customer_email: user.email,
+        metadata: { user_id: user.id, product },
+      };
+
+      // Reuse existing Stripe customer if we have one
+      const sub = getUserSubscription(user.id);
+      if (sub.stripe_customer_id) {
+        delete sessionParams.customer_email;
+        sessionParams.customer = sub.stripe_customer_id;
+      }
+
+      const session = await stripe.checkout.sessions.create(sessionParams);
+      res.json({ url: session.url });
+    } catch (err: any) {
+      console.error("Checkout session error:", err);
+      res.status(500).json({ error: "Failed to create checkout session" });
+    }
+  });
+
+  // Stripe: customer portal (manage subscription)
+  app.post("/api/stripe/portal", async (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Not authenticated" });
+
+    const sub = getUserSubscription(user.id);
+    if (!sub.stripe_customer_id) return res.status(400).json({ error: "No active subscription" });
+
+    try {
+      const session = await getStripe().billingPortal.sessions.create({
+        customer: sub.stripe_customer_id,
+        return_url: APP_URL,
+      });
+      res.json({ url: session.url });
+    } catch (err: any) {
+      console.error("Portal session error:", err);
+      res.status(500).json({ error: "Failed to create portal session" });
+    }
+  });
+
   // Generate brief — authenticated OR 1 free brief via cookie
   app.post("/api/generate-brief", async (req, res) => {
     try {
@@ -124,20 +244,27 @@ async function startServer() {
 
       const user = getSessionUser(req);
 
-      if (!isBypassed && !user) {
-        // Allow 1 free brief via cookie
-        if (req.cookies?.free_brief_used) {
-          return res.status(401).json({
-            error: "free_brief_used",
-            message: "Sign in to generate more briefs.",
-          });
-        }
-      }
-
       if (!isBypassed) {
-        const identifier = user ? `user:${user.id}` : `ip:${req.ip || "unknown"}`;
-        if (!checkAndIncrementRateLimit(identifier, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
-          return res.status(429).json({ error: "Rate limit exceeded. Free tier allows 1 brief per week. Sign in for access." });
+        if (!user) {
+          // Unauthenticated: allow 1 free brief via cookie
+          if (req.cookies?.free_brief_used) {
+            return res.status(401).json({ error: "free_brief_used", message: "Sign in to generate more briefs." });
+          }
+        } else {
+          // Authenticated: check plan
+          const sub = getUserSubscription(user.id);
+          if (sub.plan === "pro") {
+            // Unlimited — no rate limit check
+          } else if (sub.plan === "pack") {
+            if (!usePackBrief(user.id)) {
+              return res.status(402).json({ error: "pack_exhausted", message: "Your Interview Pack is used up. Upgrade to Pro for unlimited briefs." });
+            }
+          } else {
+            // Free tier
+            if (!checkAndIncrementRateLimit(`user:${user.id}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
+              return res.status(402).json({ error: "rate_limit_exceeded", message: "Free tier allows 1 brief per week. Upgrade for more." });
+            }
+          }
         }
       }
 
