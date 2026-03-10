@@ -13,6 +13,7 @@ import {
   getBriefById,
   checkAndIncrementRateLimit,
 } from "./src/lib/db.js";
+import { getPostHogClient } from "./src/lib/posthog.js";
 
 const RATE_LIMIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
 const RATE_LIMIT_MAX = 1; // 1 brief per week for free tier
@@ -90,6 +91,11 @@ async function startServer() {
       return res.status(400).send("This link has expired or already been used. Please request a new one.");
     }
 
+    const signedInUser = getUserBySession(sessionToken);
+    if (signedInUser) {
+      getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id } });
+    }
+
     res.cookie("session", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -136,6 +142,17 @@ async function startServer() {
       }
 
       const data = await generateBrief(req.body);
+
+      getPostHogClient()?.capture({
+        distinctId: user ? user.id : `anon:${req.ip || "unknown"}`,
+        event: "brief_generated",
+        properties: {
+          company: req.body.companyName || "",
+          job_title: req.body.jobTitle || "",
+          round: req.body.round || "",
+          authenticated: !!user,
+        },
+      });
 
       // Persist brief for authenticated users
       if (user) {
@@ -201,6 +218,11 @@ async function startServer() {
         subject: "Your Interview Prep Brief",
         html: `<div style="font-family:sans-serif;max-width:600px;margin:auto">${sections}</div>`,
       });
+
+      const emailUser = getSessionUser(req);
+      if (emailUser) {
+        getPostHogClient()?.capture({ distinctId: emailUser.id, event: "email_sent", properties: { user_id: emailUser.id } });
+      }
 
       res.json({ success: true });
     } catch (err: any) {

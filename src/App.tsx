@@ -6,6 +6,7 @@ import { AuthPanel } from "./components/AuthPanel";
 import { SignInGate } from "./components/SignInGate";
 import { MyBriefs } from "./components/MyBriefs";
 import type { PrepBriefData } from "./types";
+import { trackPageView, identifyUser, resetUser } from "./lib/analytics";
 
 const EXAMPLES = [
   { company: "Stripe", title: "Product Manager" },
@@ -75,13 +76,20 @@ export default function Page() {
     checkKey();
   }, []);
 
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView();
+  }, []);
+
   // Load auth state on mount
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => {
-        setUser(d.user || null);
-        setShowAuthPanel(!d.user);
+        const loadedUser = d.user || null;
+        setUser(loadedUser);
+        setShowAuthPanel(!loadedUser);
+        if (loadedUser) identifyUser(loadedUser.id);
       })
       .catch(() => setShowAuthPanel(true))
       .finally(() => setAuthLoading(false));
@@ -89,6 +97,7 @@ export default function Page() {
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
+    resetUser();
     setUser(null);
     setShowAuthPanel(true);
     setNeedsSignIn(false);
