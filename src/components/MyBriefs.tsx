@@ -61,7 +61,7 @@ export function MyBriefs({ onBack }: MyBriefsProps) {
           <span className="text-zinc-300">/</span>
           <span className="text-sm text-zinc-700">{selectedMeta.company_name} — {selectedMeta.job_title}</span>
         </div>
-        <PrepBrief data={selectedBrief} />
+        <PrepBrief data={selectedBrief} user={null} />
       </div>
     );
   }

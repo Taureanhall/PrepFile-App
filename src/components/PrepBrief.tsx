@@ -1,17 +1,28 @@
-import React, { useState } from "react";
-import type { PrepBriefData } from "../types";
+import React, { useState, useRef } from "react";
+import type { PrepBriefData, BridgingAnalysis } from "../types";
 
 interface PrepBriefProps {
   data: PrepBriefData;
+  user: { id: string; email: string } | null;
   onRegenerate?: () => void;
   isRegenerating?: boolean;
 }
 
-export function PrepBrief({ data, onRegenerate, isRegenerating }: PrepBriefProps) {
+export function PrepBrief({ data, user, onRegenerate, isRegenerating }: PrepBriefProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
+  // Resume enhancement state
+  const [bridging, setBridging] = useState<BridgingAnalysis | null>(null);
+  const [enhanceStatus, setEnhanceStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [enhanceError, setEnhanceError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   if (!data) return null;
+
+  // Use bridging overrides when available
+  const blindSpots = bridging ? bridging.blindSpots : data.blindSpots;
+  const howToShowUpStrong = bridging ? bridging.howToShowUpStrong : data.roundExpectations?.howToShowUpStrong;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,18 +43,81 @@ export function PrepBrief({ data, onRegenerate, isRegenerating }: PrepBriefProps
     }
   };
 
+  const handleEnhanceClick = () => {
+    if (!user) {
+      setEnhanceError("Please sign in to enhance your brief with your resume.");
+      return;
+    }
+    setEnhanceError(null);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input so same file can be re-selected after error
+    e.target.value = "";
+
+    // Client-side validation
+    const allowedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    const allowedExts = [".pdf", ".docx"];
+    const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+    if (!allowedTypes.includes(file.type) || !allowedExts.includes(ext)) {
+      setEnhanceError("Only PDF and DOCX files are supported.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setEnhanceError("File must be 5MB or smaller.");
+      return;
+    }
+
+    setEnhanceStatus("loading");
+    setEnhanceError(null);
+
+    try {
+      const form = new FormData();
+      form.append("briefData", JSON.stringify(data));
+      form.append("resume", file);
+
+      const res = await fetch("/api/enhance-brief", { method: "POST", body: form });
+
+      if (res.status === 401) {
+        setEnhanceStatus("error");
+        setEnhanceError("Please sign in to enhance your brief.");
+        return;
+      }
+      if (res.status === 413) {
+        setEnhanceStatus("error");
+        setEnhanceError("File too large. Maximum size is 5MB.");
+        return;
+      }
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "Failed to enhance brief");
+      }
+
+      const result: BridgingAnalysis = await res.json();
+      setBridging(result);
+      setEnhanceStatus("idle");
+    } catch (err: any) {
+      setEnhanceStatus("error");
+      setEnhanceError(err.message || "Something went wrong. Please try again.");
+    }
+  };
+
   return (
     <div className="bg-white p-5 md:p-8 lg:p-12 rounded-2xl shadow-sm border border-zinc-200/60 max-w-4xl mx-auto print:shadow-none print:border-none print:p-0">
 
       {/* Blind Spots Callout */}
-      {data.blindSpots && data.blindSpots.length > 0 && (
+      {blindSpots && blindSpots.length > 0 && (
         <div className="mb-10 p-5 bg-amber-50 border border-amber-200 rounded-xl">
           <h3 className="text-amber-800 font-semibold flex items-center gap-2 mb-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-            Blind Spots
+            Blind Spots{bridging ? " (Personalized)" : ""}
           </h3>
           <ul className="list-disc pl-5 space-y-1 text-amber-900/80 text-sm">
-            {data.blindSpots.map((spot, i) => (
+            {blindSpots.map((spot, i) => (
               <li key={i}>{spot}</li>
             ))}
           </ul>
@@ -209,6 +283,69 @@ export function PrepBrief({ data, onRegenerate, isRegenerating }: PrepBriefProps
           </section>
         )}
 
+        {/* Resume Enhancement CTA — placed above Round Expectations */}
+        {!bridging ? (
+          <div className="print:hidden rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1">
+                <h3 className="font-semibold text-zinc-900 text-sm">Personalize this brief with your resume</h3>
+                <p className="text-zinc-500 text-sm mt-0.5">
+                  Upload your resume to get tailored talking points, bridging analysis, and personalized blind spots.
+                </p>
+              </div>
+              <button
+                onClick={handleEnhanceClick}
+                disabled={enhanceStatus === "loading"}
+                className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+              >
+                {enhanceStatus === "loading" ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Analyzing your resume...
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload Resume
+                  </>
+                )}
+              </button>
+            </div>
+            {enhanceError && (
+              <p className="mt-3 text-sm text-red-600">{enhanceError}</p>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.docx"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+        ) : (
+          /* Resume Match section — shown after successful enhancement */
+          <section className="border-l-4 border-blue-400 pl-5 bg-blue-50/40 rounded-r-xl py-5 pr-5">
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-xl font-bold text-zinc-900 pb-2 border-b border-blue-100 uppercase tracking-wider text-sm flex-1">
+                Resume Match
+              </h2>
+              <span className="text-xs font-medium px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full shrink-0 mb-2">Personalized</span>
+            </div>
+            <div className="space-y-4">
+              {bridging.mandateBridges.map((bridge, i) => (
+                <div key={i} className="bg-white rounded-lg border border-blue-100 p-4 space-y-2">
+                  <p className="text-sm font-semibold text-zinc-900">{bridge.mandate}</p>
+                  <p className="text-sm text-zinc-600"><span className="font-medium text-zinc-700">Your evidence:</span> {bridge.resumeEvidence}</p>
+                  <p className="text-sm text-blue-700 italic">{bridge.bridge}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Section 6 — Round Expectations */}
         <section>
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
@@ -231,11 +368,13 @@ export function PrepBrief({ data, onRegenerate, isRegenerating }: PrepBriefProps
               </div>
             )}
 
-            {data.roundExpectations?.howToShowUpStrong?.length > 0 && (
+            {howToShowUpStrong && howToShowUpStrong.length > 0 && (
               <div>
-                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">How to Show Up Strong</h4>
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">
+                  How to Show Up Strong{bridging ? " (Personalized)" : ""}
+                </h4>
                 <ul className="space-y-2">
-                  {data.roundExpectations.howToShowUpStrong.map((point, i) => (
+                  {howToShowUpStrong.map((point, i) => (
                     <li key={i} className="flex items-start gap-3 text-zinc-700">
                       <span className="text-zinc-400 mt-1.5 text-xs">■</span>
                       <span className="leading-relaxed">{point}</span>

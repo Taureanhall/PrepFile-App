@@ -2,8 +2,9 @@ import "dotenv/config";
 import crypto from "crypto";
 import express from "express";
 import cookieParser from "cookie-parser";
+import multer from "multer";
 import { createServer as createViteServer } from "vite";
-import { generateBrief } from "./src/lib/generateBrief.js";
+import { generateBrief, generateBridgingAnalysis } from "./src/lib/generateBrief.js";
 import {
   createMagicLink,
   verifyMagicLink,
@@ -89,6 +90,82 @@ async function startServer() {
     }
 
     res.sendStatus(200);
+  });
+
+  // Resume enhancement — must be registered with route-scoped multer BEFORE express.json()
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (_req, file, cb) => {
+      const allowed = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+      const allowedExts = [".pdf", ".docx"];
+      const ext = file.originalname.toLowerCase().slice(file.originalname.lastIndexOf("."));
+      if (allowed.includes(file.mimetype) && allowedExts.includes(ext)) {
+        cb(null, true);
+      } else {
+        cb(new Error("Only PDF and DOCX files are supported"));
+      }
+    },
+  });
+
+  app.post("/api/enhance-brief", cookieParser(), (req, res) => {
+    upload.single("resume")(req, res, async (err) => {
+      if (err) {
+        if ((err as any).code === "LIMIT_FILE_SIZE") {
+          return res.status(413).json({ error: "File too large. Maximum size is 5MB." });
+        }
+        return res.status(400).json({ error: err.message || "Invalid file" });
+      }
+
+      try {
+        const user = getSessionUser(req);
+        if (!user) return res.status(401).json({ error: "Authentication required" });
+
+        if (!req.body?.briefData) return res.status(400).json({ error: "briefData is required" });
+        if (!req.file) return res.status(400).json({ error: "resume file is required" });
+
+        let brief: any;
+        try {
+          brief = JSON.parse(req.body.briefData);
+        } catch {
+          return res.status(400).json({ error: "briefData must be valid JSON" });
+        }
+
+        // Extract resume text
+        let resumeText: string;
+        if (req.file.mimetype === "application/pdf") {
+          const pdfParseModule = await import("pdf-parse");
+          const pdfParse = (pdfParseModule as any).default ?? pdfParseModule;
+          const result = await pdfParse(req.file.buffer);
+          resumeText = result.text;
+        } else {
+          const mammoth = await import("mammoth");
+          const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+          resumeText = result.value;
+        }
+
+        if (!resumeText?.trim()) {
+          return res.status(400).json({ error: "Could not extract text from resume" });
+        }
+
+        const bridgingAnalysis = await generateBridgingAnalysis(brief, resumeText);
+
+        getPostHogClient()?.capture({
+          distinctId: user.id,
+          event: "brief_enhanced",
+          properties: {
+            authenticated: true,
+            company: brief.companySnapshot?.overview ? "present" : "",
+            job_title: brief.roleIntelligence?.coreMandate || "",
+          },
+        });
+
+        res.json(bridgingAnalysis);
+      } catch (innerErr: any) {
+        console.error("enhance-brief error:", innerErr);
+        res.status(500).json({ error: innerErr.message || "Failed to enhance brief" });
+      }
+    });
   });
 
   app.use(express.json());

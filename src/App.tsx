@@ -565,6 +565,7 @@ export default function Page() {
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <PrepBrief
               data={output}
+              user={user}
               onRegenerate={handleGenerate}
               isRegenerating={isGenerating}
             />
