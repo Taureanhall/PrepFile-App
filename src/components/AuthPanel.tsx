@@ -88,19 +88,19 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
       </div>
 
       {/* Email fallback */}
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
           required
-          className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+          className="flex-1 px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-base sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400"
         />
         <button
           type="submit"
           disabled={status === "loading"}
-          className="px-4 py-2 bg-zinc-700 text-white font-medium text-sm rounded-lg hover:bg-zinc-600 disabled:opacity-50 transition-colors shrink-0"
+          className="w-full sm:w-auto px-4 py-2.5 bg-zinc-700 text-white font-medium text-sm rounded-lg hover:bg-zinc-600 disabled:opacity-50 transition-colors"
         >
           {status === "loading" ? "Sending…" : "Email link"}
         </button>

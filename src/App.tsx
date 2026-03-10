@@ -243,8 +243,8 @@ export default function Page() {
 
   // Update document title + OG tags when viewing a generated brief
   useEffect(() => {
-    const defaultTitle = "PrepFlow — AI Interview Prep Briefs";
-    const defaultDesc = "Stop guessing. PrepFlow builds a company intel brief for your exact role and interview round — in 60 seconds.";
+    const defaultTitle = "PrepFile — AI Interview Prep Briefs";
+    const defaultDesc = "Stop guessing. PrepFile builds a company intel brief for your exact role and interview round — in 60 seconds.";
 
     const setMeta = (property: string, value: string, isName = false) => {
       const sel = isName ? `meta[name="${property}"]` : `meta[property="${property}"]`;
@@ -253,7 +253,7 @@ export default function Page() {
     };
 
     if (output && companyName && jobTitle) {
-      const briefTitle = `${companyName} — ${jobTitle} Prep Brief | PrepFlow`;
+      const briefTitle = `${companyName} — ${jobTitle} Prep Brief | PrepFile`;
       const briefDesc = `Interview prep brief for ${jobTitle} at ${companyName}. Built with Porter's Five Forces + Deming analysis.`;
       document.title = briefTitle;
       setMeta("og:title", briefTitle);

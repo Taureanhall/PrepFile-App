@@ -9,10 +9,10 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
     <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans">
       {/* Nav */}
       <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center">
-        <span className="text-lg font-bold tracking-tight">PrepFlow</span>
+        <span className="text-lg font-bold tracking-tight">PrepFile</span>
         <button
           onClick={onGetStarted}
-          className="text-sm px-4 py-2 border border-zinc-200 text-zinc-700 rounded-lg hover:bg-zinc-100 transition-colors"
+          className="text-sm px-4 py-3 border border-zinc-200 text-zinc-700 rounded-lg hover:bg-zinc-100 transition-colors"
         >
           Sign in
         </button>
@@ -27,7 +27,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
           Know exactly what the<br className="hidden sm:block" /> company needs —<br className="hidden sm:block" /> before you walk in.
         </h1>
         <p className="text-xl text-zinc-500 mb-10 max-w-2xl mx-auto leading-relaxed">
-          PrepFlow analyzes the job description and generates a precise prep brief: company signals, role intelligence, round expectations, and questions that show you've done your homework.
+          PrepFile analyzes the job description and generates a precise prep brief: company signals, role intelligence, round expectations, and questions that show you've done your homework.
         </p>
         <button
           onClick={onGetStarted}

@@ -41,7 +41,7 @@ async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
-  const FROM_EMAIL = process.env.FROM_EMAIL || "PrepFlow <onboarding@resend.dev>";
+  const FROM_EMAIL = process.env.FROM_EMAIL || "PrepFile <onboarding@resend.dev>";
 
   // Stripe webhook — must be registered with raw body BEFORE express.json()
   app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
@@ -123,12 +123,12 @@ async function startServer() {
       await resend.emails.send({
         from: FROM_EMAIL,
         to: email,
-        subject: "Your PrepFlow login link",
+        subject: "Your PrepFile login link",
         html: `
           <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px">
-            <h2 style="font-size:20px;font-weight:700;color:#18181b;margin-bottom:8px">Sign in to PrepFlow</h2>
+            <h2 style="font-size:20px;font-weight:700;color:#18181b;margin-bottom:8px">Sign in to PrepFile</h2>
             <p style="color:#52525b;margin-bottom:24px">Click the button below to sign in. This link expires in 15 minutes.</p>
-            <a href="${magicUrl}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500">Sign in to PrepFlow</a>
+            <a href="${magicUrl}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500">Sign in to PrepFile</a>
             <p style="color:#a1a1aa;font-size:12px;margin-top:24px">If you didn't request this, you can ignore this email.</p>
           </div>
         `,
@@ -368,13 +368,13 @@ async function startServer() {
               await resend.emails.send({
                 from: FROM_EMAIL,
                 to: user.email,
-                subject: "Your first PrepFlow brief is ready",
+                subject: "Your first PrepFile brief is ready",
                 html: `
                   <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px">
-                    <h2 style="font-size:20px;font-weight:700;color:#18181b;margin-bottom:8px">Welcome to PrepFlow</h2>
+                    <h2 style="font-size:20px;font-weight:700;color:#18181b;margin-bottom:8px">Welcome to PrepFile</h2>
                     <p style="color:#52525b;margin-bottom:16px">
                       You just generated your first prep brief for <strong>${req.body.companyName || "your target company"}</strong>.
-                      PrepFlow uses Porter's Five Forces and Deming analysis to give you the company context, role intelligence,
+                      PrepFile uses Porter's Five Forces and Deming analysis to give you the company context, role intelligence,
                       and round-specific expectations that most candidates miss.
                     </p>
                     <a href="${appUrl}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;margin-bottom:24px">View your brief →</a>
@@ -387,7 +387,7 @@ async function startServer() {
                       <a href="${appUrl}" style="color:#18181b;font-size:14px;font-weight:500">See upgrade options →</a>
                     </div>
                     ` : ""}
-                    <p style="color:#a1a1aa;font-size:12px;margin-top:24px">PrepFlow — AI-powered interview prep</p>
+                    <p style="color:#a1a1aa;font-size:12px;margin-top:24px">PrepFile — AI-powered interview prep</p>
                   </div>
                 `,
               });
@@ -507,7 +507,7 @@ async function startServer() {
     const meta = getPublicBriefMeta(briefId);
     if (!meta) return html;
 
-    const title = `${meta.company_name} — ${meta.job_title} Interview Prep | PrepFlow`;
+    const title = `${meta.company_name} — ${meta.job_title} Interview Prep | PrepFile`;
     const description = `AI-generated interview prep brief for ${meta.job_title} at ${meta.company_name}. Company intel, role expectations, and round-specific strategy.`;
     const url = `${appUrl}/b/${briefId}`;
 

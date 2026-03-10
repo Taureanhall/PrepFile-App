@@ -15,12 +15,12 @@ export const PRICES = {
     unit_amount: 999, // $9.99
     currency: "usd",
     recurring: { interval: "month" as const },
-    product_data: { name: "PrepFlow Pro" },
+    product_data: { name: "PrepFile Pro" },
   },
   pack: {
     unit_amount: 499, // $4.99
     currency: "usd",
-    product_data: { name: "PrepFlow Interview Pack (5 briefs)" },
+    product_data: { name: "PrepFile Interview Pack (5 briefs)" },
   },
 } as const;
 
