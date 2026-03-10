@@ -629,8 +629,9 @@ async function startServer() {
     }
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: "email required" });
-    const user = db.prepare("SELECT id FROM users WHERE email = ?").get(email) as { id: string } | undefined;
-    if (!user) return res.status(404).json({ error: "User not found", hint: "Make sure they have signed in at least once" });
+    const user = db.prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(?)").get(email) as { id: string } | undefined;
+    const allUsers = db.prepare("SELECT id, email FROM users ORDER BY rowid DESC LIMIT 5").all();
+    if (!user) return res.status(404).json({ error: "User not found", recentUsers: allUsers });
     upsertSubscription(user.id, "pro", null, null);
     res.json({ success: true, userId: user.id, plan: "pro" });
   });
