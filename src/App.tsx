@@ -241,6 +241,34 @@ export default function Page() {
     biggestGap: ["Industry knowledge", "Technical skills", "Seniority jump", "Culture fit", "No obvious gap"],
   };
 
+  // Update document title + OG tags when viewing a generated brief
+  useEffect(() => {
+    const defaultTitle = "PrepFlow — AI Interview Prep Briefs";
+    const defaultDesc = "Stop guessing. PrepFlow builds a company intel brief for your exact role and interview round — in 60 seconds.";
+
+    const setMeta = (property: string, value: string, isName = false) => {
+      const sel = isName ? `meta[name="${property}"]` : `meta[property="${property}"]`;
+      const el = document.head.querySelector(sel) as HTMLMetaElement | null;
+      if (el) el.setAttribute("content", value);
+    };
+
+    if (output && companyName && jobTitle) {
+      const briefTitle = `${companyName} — ${jobTitle} Prep Brief | PrepFlow`;
+      const briefDesc = `Interview prep brief for ${jobTitle} at ${companyName}. Built with Porter's Five Forces + Deming analysis.`;
+      document.title = briefTitle;
+      setMeta("og:title", briefTitle);
+      setMeta("og:description", briefDesc);
+      setMeta("twitter:title", briefTitle, true);
+      setMeta("twitter:description", briefDesc, true);
+    } else {
+      document.title = defaultTitle;
+      setMeta("og:title", defaultTitle);
+      setMeta("og:description", defaultDesc);
+      setMeta("twitter:title", defaultTitle, true);
+      setMeta("twitter:description", defaultDesc, true);
+    }
+  }, [output, companyName, jobTitle]);
+
   // Show landing page for unauthenticated users who haven't started sign-in
   if (!authLoading && !user && !showAuthPanel && !isEditor) {
     return <LandingPage onGetStarted={() => setShowAuthPanel(true)} />;
