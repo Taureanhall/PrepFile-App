@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { PrepBrief } from "./components/PrepBrief";
 import { AuthPanel } from "./components/AuthPanel";
 import { SignInGate } from "./components/SignInGate";
+import { MyBriefs } from "./components/MyBriefs";
 import type { PrepBriefData } from "./types";
 
 const EXAMPLES = [
@@ -50,6 +51,7 @@ export default function Page() {
   // UI State
   const [isGenerating, setIsGenerating] = useState(false);
   const [output, setOutput] = useState<PrepBriefData | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   const [hasKey, setHasKey] = useState(true);
   const [isEditor, setIsEditor] = useState(false);
   const [placeholders, setPlaceholders] = useState({ company: "Stripe", title: "Product Manager" });
@@ -194,6 +196,12 @@ export default function Page() {
               <div className="flex items-center gap-3">
                 <span className="text-sm text-zinc-500 hidden sm:block">{user.email}</span>
                 <button
+                  onClick={() => { setShowHistory(true); setOutput(null); }}
+                  className="text-sm px-3 py-1.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors"
+                >
+                  My Briefs
+                </button>
+                <button
                   onClick={handleLogout}
                   className="text-sm px-3 py-1.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors"
                 >
@@ -212,7 +220,9 @@ export default function Page() {
           </div>
         </header>
 
-        {!output ? (
+        {showHistory ? (
+          <MyBriefs onBack={() => setShowHistory(false)} />
+        ) : !output ? (
           <div className="space-y-0">
             {/* Auth Panel — shown to unauthenticated users who haven't dismissed */}
             {!authLoading && !user && showAuthPanel && !needsSignIn && (

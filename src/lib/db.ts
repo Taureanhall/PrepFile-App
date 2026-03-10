@@ -26,6 +26,15 @@ db.exec(`
     expires_at TEXT NOT NULL,
     used INTEGER DEFAULT 0
   );
+
+  CREATE TABLE IF NOT EXISTS briefs (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    company_name TEXT NOT NULL,
+    job_title TEXT NOT NULL,
+    brief_data TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 export function createMagicLink(email: string): string {
@@ -83,6 +92,26 @@ export function getUserBySession(token: string): { id: string; email: string } |
 
 export function deleteSession(token: string): void {
   db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
+}
+
+export function saveBrief(userId: string, companyName: string, jobTitle: string, briefData: object): string {
+  const id = crypto.randomUUID();
+  db.prepare(
+    "INSERT INTO briefs (id, user_id, company_name, job_title, brief_data) VALUES (?, ?, ?, ?, ?)"
+  ).run(id, userId, companyName, jobTitle, JSON.stringify(briefData));
+  return id;
+}
+
+export function getBriefsByUser(userId: string): Array<{ id: string; company_name: string; job_title: string; created_at: string }> {
+  return db.prepare(
+    "SELECT id, company_name, job_title, created_at FROM briefs WHERE user_id = ? ORDER BY created_at DESC"
+  ).all(userId) as any;
+}
+
+export function getBriefById(id: string, userId: string): { id: string; company_name: string; job_title: string; brief_data: string; created_at: string } | null {
+  return db.prepare(
+    "SELECT * FROM briefs WHERE id = ? AND user_id = ?"
+  ).get(id, userId) as any;
 }
 
 export default db;

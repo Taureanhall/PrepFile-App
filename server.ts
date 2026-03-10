@@ -8,6 +8,9 @@ import {
   verifyMagicLink,
   getUserBySession,
   deleteSession,
+  saveBrief,
+  getBriefsByUser,
+  getBriefById,
 } from "./src/lib/db.js";
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -144,6 +147,15 @@ async function startServer() {
 
       const data = await generateBrief(req.body);
 
+      // Persist brief for authenticated users
+      if (user) {
+        try {
+          saveBrief(user.id, req.body.companyName || "", req.body.jobTitle || "", data);
+        } catch (err) {
+          console.error("Failed to save brief:", err);
+        }
+      }
+
       // Mark free brief used for unauthenticated users
       if (!user && !isBypassed) {
         res.cookie("free_brief_used", "1", {
@@ -204,6 +216,22 @@ async function startServer() {
     } catch (err: any) {
       res.status(500).json({ error: err.message || "Failed to send email" });
     }
+  });
+
+  // Briefs history — authenticated users only
+  app.get("/api/briefs", (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Not authenticated" });
+    const briefs = getBriefsByUser(user.id);
+    res.json({ briefs });
+  });
+
+  app.get("/api/briefs/:id", (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Not authenticated" });
+    const brief = getBriefById(req.params.id, user.id);
+    if (!brief) return res.status(404).json({ error: "Not found" });
+    res.json({ ...brief, brief_data: JSON.parse(brief.brief_data) });
   });
 
   // Vite middleware for development
