@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
+import type { PrepBriefData, BridgingAnalysis } from "../types.js";
 
 export async function generateBrief(inputs: {
   companyName: string;
@@ -236,6 +237,124 @@ export async function generateBrief(inputs: {
     if (!parsed[key]) throw new Error("Gemini response missing required field: " + key);
   }
   return stripCitations(parsed);
+}
+
+export async function generateBridgingAnalysis(
+  brief: PrepBriefData,
+  resumeText: string
+): Promise<BridgingAnalysis> {
+  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+  const ai = new GoogleGenAI({ apiKey });
+
+  const prompt = `You are analyzing a job candidate's resume against a completed strategic company intelligence brief.
+Your sole job is to produce precise bridging analysis — not generic career advice.
+
+COMPANY INTELLIGENCE BRIEF:
+${JSON.stringify(brief, null, 2)}
+
+CANDIDATE RESUME TEXT:
+${resumeText}
+
+---
+
+STRUCTURAL CONSTRAINT: Every output item must reference BOTH:
+(a) A specific piece of resume evidence (role title, project, metric, or outcome), AND
+(b) A specific company or role need drawn directly from this brief.
+
+Any item that references only one side is invalid output.
+
+TRANSLATION RULE: No academic framing. No career-coach language. Concrete tactical advice only.
+BAD: "Leverage your transferable skills in cross-functional environments."
+GOOD: "Your [specific project] at [Company] is the direct analog to their core mandate — you built exactly the capability they're testing for."
+
+---
+
+TASK 1 — MANDATE BRIDGES
+For each of the following from the brief, find the closest matching experience in the resume:
+- roleIntelligence.coreMandate
+- Each item in roleIntelligence.success90Days
+
+For each match, output:
+- mandate: The specific item from the brief (quoted exactly)
+- resumeEvidence: The specific resume experience — exact role, project, or metric. If nothing maps clearly, say so plainly.
+- bridge: The precise connection. Format: "Your [X] at [Company] maps to their need for [Y] because [concrete reason]." Not standalone "you did X."
+
+TASK 2 — PERSONALIZED ROUND STRENGTHS
+Write exactly 3 items replacing the generic roundExpectations.howToShowUpStrong with resume-grounded tactics.
+
+Each item must:
+- Name a specific resume experience
+- Connect it to what this round is evaluating per the brief's roundExpectations context
+- Give a tactical instruction: what to open with, what to lead with, what to say when a specific topic surfaces
+
+TASK 3 — CANDIDATE-SPECIFIC GAPS
+Using roleIntelligence.commonFailureModes and roundExpectations.whatTripsPeopleUp as the lens:
+Identify 1-3 things the role actually needs that are thin or absent in this resume.
+
+For each gap:
+- State it plainly: what the role needs that this resume doesn't demonstrate clearly
+- Give a concrete interview mitigation: the exact framing or story structure the candidate should use when this gap surfaces. Not "brush up on X." The actual words and approach.
+
+---
+
+Return valid JSON matching this schema exactly:
+{
+  "mandateBridges": [
+    { "mandate": string, "resumeEvidence": string, "bridge": string }
+  ],
+  "howToShowUpStrong": [string, string, string],
+  "blindSpots": [string]
+}`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3.1-pro-preview",
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          mandateBridges: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                mandate: { type: Type.STRING },
+                resumeEvidence: { type: Type.STRING },
+                bridge: { type: Type.STRING },
+              },
+              required: ["mandate", "resumeEvidence", "bridge"],
+            },
+          },
+          howToShowUpStrong: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            minItems: 3,
+            maxItems: 3,
+          },
+          blindSpots: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+          },
+        },
+        required: ["mandateBridges", "howToShowUpStrong", "blindSpots"],
+      },
+    },
+  });
+
+  let parsed: any;
+  try {
+    parsed = JSON.parse(response.text || "{}");
+  } catch {
+    throw new Error("Gemini returned malformed JSON: " + (response.text?.slice(0, 200) ?? ""));
+  }
+
+  const required = ["mandateBridges", "howToShowUpStrong", "blindSpots"];
+  for (const key of required) {
+    if (!parsed[key]) throw new Error("Gemini response missing required field: " + key);
+  }
+
+  return stripCitations(parsed) as BridgingAnalysis;
 }
 
 function stripCitations(obj: any): any {

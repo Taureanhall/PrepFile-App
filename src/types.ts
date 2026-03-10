@@ -14,6 +14,18 @@ export interface RecommendedReading {
   why: string;
 }
 
+export interface MandateBridge {
+  mandate: string;
+  resumeEvidence: string;
+  bridge: string;
+}
+
+export interface BridgingAnalysis {
+  mandateBridges: MandateBridge[];
+  howToShowUpStrong: string[];  // replaces roundExpectations.howToShowUpStrong
+  blindSpots: string[];         // replaces PrepBriefData.blindSpots
+}
+
 export interface PrepBriefData {
   companySnapshot: {
     overview: string;
