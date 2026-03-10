@@ -24,6 +24,7 @@ import {
   getPublicBriefMeta,
   getPublicBrief,
   setBriefPublic,
+  getAdminMetrics,
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
@@ -577,6 +578,92 @@ async function startServer() {
     const brief = getBriefById(req.params.id, user.id);
     if (!brief) return res.status(404).json({ error: "Not found" });
     res.json({ ...brief, brief_data: JSON.parse(brief.brief_data) });
+  });
+
+  // Admin dashboard — password-gated via ADMIN_PASSWORD env var (HTTP Basic Auth)
+  app.get("/admin", (req, res) => {
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (!adminPassword) return res.status(503).send("Admin dashboard not configured (ADMIN_PASSWORD not set).");
+
+    const authHeader = req.headers.authorization || "";
+    const base64 = authHeader.startsWith("Basic ") ? authHeader.slice(6) : "";
+    const [, password] = Buffer.from(base64, "base64").toString().split(":");
+
+    if (password !== adminPassword) {
+      res.setHeader("WWW-Authenticate", 'Basic realm="PrepFile Admin"');
+      return res.status(401).send("Unauthorized");
+    }
+
+    const m = getAdminMetrics();
+    const now = new Date().toUTCString();
+
+    const distRows = m.briefsPerUserDistribution.map(r =>
+      `<tr><td>${r.brief_count}</td><td>${r.user_count}</td></tr>`
+    ).join("") || "<tr><td colspan='2'>No data</td></tr>";
+
+    const signupRows = m.recentSignups.map(r => {
+      const planBadge = r.plan === "pro"
+        ? `<span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:9999px;font-size:11px">pro</span>`
+        : r.plan === "pack"
+        ? `<span style="background:#2563eb;color:#fff;padding:2px 8px;border-radius:9999px;font-size:11px">pack</span>`
+        : `<span style="background:#e4e4e7;color:#52525b;padding:2px 8px;border-radius:9999px;font-size:11px">free</span>`;
+      return `<tr><td>${r.email}</td><td>${planBadge}</td><td>${r.created_at}</td><td>${r.brief_count}</td></tr>`;
+    }).join("") || "<tr><td colspan='4'>No signups yet</td></tr>";
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PrepFile Admin</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f4f5;color:#18181b;padding:32px}
+  h1{font-size:22px;font-weight:700;margin-bottom:4px}
+  .sub{color:#71717a;font-size:13px;margin-bottom:32px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+  .card{background:#fff;border-radius:10px;padding:20px;border:1px solid #e4e4e7}
+  .card .label{font-size:12px;color:#71717a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+  .card .value{font-size:28px;font-weight:700}
+  .card .sub2{font-size:12px;color:#a1a1aa;margin-top:2px}
+  section{background:#fff;border-radius:10px;border:1px solid #e4e4e7;padding:20px;margin-bottom:24px}
+  section h2{font-size:15px;font-weight:600;margin-bottom:14px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:#71717a;font-weight:500;padding:6px 10px;border-bottom:1px solid #e4e4e7}
+  td{padding:8px 10px;border-bottom:1px solid #f4f4f5;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+</style>
+</head>
+<body>
+<h1>PrepFile Admin</h1>
+<p class="sub">Last loaded: ${now}</p>
+
+<div class="grid">
+  <div class="card"><div class="label">Total Users</div><div class="value">${m.totalUsers}</div><div class="sub2">+${m.usersToday} today</div></div>
+  <div class="card"><div class="label">Paying Users</div><div class="value">${m.payingUsers}</div><div class="sub2">${m.freeUsers} free</div></div>
+  <div class="card"><div class="label">Briefs (All Time)</div><div class="value">${m.totalBriefs}</div></div>
+  <div class="card"><div class="label">Briefs (7 Days)</div><div class="value">${m.briefs7d}</div><div class="sub2">+${m.briefsToday} today</div></div>
+  <div class="card"><div class="label">Free / Paid</div><div class="value">${m.freeUsers} / ${m.payingUsers}</div></div>
+</div>
+
+<section>
+  <h2>Briefs per User Distribution</h2>
+  <table>
+    <thead><tr><th>Briefs Generated</th><th>Users</th></tr></thead>
+    <tbody>${distRows}</tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Recent Signups (last 25)</h2>
+  <table>
+    <thead><tr><th>Email</th><th>Plan</th><th>Signed Up</th><th>Briefs</th></tr></thead>
+    <tbody>${signupRows}</tbody>
+  </table>
+</section>
+</body></html>`;
+
+    res.setHeader("Content-Type", "text/html");
+    res.send(html);
   });
 
   // Helper: inject dynamic OG meta tags into an HTML template for /b/:id brief share pages

@@ -288,4 +288,44 @@ export function setBriefPublic(id: string, userId: string, isPublic: boolean): b
   return result.changes > 0;
 }
 
+export interface AdminMetrics {
+  totalUsers: number;
+  usersToday: number;
+  totalBriefs: number;
+  briefsToday: number;
+  briefs7d: number;
+  payingUsers: number;
+  freeUsers: number;
+  briefsPerUserDistribution: Array<{ brief_count: number; user_count: number }>;
+  recentSignups: Array<{ email: string; plan: string; created_at: string; brief_count: number }>;
+}
+
+export function getAdminMetrics(): AdminMetrics {
+  const totalUsers = (db.prepare("SELECT COUNT(*) as cnt FROM users").get() as any).cnt as number;
+  const usersToday = (db.prepare("SELECT COUNT(*) as cnt FROM users WHERE created_at >= date('now')").get() as any).cnt as number;
+  const totalBriefs = (db.prepare("SELECT COUNT(*) as cnt FROM briefs").get() as any).cnt as number;
+  const briefsToday = (db.prepare("SELECT COUNT(*) as cnt FROM briefs WHERE created_at >= date('now')").get() as any).cnt as number;
+  const briefs7d = (db.prepare("SELECT COUNT(*) as cnt FROM briefs WHERE created_at >= datetime('now', '-7 days')").get() as any).cnt as number;
+  const payingUsers = (db.prepare("SELECT COUNT(*) as cnt FROM subscriptions WHERE plan != 'free'").get() as any).cnt as number;
+  const freeUsers = totalUsers - payingUsers;
+
+  const briefsPerUserDistribution = db.prepare(`
+    SELECT brief_count, COUNT(*) as user_count
+    FROM (SELECT user_id, COUNT(*) as brief_count FROM briefs GROUP BY user_id)
+    GROUP BY brief_count ORDER BY brief_count ASC
+  `).all() as Array<{ brief_count: number; user_count: number }>;
+
+  const recentSignups = db.prepare(`
+    SELECT u.email, COALESCE(s.plan, 'free') as plan, u.created_at, COUNT(b.id) as brief_count
+    FROM users u
+    LEFT JOIN subscriptions s ON s.user_id = u.id
+    LEFT JOIN briefs b ON b.user_id = u.id
+    GROUP BY u.id
+    ORDER BY u.created_at DESC
+    LIMIT 25
+  `).all() as Array<{ email: string; plan: string; created_at: string; brief_count: number }>;
+
+  return { totalUsers, usersToday, totalBriefs, briefsToday, briefs7d, payingUsers, freeUsers, briefsPerUserDistribution, recentSignups };
+}
+
 export default db;
