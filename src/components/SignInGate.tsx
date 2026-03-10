@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 export function SignInGate() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
     setStatus("loading");

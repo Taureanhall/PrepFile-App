@@ -415,6 +415,38 @@ async function startServer() {
         }
       }
 
+      const { companyName, jobTitle, jobDescription, round, familiarity, timeToPrep, biggestGap } = req.body;
+
+      const VALID_ROUNDS = ["phone_screen", "technical", "behavioral", "final", "onsite", "hiring_manager", "recruiter"];
+      const VALID_FAMILIARITY = ["first_time_heard", "know_the_name", "used_their_product", "follow_them_closely", "insider_knowledge"];
+      const VALID_TIME_TO_PREP = ["under_1_hour", "a_few_hours", "1_day", "2_3_days", "a_week_plus"];
+      const VALID_BIGGEST_GAP = ["company_knowledge", "role_clarity", "technical_skills", "behavioral_prep", "questions_to_ask"];
+
+      if (!companyName || typeof companyName !== "string" || companyName.trim().length === 0) {
+        return res.status(400).json({ error: "companyName is required" });
+      }
+      if (!jobTitle || typeof jobTitle !== "string" || jobTitle.trim().length === 0) {
+        return res.status(400).json({ error: "jobTitle is required" });
+      }
+      if (!jobDescription || typeof jobDescription !== "string" || jobDescription.trim().length < 10) {
+        return res.status(400).json({ error: "jobDescription must be at least 10 characters" });
+      }
+      if (jobDescription.length > 10000) {
+        return res.status(400).json({ error: "jobDescription exceeds maximum length" });
+      }
+      if (round && !VALID_ROUNDS.includes(round)) {
+        return res.status(400).json({ error: "Invalid round value" });
+      }
+      if (familiarity && !VALID_FAMILIARITY.includes(familiarity)) {
+        return res.status(400).json({ error: "Invalid familiarity value" });
+      }
+      if (timeToPrep && !VALID_TIME_TO_PREP.includes(timeToPrep)) {
+        return res.status(400).json({ error: "Invalid timeToPrep value" });
+      }
+      if (biggestGap && !VALID_BIGGEST_GAP.includes(biggestGap)) {
+        return res.status(400).json({ error: "Invalid biggestGap value" });
+      }
+
       const data = await generateBrief(req.body);
 
       getPostHogClient()?.capture({
@@ -498,6 +530,11 @@ async function startServer() {
 
   app.post("/api/send-brief", async (req, res) => {
     try {
+      const sendUser = getSessionUser(req);
+      if (!sendUser) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
       const { email, data } = req.body;
       if (!email || !data) {
         return res.status(400).json({ error: "email and data are required" });
@@ -601,13 +638,15 @@ async function startServer() {
       `<tr><td>${r.brief_count}</td><td>${r.user_count}</td></tr>`
     ).join("") || "<tr><td colspan='2'>No data</td></tr>";
 
+    const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
     const signupRows = m.recentSignups.map(r => {
       const planBadge = r.plan === "pro"
         ? `<span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:9999px;font-size:11px">pro</span>`
         : r.plan === "pack"
         ? `<span style="background:#2563eb;color:#fff;padding:2px 8px;border-radius:9999px;font-size:11px">pack</span>`
         : `<span style="background:#e4e4e7;color:#52525b;padding:2px 8px;border-radius:9999px;font-size:11px">free</span>`;
-      return `<tr><td>${r.email}</td><td>${planBadge}</td><td>${r.created_at}</td><td>${r.brief_count}</td></tr>`;
+      return `<tr><td>${esc(r.email)}</td><td>${planBadge}</td><td>${esc(r.created_at)}</td><td>${esc(String(r.brief_count))}</td></tr>`;
     }).join("") || "<tr><td colspan='4'>No signups yet</td></tr>";
 
     const html = `<!DOCTYPE html>

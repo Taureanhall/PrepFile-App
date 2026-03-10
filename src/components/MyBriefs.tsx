@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { PrepBrief } from "./PrepBrief";
 import type { PrepBriefData } from "../types";
 

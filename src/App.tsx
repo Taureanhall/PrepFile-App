@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { PrepBrief } from "./components/PrepBrief";
 import { AuthPanel } from "./components/AuthPanel";
 import { SignInGate } from "./components/SignInGate";

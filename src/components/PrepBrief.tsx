@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef, type FormEvent, type ChangeEvent } from "react";
 import type { PrepBriefData, BridgingAnalysis } from "../types";
 
 interface PrepBriefProps {
@@ -24,7 +24,7 @@ export function PrepBrief({ data, user, onRegenerate, isRegenerating }: PrepBrie
   const blindSpots = bridging ? bridging.blindSpots : data.blindSpots;
   const howToShowUpStrong = bridging ? bridging.howToShowUpStrong : data.roundExpectations?.howToShowUpStrong;
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     if (!email) return;
     setStatus("loading");
@@ -52,7 +52,7 @@ export function PrepBrief({ data, user, onRegenerate, isRegenerating }: PrepBrie
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 

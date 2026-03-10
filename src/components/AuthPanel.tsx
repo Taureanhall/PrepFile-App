@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 interface AuthPanelProps {
   onDismiss: () => void;
@@ -9,7 +9,7 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
     setStatus("loading");
