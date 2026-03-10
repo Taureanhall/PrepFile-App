@@ -34,7 +34,7 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
         <p className="text-zinc-500 text-sm">
           {reason === "pack_exhausted"
             ? "Your 5-brief Interview Pack has been used. Upgrade to Pro for unlimited briefs."
-            : "Free tier includes 1 brief per week. Upgrade to keep prepping."}
+            : "Free tier includes 3 briefs per week. Upgrade to keep prepping."}
         </p>
       </div>
 

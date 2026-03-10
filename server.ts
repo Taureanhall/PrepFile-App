@@ -20,6 +20,9 @@ import {
   hasReceivedOnboardingEmail,
   markOnboardingEmailSent,
   upsertGoogleUser,
+  getPublicBriefMeta,
+  getPublicBrief,
+  setBriefPublic,
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
@@ -466,6 +469,23 @@ async function startServer() {
     }
   });
 
+  // Public brief API — no auth required
+  app.get("/api/public/briefs/:id", (req, res) => {
+    const brief = getPublicBrief(req.params.id);
+    if (!brief) return res.status(404).json({ error: "Not found" });
+    res.json({ ...brief, brief_data: JSON.parse(brief.brief_data) });
+  });
+
+  // Toggle brief public/private
+  app.post("/api/briefs/:id/share", (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Not authenticated" });
+    const { isPublic } = req.body as { isPublic: boolean };
+    const changed = setBriefPublic(req.params.id, user.id, isPublic);
+    if (!changed) return res.status(404).json({ error: "Not found" });
+    res.json({ success: true, isPublic });
+  });
+
   // Briefs history — authenticated users only
   app.get("/api/briefs", (req, res) => {
     const user = getSessionUser(req);
@@ -482,15 +502,56 @@ async function startServer() {
     res.json({ ...brief, brief_data: JSON.parse(brief.brief_data) });
   });
 
+  // Helper: inject dynamic OG meta tags into an HTML template for /b/:id brief share pages
+  function injectBriefOgTags(html: string, briefId: string, appUrl: string): string {
+    const meta = getPublicBriefMeta(briefId);
+    if (!meta) return html;
+
+    const title = `${meta.company_name} — ${meta.job_title} Interview Prep | PrepFlow`;
+    const description = `AI-generated interview prep brief for ${meta.job_title} at ${meta.company_name}. Company intel, role expectations, and round-specific strategy.`;
+    const url = `${appUrl}/b/${briefId}`;
+
+    return html
+      .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
+      .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
+      .replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/g, `$1${url}$2`)
+      .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
+      .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/g, `$1${url}$2`);
+  }
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
+
+    // Intercept /b/:id to inject dynamic OG tags before Vite serves the SPA
+    app.get("/b/:id", async (req, res, next) => {
+      try {
+        const template = await vite.transformIndexHtml(req.url, (await import("fs")).readFileSync("index.html", "utf-8"));
+        const html = injectBriefOgTags(template, req.params.id, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch {
+        next();
+      }
+    });
+
     app.use(vite.middlewares);
   } else {
     app.use(express.static("dist"));
+
+    // Intercept /b/:id to inject dynamic OG tags before catch-all
+    app.get("/b/:id", (req, res) => {
+      const fs = require("fs") as typeof import("fs");
+      const indexPath = (require("path") as typeof import("path")).join(process.cwd(), "dist", "index.html");
+      const template = fs.readFileSync(indexPath, "utf-8");
+      const html = injectBriefOgTags(template, req.params.id, APP_URL);
+      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+    });
+
     app.get("*", (_req, res) => {
       res.sendFile("dist/index.html", { root: process.cwd() });
     });

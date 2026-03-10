@@ -226,6 +226,7 @@ export function usePackBrief(userId: string): boolean {
 try { db.exec("ALTER TABLE users ADD COLUMN onboarding_email_sent INTEGER NOT NULL DEFAULT 0"); } catch {}
 try { db.exec("ALTER TABLE users ADD COLUMN google_id TEXT"); } catch {}
 try { db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL"); } catch {}
+try { db.exec("ALTER TABLE briefs ADD COLUMN is_public INTEGER NOT NULL DEFAULT 0"); } catch {}
 
 export function getBriefCountForUser(userId: string): number {
   const row = db.prepare("SELECT COUNT(*) as cnt FROM briefs WHERE user_id = ?").get(userId) as any;
@@ -263,6 +264,28 @@ export function upsertGoogleUser(googleId: string, email: string): string {
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
   db.prepare("INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)").run(crypto.randomUUID(), user.id, sessionToken, expiresAt);
   return sessionToken;
+}
+
+/** Returns company_name and job_title for a public brief (is_public=1), or null if not found/private. */
+export function getPublicBriefMeta(id: string): { company_name: string; job_title: string } | null {
+  return db.prepare(
+    "SELECT company_name, job_title FROM briefs WHERE id = ? AND is_public = 1"
+  ).get(id) as any;
+}
+
+/** Get full brief data for a public brief (no auth required). */
+export function getPublicBrief(id: string): { id: string; company_name: string; job_title: string; brief_data: string; created_at: string } | null {
+  return db.prepare(
+    "SELECT id, company_name, job_title, brief_data, created_at FROM briefs WHERE id = ? AND is_public = 1"
+  ).get(id) as any;
+}
+
+/** Toggle is_public on a brief owned by the given user. Returns the new state. */
+export function setBriefPublic(id: string, userId: string, isPublic: boolean): boolean {
+  const result = db.prepare(
+    "UPDATE briefs SET is_public = ? WHERE id = ? AND user_id = ?"
+  ).run(isPublic ? 1 : 0, id, userId);
+  return result.changes > 0;
 }
 
 export default db;

@@ -84,7 +84,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             <div>
               <div className="text-sm font-medium text-zinc-500 mb-1">Free</div>
               <div className="text-3xl font-bold text-zinc-900">$0</div>
-              <div className="text-sm text-zinc-400 mt-1">1 brief / week</div>
+              <div className="text-sm text-zinc-400 mt-1">3 briefs / week</div>
             </div>
             <ul className="text-sm text-zinc-600 space-y-2 flex-1">
               <li className="flex gap-2"><span className="text-zinc-400">✓</span> Full prep brief</li>
