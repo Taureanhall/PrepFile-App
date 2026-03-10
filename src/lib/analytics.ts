@@ -26,3 +26,13 @@ export function trackPageView() {
   if (!POSTHOG_KEY) return;
   posthog.capture("page_view");
 }
+
+export function trackBriefGenerated(company: string, jobTitle: string) {
+  if (!POSTHOG_KEY) return;
+  posthog.capture("brief_generated", { company, job_title: jobTitle });
+}
+
+export function trackLogin() {
+  if (!POSTHOG_KEY) return;
+  posthog.capture("login");
+}

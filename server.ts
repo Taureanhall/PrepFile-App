@@ -15,6 +15,9 @@ import {
   getUserSubscription,
   upsertSubscription,
   usePackBrief,
+  getBriefCountForUser,
+  hasReceivedOnboardingEmail,
+  markOnboardingEmailSent,
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
@@ -291,7 +294,50 @@ async function startServer() {
       // Persist brief for authenticated users
       if (user) {
         try {
-          saveBrief(user.id, req.body.companyName || "", req.body.jobTitle || "", data);
+          const briefId = saveBrief(user.id, req.body.companyName || "", req.body.jobTitle || "", data);
+
+          // Send onboarding email after first brief
+          const briefCount = getBriefCountForUser(user.id);
+          if (briefCount === 1 && !hasReceivedOnboardingEmail(user.id)) {
+            try {
+              const { Resend } = await import("resend");
+              const resend = new Resend(process.env.RESEND_API_KEY);
+              const sub = getUserSubscription(user.id);
+              const isFreeTier = sub.plan === "free";
+              const appUrl = APP_URL;
+
+              await resend.emails.send({
+                from: FROM_EMAIL,
+                to: user.email,
+                subject: "Your first PrepFlow brief is ready",
+                html: `
+                  <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px">
+                    <h2 style="font-size:20px;font-weight:700;color:#18181b;margin-bottom:8px">Welcome to PrepFlow</h2>
+                    <p style="color:#52525b;margin-bottom:16px">
+                      You just generated your first prep brief for <strong>${req.body.companyName || "your target company"}</strong>.
+                      PrepFlow uses Porter's Five Forces and Deming analysis to give you the company context, role intelligence,
+                      and round-specific expectations that most candidates miss.
+                    </p>
+                    <a href="${appUrl}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;margin-bottom:24px">View your brief →</a>
+                    ${isFreeTier ? `
+                    <div style="background:#f4f4f5;border-radius:8px;padding:16px;margin-top:8px">
+                      <p style="color:#3f3f46;font-size:14px;margin:0 0 8px">
+                        <strong>On the free plan?</strong> You get 1 brief per week. Upgrade to Pro for unlimited briefs at $9.99/month,
+                        or grab an Interview Pack (5 briefs) for $4.99.
+                      </p>
+                      <a href="${appUrl}" style="color:#18181b;font-size:14px;font-weight:500">See upgrade options →</a>
+                    </div>
+                    ` : ""}
+                    <p style="color:#a1a1aa;font-size:12px;margin-top:24px">PrepFlow — AI-powered interview prep</p>
+                  </div>
+                `,
+              });
+              markOnboardingEmailSent(user.id);
+            } catch (emailErr) {
+              console.error("Failed to send onboarding email:", emailErr);
+              // Non-fatal — do not crash the generate endpoint
+            }
+          }
         } catch (err) {
           console.error("Failed to save brief:", err);
         }

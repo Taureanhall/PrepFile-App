@@ -222,4 +222,25 @@ export function usePackBrief(userId: string): boolean {
   return true;
 }
 
+// Migrate: add onboarding_email_sent if it doesn't exist yet
+try {
+  db.exec("ALTER TABLE users ADD COLUMN onboarding_email_sent INTEGER NOT NULL DEFAULT 0");
+} catch {
+  // Column already exists — safe to ignore
+}
+
+export function getBriefCountForUser(userId: string): number {
+  const row = db.prepare("SELECT COUNT(*) as cnt FROM briefs WHERE user_id = ?").get(userId) as any;
+  return row?.cnt ?? 0;
+}
+
+export function markOnboardingEmailSent(userId: string): void {
+  db.prepare("UPDATE users SET onboarding_email_sent = 1 WHERE id = ?").run(userId);
+}
+
+export function hasReceivedOnboardingEmail(userId: string): boolean {
+  const row = db.prepare("SELECT onboarding_email_sent FROM users WHERE id = ?").get(userId) as any;
+  return row?.onboarding_email_sent === 1;
+}
+
 export default db;

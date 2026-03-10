@@ -6,8 +6,9 @@ import { AuthPanel } from "./components/AuthPanel";
 import { SignInGate } from "./components/SignInGate";
 import { MyBriefs } from "./components/MyBriefs";
 import { UpgradePrompt } from "./components/UpgradePrompt";
+import { LandingPage } from "./components/LandingPage";
 import type { PrepBriefData } from "./types";
-import { trackPageView, identifyUser, resetUser } from "./lib/analytics";
+import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin } from "./lib/analytics";
 
 const EXAMPLES = [
   { company: "Stripe", title: "Product Manager" },
@@ -46,6 +47,8 @@ export default function Page() {
   const [needsSignIn, setNeedsSignIn] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<"free_limit" | "pack_exhausted" | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentCancel, setPaymentCancel] = useState(false);
+  const [paymentPlan, setPaymentPlan] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
@@ -94,13 +97,34 @@ export default function Page() {
     if (params.get("payment") === "success") {
       setPaymentSuccess(true);
       window.history.replaceState({}, "", "/");
-      // Refresh subscription after successful payment
+      // Refresh subscription after successful payment to get plan name
       fetch("/api/stripe/status")
         .then((r) => r.ok ? r.json() : null)
-        .then((d) => d && setSubscription(d))
+        .then((d) => {
+          if (d) {
+            setSubscription(d);
+            setPaymentPlan(d.plan === "pro" ? "Pro" : d.plan === "pack" ? "Interview Pack" : null);
+          }
+        })
         .catch(() => {});
+    } else if (params.get("payment") === "cancel") {
+      setPaymentCancel(true);
+      window.history.replaceState({}, "", "/");
     }
   }, []);
+
+  // Auto-dismiss payment banners after 5 seconds
+  useEffect(() => {
+    if (!paymentSuccess) return;
+    const t = setTimeout(() => setPaymentSuccess(false), 5000);
+    return () => clearTimeout(t);
+  }, [paymentSuccess]);
+
+  useEffect(() => {
+    if (!paymentCancel) return;
+    const t = setTimeout(() => setPaymentCancel(false), 5000);
+    return () => clearTimeout(t);
+  }, [paymentCancel]);
 
   // Load auth state on mount
   useEffect(() => {
@@ -109,9 +133,10 @@ export default function Page() {
       .then(async (d) => {
         const loadedUser = d.user || null;
         setUser(loadedUser);
-        setShowAuthPanel(!loadedUser);
+        // Don't auto-open auth panel — landing page handles unauthenticated entry
         if (loadedUser) {
           identifyUser(loadedUser.id);
+          trackLogin();
           try {
             const subRes = await fetch("/api/stripe/status");
             if (subRes.ok) {
@@ -195,6 +220,7 @@ export default function Page() {
 
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
+      trackBriefGenerated(companyName, jobTitle);
       setOutput(data);
     } catch (error: any) {
       console.error("Error generating brief:", error);
@@ -214,6 +240,11 @@ export default function Page() {
     timeToPrep: ["Under 1 hour", "1-3 hours", "Full day", "1+ days"],
     biggestGap: ["Industry knowledge", "Technical skills", "Seniority jump", "Culture fit", "No obvious gap"],
   };
+
+  // Show landing page for unauthenticated users who haven't started sign-in
+  if (!authLoading && !user && !showAuthPanel && !isEditor) {
+    return <LandingPage onGetStarted={() => setShowAuthPanel(true)} />;
+  }
 
   if (!hasKey) {
     return (
@@ -316,8 +347,18 @@ export default function Page() {
             {/* Payment success banner */}
             {paymentSuccess && (
               <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-sm flex justify-between items-center">
-                <span>Payment successful! Your plan has been upgraded.</span>
+                <span>
+                  Payment successful!{paymentPlan ? ` You're now on ${paymentPlan}.` : " Your plan has been upgraded."}
+                </span>
                 <button onClick={() => setPaymentSuccess(false)} className="text-green-600 hover:text-green-800 ml-4">✕</button>
+              </div>
+            )}
+
+            {/* Payment cancel banner */}
+            {paymentCancel && (
+              <div className="mb-6 p-4 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-700 text-sm flex justify-between items-center">
+                <span>No charge was made. You can upgrade anytime.</span>
+                <button onClick={() => setPaymentCancel(false)} className="text-zinc-500 hover:text-zinc-700 ml-4">✕</button>
               </div>
             )}
 
