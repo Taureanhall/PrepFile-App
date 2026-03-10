@@ -1,7 +1,14 @@
 import "dotenv/config";
 import express from "express";
+import cookieParser from "cookie-parser";
 import { createServer as createViteServer } from "vite";
 import { generateBrief } from "./src/lib/generateBrief.js";
+import {
+  createMagicLink,
+  verifyMagicLink,
+  getUserBySession,
+  deleteSession,
+} from "./src/lib/db.js";
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
@@ -17,22 +24,116 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
+function getSessionUser(req: express.Request) {
+  const token = req.cookies?.session;
+  if (!token) return null;
+  return getUserBySession(token);
+}
+
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
 
   app.use(express.json());
+  app.use(cookieParser());
 
   // API routes FIRST
-  app.get("/api/health", (req, res) => {
+  app.get("/api/health", (_req, res) => {
     res.json({ status: "ok" });
   });
 
+  // Auth: get current user
+  app.get("/api/auth/me", (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ user: null });
+    res.json({ user });
+  });
+
+  // Auth: request magic link
+  app.post("/api/auth/request-magic-link", async (req, res) => {
+    const { email } = req.body;
+    if (!email || typeof email !== "string" || !email.includes("@")) {
+      return res.status(400).json({ error: "Valid email required" });
+    }
+
+    try {
+      const token = createMagicLink(email.toLowerCase().trim());
+      const magicUrl = `${APP_URL}/api/auth/verify?token=${token}`;
+
+      const { Resend } = await import("resend");
+      const resend = new Resend(process.env.RESEND_API_KEY);
+
+      await resend.emails.send({
+        from: "PrepFlow <onboarding@resend.dev>",
+        to: email,
+        subject: "Your PrepFlow login link",
+        html: `
+          <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px">
+            <h2 style="font-size:20px;font-weight:700;color:#18181b;margin-bottom:8px">Sign in to PrepFlow</h2>
+            <p style="color:#52525b;margin-bottom:24px">Click the button below to sign in. This link expires in 15 minutes.</p>
+            <a href="${magicUrl}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500">Sign in to PrepFlow</a>
+            <p style="color:#a1a1aa;font-size:12px;margin-top:24px">If you didn't request this, you can ignore this email.</p>
+          </div>
+        `,
+      });
+
+      res.json({ success: true });
+    } catch (err: any) {
+      console.error("Magic link error:", err);
+      res.status(500).json({ error: "Failed to send login email" });
+    }
+  });
+
+  // Auth: verify magic link token → set session cookie → redirect home
+  app.get("/api/auth/verify", (req, res) => {
+    const { token } = req.query;
+    if (!token || typeof token !== "string") {
+      return res.status(400).send("Invalid or missing token");
+    }
+
+    const sessionToken = verifyMagicLink(token);
+    if (!sessionToken) {
+      return res.status(400).send("This link has expired or already been used. Please request a new one.");
+    }
+
+    res.cookie("session", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+    // Clear free brief cookie now that they're signed in
+    res.clearCookie("free_brief_used");
+    res.redirect("/");
+  });
+
+  // Auth: logout
+  app.post("/api/auth/logout", (req, res) => {
+    const token = req.cookies?.session;
+    if (token) deleteSession(token);
+    res.clearCookie("session");
+    res.json({ success: true });
+  });
+
+  // Generate brief — authenticated OR 1 free brief via cookie
   app.post("/api/generate-brief", async (req, res) => {
     try {
       const bypassKey = process.env.BYPASS_KEY;
       const clientKey = req.headers["x-bypass-key"];
       const isBypassed = bypassKey && clientKey === bypassKey;
+
+      const user = getSessionUser(req);
+
+      if (!isBypassed && !user) {
+        // Allow 1 free brief via cookie
+        if (req.cookies?.free_brief_used) {
+          return res.status(401).json({
+            error: "free_brief_used",
+            message: "Sign in to generate more briefs.",
+          });
+        }
+      }
 
       if (!isBypassed) {
         const ip = req.ip || "unknown";
@@ -42,6 +143,17 @@ async function startServer() {
       }
 
       const data = await generateBrief(req.body);
+
+      // Mark free brief used for unauthenticated users
+      if (!user && !isBypassed) {
+        res.cookie("free_brief_used", "1", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+      }
+
       res.json(data);
     } catch (err: any) {
       res.status(500).json({ error: err.message || "Failed to generate brief" });

@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { PrepBrief } from "./components/PrepBrief";
+import { AuthPanel } from "./components/AuthPanel";
+import { SignInGate } from "./components/SignInGate";
 import type { PrepBriefData } from "./types";
 
 const EXAMPLES = [
@@ -22,7 +24,18 @@ const EXAMPLES = [
   { company: "Airbnb", title: "Senior Software Engineer" }
 ];
 
+interface User {
+  id: string;
+  email: string;
+}
+
 export default function Page() {
+  // Auth state
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [showAuthPanel, setShowAuthPanel] = useState(false);
+  const [needsSignIn, setNeedsSignIn] = useState(false);
+
   // Core Inputs
   const [companyName, setCompanyName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
@@ -44,8 +57,7 @@ export default function Page() {
   useEffect(() => {
     const randomExample = EXAMPLES[Math.floor(Math.random() * EXAMPLES.length)];
     setPlaceholders(randomExample);
-    
-}, []);
+  }, []);
 
   useEffect(() => {
     const checkKey = async () => {
@@ -60,6 +72,25 @@ export default function Page() {
     };
     checkKey();
   }, []);
+
+  // Load auth state on mount
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => {
+        setUser(d.user || null);
+        setShowAuthPanel(!d.user);
+      })
+      .catch(() => setShowAuthPanel(true))
+      .finally(() => setAuthLoading(false));
+  }, []);
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    setShowAuthPanel(true);
+    setNeedsSignIn(false);
+  };
 
   const handleSelectKey = async () => {
     const aistudio = (window as any).aistudio;
@@ -82,9 +113,9 @@ export default function Page() {
 
   const handleGenerate = async () => {
     if (!isFormValid) return;
-    
+
     setIsGenerating(true);
-    
+
     try {
       const bypassKey = localStorage.getItem("bypass_key") || "";
       const res = await fetch('/api/generate-brief', {
@@ -92,11 +123,21 @@ export default function Page() {
         headers: { 'Content-Type': 'application/json', ...(bypassKey && { 'x-bypass-key': bypassKey }) },
         body: JSON.stringify({ companyName, jobTitle, jobDescription, round, familiarity, timeToPrep, biggestGap }),
       });
+
+      if (res.status === 401) {
+        const d = await res.json();
+        if (d.error === "free_brief_used") {
+          setNeedsSignIn(true);
+          return;
+        }
+        setNeedsSignIn(true);
+        return;
+      }
+
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setOutput(data);
-      
-} catch (error: any) {
+    } catch (error: any) {
       console.error("Error generating brief:", error);
       if (error.message?.includes("Rate limit exceeded")) {
         alert("You've reached your 5-brief daily limit. Try again tomorrow.");
@@ -137,7 +178,7 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans selection:bg-zinc-200">
       <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
-        
+
         {/* Header */}
         <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -148,186 +189,211 @@ export default function Page() {
               Prep briefs that show what the company actually needs.
             </p>
           </div>
-          {isEditor && (
-            <button
-              onClick={handleSelectKey}
-              className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors font-medium shadow-sm"
-            >
-              Connect / Change API Key
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {!authLoading && user && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-zinc-500 hidden sm:block">{user.email}</span>
+                <button
+                  onClick={handleLogout}
+                  className="text-sm px-3 py-1.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors"
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
+            {isEditor && (
+              <button
+                onClick={handleSelectKey}
+                className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors font-medium shadow-sm"
+              >
+                Connect / Change API Key
+              </button>
+            )}
+          </div>
         </header>
 
         {!output ? (
-          <div className="space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-zinc-200/60">
-            
-            {/* Core Inputs */}
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                  Company name
-                </label>
-                <input
-                  type="text"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder={`e.g. ${placeholders.company}`}
-                  className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors"
-                />
-              </div>
+          <div className="space-y-0">
+            {/* Auth Panel — shown to unauthenticated users who haven't dismissed */}
+            {!authLoading && !user && showAuthPanel && !needsSignIn && (
+              <AuthPanel onDismiss={() => setShowAuthPanel(false)} />
+            )}
 
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                  Job title
-                </label>
-                <input
-                  type="text"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  placeholder={`e.g. ${placeholders.title}`}
-                  className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors"
-                />
-              </div>
+            {/* Sign-in gate — shown when free brief is used up */}
+            {needsSignIn ? (
+              <SignInGate />
+            ) : (
+              <div className="space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-zinc-200/60">
 
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                  Job description
-                </label>
-                <textarea
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  placeholder="Paste the full job description here..."
-                  rows={6}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors resize-y"
-                />
-              </div>
-            </div>
+                {/* Core Inputs */}
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                      Company name
+                    </label>
+                    <input
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder={`e.g. ${placeholders.company}`}
+                      className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors"
+                    />
+                  </div>
 
-            {/* MCQ Section (Conditional) */}
-            {showMCQs && (
-              <div className="pt-6 border-t border-zinc-100 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div>
-                  <h2 className="text-lg font-semibold text-zinc-900 mb-1">Quick context</h2>
-                  <p className="text-sm text-zinc-500 mb-6">Help us tailor the brief to your specific situation.</p>
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                      Job title
+                    </label>
+                    <input
+                      type="text"
+                      value={jobTitle}
+                      onChange={(e) => setJobTitle(e.target.value)}
+                      placeholder={`e.g. ${placeholders.title}`}
+                      className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors"
+                    />
+                  </div>
 
-                {/* Question 1 */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium text-zinc-800">
-                    Which interview round is this for?
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {mcqOptions.round.map((option) => (
-                      <button
-                        key={option}
-                        onClick={() => setRound(option)}
-                        className={`px-4 py-2 text-sm rounded-full border transition-colors ${
-                          round === option
-                            ? "bg-zinc-900 text-white border-zinc-900"
-                            : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                      Job description
+                    </label>
+                    <textarea
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      placeholder="Paste the full job description here..."
+                      rows={6}
+                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors resize-y"
+                    />
                   </div>
                 </div>
 
-                {/* Question 2 */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium text-zinc-800">
-                    How familiar are you with this company?
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {mcqOptions.familiarity.map((option) => (
-                      <button
-                        key={option}
-                        onClick={() => setFamiliarity(option)}
-                        className={`px-4 py-2 text-sm rounded-full border transition-colors ${
-                          familiarity === option
-                            ? "bg-zinc-900 text-white border-zinc-900"
-                            : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {/* MCQ Section (Conditional) */}
+                {showMCQs && (
+                  <div className="pt-6 border-t border-zinc-100 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div>
+                      <h2 className="text-lg font-semibold text-zinc-900 mb-1">Quick context</h2>
+                      <p className="text-sm text-zinc-500 mb-6">Help us tailor the brief to your specific situation.</p>
+                    </div>
 
-                {/* Question 3 */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium text-zinc-800">
-                    How much time do you have to prep?
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {mcqOptions.timeToPrep.map((option) => (
-                      <button
-                        key={option}
-                        onClick={() => setTimeToPrep(option)}
-                        className={`px-4 py-2 text-sm rounded-full border transition-colors ${
-                          timeToPrep === option
-                            ? "bg-zinc-900 text-white border-zinc-900"
-                            : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                    {/* Question 1 */}
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-zinc-800">
+                        Which interview round is this for?
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {mcqOptions.round.map((option) => (
+                          <button
+                            key={option}
+                            onClick={() => setRound(option)}
+                            className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                              round === option
+                                ? "bg-zinc-900 text-white border-zinc-900"
+                                : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                {/* Question 4 */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium text-zinc-800">
-                    What's your biggest gap for this role?
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {mcqOptions.biggestGap.map((option) => (
-                      <button
-                        key={option}
-                        onClick={() => setBiggestGap(option)}
-                        className={`px-4 py-2 text-sm rounded-full border transition-colors ${
-                          biggestGap === option
-                            ? "bg-zinc-900 text-white border-zinc-900"
-                            : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                    {/* Question 2 */}
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-zinc-800">
+                        How familiar are you with this company?
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {mcqOptions.familiarity.map((option) => (
+                          <button
+                            key={option}
+                            onClick={() => setFamiliarity(option)}
+                            className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                              familiarity === option
+                                ? "bg-zinc-900 text-white border-zinc-900"
+                                : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                {/* Submit Button */}
-                <div className="pt-4 space-y-3">
-                  <button
-                    onClick={handleGenerate}
-                    disabled={!isFormValid || isGenerating}
-                    className="w-full flex items-center justify-center py-3.5 px-4 bg-zinc-900 text-white font-medium rounded-xl hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Researching company + building your brief (30–60 sec)...
-                      </>
-                    ) : (
-                      "Generate My Prep Brief"
-                    )}
-                  </button>
-                </div>
+                    {/* Question 3 */}
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-zinc-800">
+                        How much time do you have to prep?
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {mcqOptions.timeToPrep.map((option) => (
+                          <button
+                            key={option}
+                            onClick={() => setTimeToPrep(option)}
+                            className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                              timeToPrep === option
+                                ? "bg-zinc-900 text-white border-zinc-900"
+                                : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Question 4 */}
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-zinc-800">
+                        What's your biggest gap for this role?
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {mcqOptions.biggestGap.map((option) => (
+                          <button
+                            key={option}
+                            onClick={() => setBiggestGap(option)}
+                            className={`px-4 py-2 text-sm rounded-full border transition-colors ${
+                              biggestGap === option
+                                ? "bg-zinc-900 text-white border-zinc-900"
+                                : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="pt-4 space-y-3">
+                      <button
+                        onClick={handleGenerate}
+                        disabled={!isFormValid || isGenerating}
+                        className="w-full flex items-center justify-center py-3.5 px-4 bg-zinc-900 text-white font-medium rounded-xl hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {isGenerating ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Researching company + building your brief (30–60 sec)...
+                          </>
+                        ) : (
+                          "Generate My Prep Brief"
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
         ) : (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <PrepBrief data={output} />
-            
+
             <div className="flex justify-center pt-8 print:hidden">
-              <button 
+              <button
                 onClick={() => setOutput(null)}
                 className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-2"
               >
