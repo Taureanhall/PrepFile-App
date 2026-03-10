@@ -32,6 +32,7 @@ async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
+  const FROM_EMAIL = process.env.FROM_EMAIL || "PrepFlow <onboarding@resend.dev>";
 
   // Stripe webhook — must be registered with raw body BEFORE express.json()
   app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
@@ -111,7 +112,7 @@ async function startServer() {
       const resend = new Resend(process.env.RESEND_API_KEY);
 
       await resend.emails.send({
-        from: "PrepFlow <onboarding@resend.dev>",
+        from: FROM_EMAIL,
         to: email,
         subject: "Your PrepFlow login link",
         html: `
@@ -340,7 +341,7 @@ async function startServer() {
       ].join("");
 
       await resend.emails.send({
-        from: "PrepFlow <onboarding@resend.dev>",
+        from: FROM_EMAIL,
         to: email,
         subject: "Your Interview Prep Brief",
         html: `<div style="font-family:sans-serif;max-width:600px;margin:auto">${sections}</div>`,
