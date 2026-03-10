@@ -222,12 +222,10 @@ export function usePackBrief(userId: string): boolean {
   return true;
 }
 
-// Migrate: add onboarding_email_sent if it doesn't exist yet
-try {
-  db.exec("ALTER TABLE users ADD COLUMN onboarding_email_sent INTEGER NOT NULL DEFAULT 0");
-} catch {
-  // Column already exists — safe to ignore
-}
+// Migrations — safe to run on every boot
+try { db.exec("ALTER TABLE users ADD COLUMN onboarding_email_sent INTEGER NOT NULL DEFAULT 0"); } catch {}
+try { db.exec("ALTER TABLE users ADD COLUMN google_id TEXT"); } catch {}
+try { db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL"); } catch {}
 
 export function getBriefCountForUser(userId: string): number {
   const row = db.prepare("SELECT COUNT(*) as cnt FROM briefs WHERE user_id = ?").get(userId) as any;
@@ -241,6 +239,30 @@ export function markOnboardingEmailSent(userId: string): void {
 export function hasReceivedOnboardingEmail(userId: string): boolean {
   const row = db.prepare("SELECT onboarding_email_sent FROM users WHERE id = ?").get(userId) as any;
   return row?.onboarding_email_sent === 1;
+}
+
+/** Upsert a user by Google ID. Returns a session token. */
+export function upsertGoogleUser(googleId: string, email: string): string {
+  let user = db.prepare("SELECT * FROM users WHERE google_id = ?").get(googleId) as any;
+
+  if (!user) {
+    // Check if email already exists (magic link user upgrading to Google)
+    user = db.prepare("SELECT * FROM users WHERE email = ?").get(email.toLowerCase()) as any;
+    if (user) {
+      db.prepare("UPDATE users SET google_id = ?, last_login_at = datetime('now') WHERE id = ?").run(googleId, user.id);
+    } else {
+      const userId = crypto.randomUUID();
+      db.prepare("INSERT INTO users (id, email, google_id, last_login_at) VALUES (?, ?, ?, datetime('now'))").run(userId, email.toLowerCase(), googleId);
+      user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId) as any;
+    }
+  } else {
+    db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
+  }
+
+  const sessionToken = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  db.prepare("INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)").run(crypto.randomUUID(), user.id, sessionToken, expiresAt);
+  return sessionToken;
 }
 
 export default db;

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import crypto from "crypto";
 import express from "express";
 import cookieParser from "cookie-parser";
 import { createServer as createViteServer } from "vite";
@@ -18,9 +19,11 @@ import {
   getBriefCountForUser,
   hasReceivedOnboardingEmail,
   markOnboardingEmailSent,
+  upsertGoogleUser,
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
+import { OAuth2Client } from "google-auth-library";
 
 const RATE_LIMIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
 const RATE_LIMIT_MAX = 3; // 3 briefs per week for free tier
@@ -169,6 +172,59 @@ async function startServer() {
     if (token) deleteSession(token);
     res.clearCookie("session");
     res.json({ success: true });
+  });
+
+  // Auth: Google OAuth
+  app.get("/api/auth/google", (req, res) => {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    if (!clientId || !clientSecret) return res.status(503).json({ error: "Google OAuth not configured" });
+
+    const state = crypto.randomBytes(16).toString("hex");
+    res.cookie("oauth_state", state, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 10 * 60 * 1000 });
+
+    const client = new OAuth2Client(clientId, clientSecret, `${APP_URL}/api/auth/google/callback`);
+    const url = client.generateAuthUrl({ access_type: "offline", scope: ["email", "profile"], state });
+    res.redirect(url);
+  });
+
+  app.get("/api/auth/google/callback", async (req, res) => {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    if (!clientId || !clientSecret) return res.status(503).send("Google OAuth not configured");
+
+    const { code, state } = req.query as { code?: string; state?: string };
+    const storedState = req.cookies?.oauth_state;
+    if (!code || !state || state !== storedState) return res.status(400).send("Invalid OAuth state");
+    res.clearCookie("oauth_state");
+
+    try {
+      const client = new OAuth2Client(clientId, clientSecret, `${APP_URL}/api/auth/google/callback`);
+      const { tokens } = await client.getToken(code);
+      client.setCredentials(tokens);
+
+      const ticket = await client.verifyIdToken({ idToken: tokens.id_token!, audience: clientId });
+      const payload = ticket.getPayload();
+      if (!payload?.sub || !payload?.email) return res.status(400).send("Invalid Google account");
+
+      const sessionToken = upsertGoogleUser(payload.sub, payload.email);
+      const signedInUser = getUserBySession(sessionToken);
+      if (signedInUser) {
+        getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id, method: "google" } });
+      }
+
+      res.cookie("session", sessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
+      res.clearCookie("free_brief_used");
+      res.redirect("/");
+    } catch (err: any) {
+      console.error("Google OAuth error:", err);
+      res.status(500).send("Google sign-in failed. Please try again.");
+    }
   });
 
   // Stripe: get current plan
