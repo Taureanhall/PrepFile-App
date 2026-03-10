@@ -122,6 +122,10 @@ async function startServer() {
         const user = getSessionUser(req);
         if (!user) return res.status(401).json({ error: "Authentication required" });
 
+        // Resume match is Pro/Pack only
+        const userSub = getUserSubscription(user.id);
+        if (userSub.plan === "free") return res.status(403).json({ error: "pro_required" });
+
         if (!req.body?.briefData) return res.status(400).json({ error: "briefData is required" });
         if (!req.file) return res.status(400).json({ error: "resume file is required" });
 
@@ -391,6 +395,15 @@ async function startServer() {
 
       const user = getSessionUser(req);
 
+      // Determine brief tier (server-authoritative, never trust client)
+      let briefTier: "free" | "pro" = "free";
+      if (isBypassed) {
+        briefTier = "pro";
+      } else if (user) {
+        const subForTier = getUserSubscription(user.id);
+        if (subForTier.plan === "pro" || subForTier.plan === "pack") briefTier = "pro";
+      }
+
       if (!isBypassed) {
         if (!user) {
           // Unauthenticated: allow 1 free brief via cookie
@@ -447,7 +460,7 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid biggestGap value" });
       }
 
-      const data = await generateBrief(req.body);
+      const data = await generateBrief(req.body, briefTier);
 
       getPostHogClient()?.capture({
         distinctId: user ? user.id : `anon:${req.ip || "unknown"}`,
