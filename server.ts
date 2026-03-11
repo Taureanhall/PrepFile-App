@@ -1,5 +1,7 @@
 import "dotenv/config";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 import express from "express";
 import cookieParser from "cookie-parser";
 import multer from "multer";
@@ -758,6 +760,21 @@ async function startServer() {
       title: "How to Prepare for an Apple Interview | PrepFile",
       description: "Apple's interview process has no standard format — each team runs its own loop. Here's what actually matters: the culture signals, the loop structure, and the one question that kills most candidates.",
     },
+    netflix: {
+      name: "Netflix",
+      title: "How to Prepare for a Netflix Interview | PrepFile",
+      description: "Netflix's hiring bar is uniquely high — and uniquely different. Culture alignment, autonomous decision-making, and system design depth matter more than LeetCode grinding. Here's what actually gets you hired.",
+    },
+    jpmorgan: {
+      name: "JPMorgan",
+      title: "How to Prepare for a JPMorgan Interview | PrepFile",
+      description: "JPMorgan's interview process starts with Pymetrics before any human sees your resume. Division matters — IB, S&T, AWM, and Tech each have distinct formats. Here's how to prep for each.",
+    },
+    deloitte: {
+      name: "Deloitte",
+      title: "How to Prepare for a Deloitte Interview | PrepFile",
+      description: "Deloitte's case interviews are candidate-led, not interviewer-led — the opposite of McKinsey. The group exercise is real and evaluated. Here's what the process actually looks like across Consulting, Advisory, and Audit.",
+    },
   };
 
   // Helper: inject SEO meta tags for /interview-prep index page
@@ -893,29 +910,41 @@ async function startServer() {
 
     // Intercept /b/:id to inject dynamic OG tags before catch-all
     app.get("/b/:id", (req, res) => {
-      const fs = require("fs") as typeof import("fs");
-      const indexPath = (require("path") as typeof import("path")).join(process.cwd(), "dist", "index.html");
-      const template = fs.readFileSync(indexPath, "utf-8");
-      const html = injectBriefOgTags(template, req.params.id, APP_URL);
-      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      try {
+        const indexPath = path.join(process.cwd(), "dist", "index.html");
+        const template = fs.readFileSync(indexPath, "utf-8");
+        const html = injectBriefOgTags(template, req.params.id, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch (err) {
+        console.error("[/b/:id] Failed to render:", err);
+        res.status(500).send("Internal Server Error");
+      }
     });
 
     // Intercept /interview-prep (index) to inject SEO meta tags
     app.get("/interview-prep", (req, res) => {
-      const fs = require("fs") as typeof import("fs");
-      const indexPath = (require("path") as typeof import("path")).join(process.cwd(), "dist", "index.html");
-      const template = fs.readFileSync(indexPath, "utf-8");
-      const html = injectInterviewPrepIndexMeta(template, APP_URL);
-      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      try {
+        const indexPath = path.join(process.cwd(), "dist", "index.html");
+        const template = fs.readFileSync(indexPath, "utf-8");
+        const html = injectInterviewPrepIndexMeta(template, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch (err) {
+        console.error("[/interview-prep] Failed to render:", err);
+        res.status(500).send("Internal Server Error");
+      }
     });
 
     // Intercept /interview-prep/:slug to inject SEO meta tags
     app.get("/interview-prep/:slug", (req, res) => {
-      const fs = require("fs") as typeof import("fs");
-      const indexPath = (require("path") as typeof import("path")).join(process.cwd(), "dist", "index.html");
-      const template = fs.readFileSync(indexPath, "utf-8");
-      const html = injectInterviewPrepMeta(template, req.params.slug, APP_URL);
-      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      try {
+        const indexPath = path.join(process.cwd(), "dist", "index.html");
+        const template = fs.readFileSync(indexPath, "utf-8");
+        const html = injectInterviewPrepMeta(template, req.params.slug, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch (err) {
+        console.error("[/interview-prep/:slug] Failed to render:", err);
+        res.status(500).send("Internal Server Error");
+      }
     });
 
     app.get("*", (_req, res) => {
