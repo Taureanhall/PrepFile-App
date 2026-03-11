@@ -116,6 +116,33 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- Job-function landing pages (short URLs) -->
+  <url>
+    <loc>https://prepfile.app/interview-prep/roles/pm</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://prepfile.app/interview-prep/roles/swe</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://prepfile.app/interview-prep/roles/data-science</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://prepfile.app/interview-prep/roles/consulting</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://prepfile.app/interview-prep/roles/finance</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Job-role guides (batch 3) -->
   <url>
     <loc>https://prepfile.app/interview-prep/data-scientist</loc>

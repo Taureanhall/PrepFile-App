@@ -11,6 +11,8 @@ import { PublicBrief } from "./components/PublicBrief";
 import { InterviewPrepPage } from "./components/InterviewPrepPage";
 import { InterviewPrepIndex } from "./components/InterviewPrepIndex";
 import { BlogPage } from "./components/BlogPage";
+import { FaqPage } from "./components/FaqPage";
+import { SegmentPage } from "./components/SegmentPage";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted } from "./lib/analytics";
 import { upgradeNudges } from "./data/conversion-copy";
@@ -87,6 +89,17 @@ export default function Page() {
   const blogSlug = window.location.pathname.match(/^\/blog\/([^/]+)$/)?.[1] ?? null;
   if (blogSlug) {
     return <BlogPage slug={blogSlug} />;
+  }
+
+  // Route: /faq — FAQ page
+  if (window.location.pathname === "/faq") {
+    return <FaqPage />;
+  }
+
+  // Route: /for/:slug — segment landing pages
+  const segmentSlug = window.location.pathname.match(/^\/for\/([^/]+)$/)?.[1] ?? null;
+  if (segmentSlug) {
+    return <SegmentPage slug={segmentSlug} />;
   }
 
   // Auth state
