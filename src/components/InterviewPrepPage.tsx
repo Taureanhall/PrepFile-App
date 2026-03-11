@@ -4,6 +4,29 @@ import { content as amazonContent } from "../marketing/content/amazon";
 import { content as metaContent } from "../marketing/content/meta";
 import { content as appleContent } from "../marketing/content/apple";
 import { content as microsoftContent } from "../marketing/content/microsoft";
+import { content as airbnbContent } from "../marketing/content/airbnb";
+import { content as spotifyContent } from "../marketing/content/spotify";
+import { content as linkedinContent } from "../marketing/content/linkedin";
+import { content as adobeContent } from "../marketing/content/adobe";
+import { content as stripeContent } from "../marketing/content/stripe";
+import { content as teslaContent } from "../marketing/content/tesla";
+import { content as salesforceContent } from "../marketing/content/salesforce";
+import { content as ibmContent } from "../marketing/content/ibm";
+import { content as dataSciContent } from "../marketing/content/data-scientist";
+import { content as marketingMgrContent } from "../marketing/content/marketing-manager";
+import { content as productMgrContent } from "../marketing/content/product-manager";
+import { content as softwareEngContent } from "../marketing/content/software-engineer";
+import { content as uxDesignerContent } from "../marketing/content/ux-designer";
+import { content as dataEngContent } from "../marketing/content/data-engineer";
+import { content as bizAnalystContent } from "../marketing/content/business-analyst";
+import { content as mgmtConsultContent } from "../marketing/content/management-consultant";
+import { content as ibAnalystContent } from "../marketing/content/investment-banking-analyst";
+import { content as devopsContent } from "../marketing/content/devops-sre-engineer";
+import {
+  chatgptComparison,
+  interviewingIoComparison,
+  prampComparison,
+} from "../marketing/content/comparisons";
 
 interface CompanyData {
   name: string;
@@ -252,6 +275,27 @@ const COMPANIES: Record<string, CompanyData> = {
     ],
     ctaCompany: "Deloitte",
   },
+  airbnb: airbnbContent,
+  spotify: spotifyContent,
+  linkedin: linkedinContent,
+  adobe: adobeContent,
+  stripe: stripeContent,
+  tesla: teslaContent,
+  salesforce: salesforceContent,
+  ibm: ibmContent,
+  "data-scientist": dataSciContent,
+  "marketing-manager": marketingMgrContent,
+  "product-manager": productMgrContent,
+  "software-engineer": softwareEngContent,
+  "ux-designer": uxDesignerContent,
+  "data-engineer": dataEngContent,
+  "business-analyst": bizAnalystContent,
+  "management-consultant": mgmtConsultContent,
+  "investment-banking-analyst": ibAnalystContent,
+  "devops-sre-engineer": devopsContent,
+  "prepfile-vs-chatgpt": chatgptComparison,
+  "prepfile-vs-interviewing-io": interviewingIoComparison,
+  "prepfile-vs-pramp": prampComparison,
 };
 
 interface InterviewPrepPageProps {
@@ -353,7 +397,7 @@ export function InterviewPrepPage({ slug }: InterviewPrepPageProps) {
       <div className="max-w-3xl mx-auto px-6 pt-6 text-sm text-zinc-400">
         <a href="/" className="hover:text-zinc-600 transition-colors">Home</a>
         <span className="mx-2">/</span>
-        <a href="/sitemap.xml" className="hover:text-zinc-600 transition-colors">Interview Prep</a>
+        <a href="/interview-prep" className="hover:text-zinc-600 transition-colors">Interview Prep</a>
         <span className="mx-2">/</span>
         <span className="text-zinc-600">{data.name}</span>
       </div>

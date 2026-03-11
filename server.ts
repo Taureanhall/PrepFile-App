@@ -27,10 +27,18 @@ import {
   getPublicBrief,
   setBriefPublic,
   getAdminMetrics,
+  getOrCreateUserByEmail,
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
 import { runNurtureEmailBatch } from "./src/lib/nurture.js";
+import {
+  sendWelcomeEmailImmediate,
+  runWelcomeSequenceBatch,
+  runReengagementBatch,
+  parseUnsubscribeToken,
+} from "./src/lib/email-sequences.js";
+import { setEmailUnsubscribed, getUserIdByEmail } from "./src/lib/db.js";
 import { OAuth2Client } from "google-auth-library";
 
 const RATE_LIMIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -64,9 +72,20 @@ async function startServer() {
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as any;
-      const userId = session.metadata?.user_id;
+      let userId = session.metadata?.user_id;
       const product = session.metadata?.product as "pro" | "pack";
-      if (!userId || !product) return res.sendStatus(200);
+      if (!product) return res.sendStatus(200);
+
+      // If no user_id (unauthenticated checkout), create or find user by Stripe customer email
+      if (!userId) {
+        const email = session.customer_details?.email || session.customer_email;
+        if (!email) {
+          console.error("[STRIPE] checkout.session.completed with no user_id and no email");
+          return res.sendStatus(200);
+        }
+        userId = getOrCreateUserByEmail(email);
+        console.log(`[STRIPE] Created/found user ${userId} for unauthenticated checkout (${email})`);
+      }
 
       if (product === "pro") {
         upsertSubscription(userId, "pro", session.customer, session.subscription);
@@ -241,6 +260,8 @@ async function startServer() {
     const signedInUser = getUserBySession(sessionToken);
     if (signedInUser) {
       getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id } });
+      // Fire welcome-1 for new users (idempotent — skips if already sent)
+      sendWelcomeEmailImmediate(signedInUser.id, signedInUser.email, APP_URL, FROM_EMAIL).catch(() => {});
     }
 
     res.cookie("session", sessionToken, {
@@ -260,6 +281,30 @@ async function startServer() {
     if (token) deleteSession(token);
     res.clearCookie("session");
     res.json({ success: true });
+  });
+
+  // Email unsubscribe — linked from all marketing emails
+  app.get("/api/unsubscribe", (req, res) => {
+    const { token } = req.query;
+    if (!token || typeof token !== "string") {
+      return res.status(400).send("Invalid unsubscribe link.");
+    }
+    const userId = parseUnsubscribeToken(token);
+    if (!userId) {
+      return res.status(400).send("Invalid or expired unsubscribe link.");
+    }
+    try {
+      setEmailUnsubscribed(userId);
+    } catch (err) {
+      console.error("[unsubscribe] DB error:", err);
+    }
+    res.status(200).send(
+      `<html><body style="font-family:sans-serif;max-width:480px;margin:80px auto;text-align:center">` +
+      `<h2 style="color:#18181b">You've been unsubscribed</h2>` +
+      `<p style="color:#52525b">You won't receive any more marketing emails from PrepFile.</p>` +
+      `<a href="/" style="color:#18181b">Return to PrepFile →</a>` +
+      `</body></html>`
+    );
   });
 
   // Auth: Google OAuth
@@ -299,6 +344,8 @@ async function startServer() {
       const signedInUser = getUserBySession(sessionToken);
       if (signedInUser) {
         getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id, method: "google" } });
+        // Fire welcome-1 for new users (idempotent — skips if already sent)
+        sendWelcomeEmailImmediate(signedInUser.id, signedInUser.email, APP_URL, FROM_EMAIL).catch(() => {});
       }
 
       res.cookie("session", sessionToken, {
@@ -327,10 +374,9 @@ async function startServer() {
     });
   });
 
-  // Stripe: create checkout session
+  // Stripe: create checkout session (works for both authenticated and unauthenticated users)
   app.post("/api/stripe/create-checkout-session", async (req, res) => {
     const user = getSessionUser(req);
-    if (!user) return res.status(401).json({ error: "Not authenticated" });
 
     const { product } = req.body as { product: "pro" | "pack" };
     if (product !== "pro" && product !== "pack") {
@@ -348,16 +394,20 @@ async function startServer() {
         line_items: [{ price_data: priceConfig, quantity: 1 }],
         success_url: `${APP_URL}/?payment=success`,
         cancel_url: `${APP_URL}/?payment=cancel`,
-        customer_email: user.email,
-        metadata: { user_id: user.id, product },
+        metadata: { product },
       };
 
-      // Reuse existing Stripe customer if we have one
-      const sub = getUserSubscription(user.id);
-      if (sub.stripe_customer_id) {
-        delete sessionParams.customer_email;
-        sessionParams.customer = sub.stripe_customer_id;
+      if (user) {
+        // Authenticated: attach user info and reuse Stripe customer
+        sessionParams.metadata.user_id = user.id;
+        sessionParams.customer_email = user.email;
+        const sub = getUserSubscription(user.id);
+        if (sub.stripe_customer_id) {
+          delete sessionParams.customer_email;
+          sessionParams.customer = sub.stripe_customer_id;
+        }
       }
+      // Unauthenticated: Stripe collects email during checkout
 
       const session = await stripe.checkout.sessions.create(sessionParams);
       res.json({ url: session.url });
@@ -785,6 +835,21 @@ async function startServer() {
       title: "How to Prepare for an Uber Interview | PrepFile",
       description: "Uber's system design rounds are domain-specific: ride matching, surge pricing, real-time geo at scale. Here's the full loop, what interviewers score, and how to prep for each round.",
     },
+    tesla: {
+      name: "Tesla",
+      title: "How to Prepare for a Tesla Interview | PrepFile",
+      description: "Tesla's hiring bar is speed and ownership: they want builders who operate without hand-holding. Here's the full process, what interviewers score, and how to stand out in a Tesla loop.",
+    },
+    salesforce: {
+      name: "Salesforce",
+      title: "How to Prepare for a Salesforce Interview | PrepFile",
+      description: "Salesforce interviews blend technical depth with Ohana culture fit. Here's the hiring process, what evaluators score in each round, and how to prep for a Salesforce loop.",
+    },
+    ibm: {
+      name: "IBM",
+      title: "How to Prepare for an IBM Interview | PrepFile",
+      description: "IBM's interviews span consulting, cloud, and AI roles — each with distinct formats. Here's the hiring process, what evaluators score, and how to prep for an IBM loop.",
+    },
     "software-engineer": {
       name: "Software Engineer",
       title: "Software Engineer Interview Prep Guide | PrepFile",
@@ -810,7 +875,140 @@ async function startServer() {
       title: "Marketing Manager Interview Prep Guide | PrepFile",
       description: "Ace your marketing manager interview: campaign strategy questions, metrics rounds, behavioral assessments, and what hiring managers look for in marketing candidates. Get a personalized prep brief in minutes.",
     },
+    "data-engineer": {
+      name: "Data Engineer",
+      title: "Data Engineer Interview Prep Guide | PrepFile",
+      description: "Ace your data engineer interview: SQL deep dives, pipeline design, system design for data infrastructure, and what hiring managers look for in DE candidates. Get a personalized prep brief in minutes.",
+    },
+    "business-analyst": {
+      name: "Business Analyst",
+      title: "Business Analyst Interview Prep Guide | PrepFile",
+      description: "Prepare for your business analyst interview: case studies, SQL rounds, stakeholder communication questions, and what hiring managers look for in BA candidates. Get a personalized prep brief in minutes.",
+    },
+    "management-consultant": {
+      name: "Management Consultant",
+      title: "Management Consulting Interview Prep Guide | PrepFile",
+      description: "Crack your consulting interview: case interview frameworks, market sizing, exhibit interpretation, and what McKinsey, BCG, and Bain actually evaluate. Get a personalized prep brief in minutes.",
+    },
+    "investment-banking-analyst": {
+      name: "Investment Banking Analyst",
+      title: "Investment Banking Analyst Interview Prep Guide | PrepFile",
+      description: "Prepare for your IB analyst interview: technical questions on valuation and accounting, fit interviews, deal experience, and what bulge bracket banks actually evaluate. Get a personalized prep brief in minutes.",
+    },
+    "devops-sre-engineer": {
+      name: "DevOps/SRE Engineer",
+      title: "DevOps/SRE Engineer Interview Prep Guide | PrepFile",
+      description: "Ace your DevOps or SRE interview: system design for reliability, incident response scenarios, infrastructure coding, and what top companies look for in platform engineers. Get a personalized prep brief in minutes.",
+    },
+    airbnb: {
+      name: "Airbnb",
+      title: "How to Prepare for an Airbnb Interview | PrepFile",
+      description: "Airbnb's Core Values are an active evaluation rubric, not marketing copy. Understand the Experience round, what marketplace system design looks like at Airbnb, and how to prepare for their product-specific coding problems.",
+    },
+    spotify: {
+      name: "Spotify",
+      title: "How to Prepare for a Spotify Interview | PrepFile",
+      description: "Spotify's Squad model shapes how they hire: autonomous operation, mission alignment, and ambiguity tolerance are scored signals. Here's the full loop, what evaluators score, and how to prep for Spotify's domain-specific technical rounds.",
+    },
+    linkedin: {
+      name: "LinkedIn",
+      title: "How to Prepare for a LinkedIn Interview | PrepFile",
+      description: "LinkedIn's InDay Loop spans coding, system design, and structured behavioral rounds. Graph algorithms are domain-relevant, and mission alignment is a scored signal. Here's what evaluators actually look for.",
+    },
+    adobe: {
+      name: "Adobe",
+      title: "How to Prepare for an Adobe Interview | PrepFile",
+      description: "Adobe interviews span Creative Cloud engineering, enterprise SaaS, and design roles — each with distinct formats. Customer empathy is a scored behavioral signal. Here's the full process and what evaluators score.",
+    },
+    stripe: {
+      name: "Stripe",
+      title: "How to Prepare for a Stripe Interview | PrepFile",
+      description: "Stripe evaluates written communication explicitly, and their API design round is unlike anything at FAANG. Understand the full loop, what exactly-once processing means for system design prep, and how to approach the API design round.",
+    },
+    "prepfile-vs-chatgpt": {
+      name: "PrepFile vs ChatGPT",
+      title: "PrepFile vs ChatGPT for Interview Prep | PrepFile",
+      description: "ChatGPT gives generic interview advice. PrepFile generates a structured brief specific to your company, role, and round. Here's the difference — and when to use each.",
+    },
+    "prepfile-vs-interviewing-io": {
+      name: "PrepFile vs Interviewing.io",
+      title: "PrepFile vs Interviewing.io | PrepFile",
+      description: "Interviewing.io is mock interview practice. PrepFile is company research and prep intelligence. Here's how they work together — and which to use first.",
+    },
+    "prepfile-vs-pramp": {
+      name: "PrepFile vs Pramp",
+      title: "PrepFile vs Pramp | PrepFile",
+      description: "Pramp gives peer mock interview reps. PrepFile gives company-specific research briefs. Use them in sequence — PrepFile first, then Pramp — for the best result.",
+    },
   };
+
+  // Blog article SEO data — mirrors blog-articles.ts content
+  const BLOG_ARTICLES: Record<string, { title: string; description: string; keywords: string }> = {
+    "how-to-prepare-tech-interview-24-hours": {
+      title: "How to Prepare for a Tech Interview in 24 Hours | PrepFile",
+      description: "Got an interview tomorrow? Here's exactly how to use the next 24 hours — hour by hour — to prepare without burning yourself out.",
+      keywords: "last minute interview prep, interview tomorrow what to do, 24 hour interview prep",
+    },
+    "interview-prep-checklist": {
+      title: "The Interview Prep Checklist Most Candidates Skip | PrepFile",
+      description: "Most candidates do the visible prep and skip the items that actually matter. Here's the checklist that separates prepared candidates from everyone else.",
+      keywords: "interview preparation checklist, interview prep checklist, what to do before an interview",
+    },
+    "why-interview-prep-advice-is-wrong": {
+      title: "Why Most Interview Prep Advice Is Wrong | PrepFile",
+      description: "The standard interview prep advice — practice questions, use STAR format, do mock interviews — isn't wrong. It just optimizes for the wrong constraint.",
+      keywords: "how to actually prepare for interviews, interview prep advice, effective interview preparation",
+    },
+  };
+
+  // Helper: inject SEO meta tags for /blog index page
+  function injectBlogIndexMeta(html: string, appUrl: string): string {
+    const title = "Interview Prep Blog | PrepFile";
+    const description = "Interview prep guides, strategy, and tactics from PrepFile. Learn how to prepare smarter, not longer.";
+    const url = `${appUrl}/blog`;
+
+    return html
+      .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
+      .replace(/(<meta\s+name="description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
+      .replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/g, `$1${url}$2`)
+      .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
+      .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/g, `$1${url}$2`);
+  }
+
+  // Helper: inject SEO meta tags for /blog/:slug pages
+  function injectBlogMeta(html: string, slug: string, appUrl: string): string {
+    const article = BLOG_ARTICLES[slug];
+    if (!article) return html;
+
+    const url = `${appUrl}/blog/${slug}`;
+    const schemaJson = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: article.title.replace(" | PrepFile", ""),
+      description: article.description,
+      keywords: article.keywords,
+      url,
+      publisher: {
+        "@type": "Organization",
+        name: "PrepFile",
+        url: appUrl,
+      },
+    });
+
+    return html
+      .replace(/<title>[^<]*<\/title>/, `<title>${article.title}</title>`)
+      .replace(/(<meta\s+name="description"\s+content=")[^"]*(")/g, `$1${article.description}$2`)
+      .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/g, `$1${article.title}$2`)
+      .replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/g, `$1${article.description}$2`)
+      .replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/g, `$1${url}$2`)
+      .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/g, `$1${article.title}$2`)
+      .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/g, `$1${article.description}$2`)
+      .replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/g, `$1${url}$2`)
+      .replace("</head>", `<script type="application/ld+json">${schemaJson}</script>\n</head>`);
+  }
 
   // Helper: inject SEO meta tags for /interview-prep index page
   function injectInterviewPrepIndexMeta(html: string, appUrl: string): string {
@@ -883,12 +1081,18 @@ async function startServer() {
   // Sitemap
   app.get("/sitemap.xml", (_req, res) => {
     const slugs = Object.keys(INTERVIEW_PREP_PAGES);
+    const blogSlugs = Object.keys(BLOG_ARTICLES);
     const urls = [
       `<url><loc>${APP_URL}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>`,
       `<url><loc>${APP_URL}/interview-prep</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>`,
       ...slugs.map(
         (slug) =>
           `<url><loc>${APP_URL}/interview-prep/${slug}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>`
+      ),
+      `<url><loc>${APP_URL}/blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`,
+      ...blogSlugs.map(
+        (slug) =>
+          `<url><loc>${APP_URL}/blog/${slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`
       ),
     ].join("\n  ");
 
@@ -933,6 +1137,28 @@ async function startServer() {
       try {
         const template = await vite.transformIndexHtml(req.url, (await import("fs")).readFileSync("index.html", "utf-8"));
         const html = injectInterviewPrepMeta(template, req.params.slug, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch {
+        next();
+      }
+    });
+
+    // Intercept /blog (index) to inject SEO meta tags
+    app.get("/blog", async (req, res, next) => {
+      try {
+        const template = await vite.transformIndexHtml(req.url, (await import("fs")).readFileSync("index.html", "utf-8"));
+        const html = injectBlogIndexMeta(template, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch {
+        next();
+      }
+    });
+
+    // Intercept /blog/:slug to inject SEO meta tags
+    app.get("/blog/:slug", async (req, res, next) => {
+      try {
+        const template = await vite.transformIndexHtml(req.url, (await import("fs")).readFileSync("index.html", "utf-8"));
+        const html = injectBlogMeta(template, req.params.slug, APP_URL);
         res.status(200).set({ "Content-Type": "text/html" }).end(html);
       } catch {
         next();
@@ -989,12 +1215,36 @@ async function startServer() {
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    // Stripe configuration diagnostic
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) {
+      console.error("[STRIPE] STRIPE_SECRET_KEY is NOT set — upgrade buttons will fail");
+    } else if (stripeKey.startsWith("sk_live_")) {
+      console.log("[STRIPE] STRIPE_SECRET_KEY: live key configured");
+    } else if (stripeKey.startsWith("sk_test_")) {
+      console.log("[STRIPE] STRIPE_SECRET_KEY: test key configured (switch to sk_live_ for production)");
+    } else {
+      console.warn("[STRIPE] STRIPE_SECRET_KEY: key present but unrecognized format");
+    }
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    console.log(`[STRIPE] STRIPE_WEBHOOK_SECRET: ${webhookSecret ? "set" : "NOT set — webhooks will fail"}`);
+    console.log(`[STRIPE] APP_URL: ${APP_URL}`);
   });
 
   // Nurture email batch — run once on startup (after 30s) then every 4 hours
   const runNurture = () => runNurtureEmailBatch(APP_URL, FROM_EMAIL);
   setTimeout(runNurture, 30_000);
   setInterval(runNurture, 4 * 60 * 60 * 1000);
+
+  // Welcome sequence batch (welcome-2 day 2, welcome-3 day 5) — every 4 hours
+  const runWelcome = () => runWelcomeSequenceBatch(APP_URL, FROM_EMAIL);
+  setTimeout(runWelcome, 60_000);
+  setInterval(runWelcome, 4 * 60 * 60 * 1000);
+
+  // Re-engagement batch (day 7, day 14 inactive) — every 4 hours
+  const runReengagement = () => runReengagementBatch(APP_URL, FROM_EMAIL);
+  setTimeout(runReengagement, 90_000);
+  setInterval(runReengagement, 4 * 60 * 60 * 1000);
 }
 
 startServer();

@@ -201,7 +201,9 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
           <a href="#section-5" className="hover:text-zinc-800 transition-colors">Behavioral Bank</a>
           <a href="#section-6" className="hover:text-zinc-800 transition-colors">Round Expectations</a>
           <a href="#section-7" className="hover:text-zinc-800 transition-colors">Questions to Ask</a>
-          <a href="#section-8" className="hover:text-zinc-800 transition-colors">Reading</a>
+          {data.recommendedReading && data.recommendedReading.length > 0 && (
+            <a href="#section-8" className="hover:text-zinc-800 transition-colors">Reading</a>
+          )}
         </div>
       </nav>
 
@@ -463,7 +465,8 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
           </section>
         )}
 
-        {/* Section 6 — Round Expectations */}
+        {/* Section 6 — Round Expectations (Pro/Pack only — hidden when data is absent) */}
+        {data.roundExpectations && (data.roundExpectations.overview || data.roundExpectations.whatTripsPeopleUp?.length > 0 || howToShowUpStrong?.length > 0) ? (
         <section id="section-6">
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
             6. Round Expectations
@@ -502,6 +505,29 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
             )}
           </div>
         </section>
+        ) : userPlan === "free" ? (
+          /* Free tier: locked round expectations teaser */
+          <section id="section-6" className="print:hidden">
+            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+              6. Round Expectations
+            </h2>
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex-1">
+                  <p className="text-zinc-500 text-sm">
+                    Round-by-round breakdown, common pitfalls, and how to stand out — available with Pro or Interview Pack.
+                  </p>
+                </div>
+                <button
+                  onClick={onUpgradeClick}
+                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors whitespace-nowrap"
+                >
+                  Unlock Round Expectations
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {/* Section 7 — Questions to Ask */}
         <section id="section-7">

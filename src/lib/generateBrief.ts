@@ -252,6 +252,20 @@ export async function generateBrief(inputs: {
         parsed.companySnapshot.recentSignals = parsed.companySnapshot.recentSignals.slice(0, 2);
       }
     }
+    // Trim interview themes to 2 (from typically 4-5)
+    if (Array.isArray(parsed.interviewThemes) && parsed.interviewThemes.length > 2) {
+      parsed.interviewThemes = parsed.interviewThemes.slice(0, 2);
+    }
+    // Trim behavioral bank to 2 competencies
+    if (Array.isArray(parsed.behavioralQuestionBank) && parsed.behavioralQuestionBank.length > 2) {
+      parsed.behavioralQuestionBank = parsed.behavioralQuestionBank.slice(0, 2);
+    }
+    // Trim questions to ask to 3
+    if (Array.isArray(parsed.questionsToAsk) && parsed.questionsToAsk.length > 3) {
+      parsed.questionsToAsk = parsed.questionsToAsk.slice(0, 3);
+    }
+    // Remove recommended reading for free tier
+    delete parsed.recommendedReading;
   }
 
   return stripCitations(parsed);

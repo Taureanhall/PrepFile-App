@@ -1,5 +1,3 @@
-import { useState, type FormEvent } from "react";
-
 interface AuthPanelProps {
   onDismiss: () => void;
 }
@@ -14,34 +12,6 @@ const GoogleIcon = () => (
 );
 
 export function AuthPanel({ onDismiss }: AuthPanelProps) {
-  const [showEmail, setShowEmail] = useState(false);
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    setStatus("loading");
-    setErrorMsg("");
-
-    try {
-      const res = await fetch("/api/auth/request-magic-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-      if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error || "Failed to send link");
-      }
-      setStatus("sent");
-    } catch (err: any) {
-      setErrorMsg(err.message || "Something went wrong");
-      setStatus("error");
-    }
-  };
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -66,68 +36,24 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
           <p className="text-zinc-500 text-sm">Ace your next interview</p>
         </div>
 
-        {status === "sent" ? (
-          <div className="text-center space-y-2 py-2">
-            <div className="text-3xl">✉️</div>
-            <p className="font-medium text-zinc-900">Check your inbox</p>
-            <p className="text-zinc-500 text-sm">
-              Sent a link to <strong className="text-zinc-900">{email}</strong>. Expires in 15 min.
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* Primary CTA */}
-            <a
-              href="/api/auth/google"
-              className="flex items-center justify-center gap-3 w-full px-4 py-3.5 bg-zinc-900 text-white font-medium text-sm rounded-xl hover:bg-zinc-800 transition-colors min-h-[48px]"
-            >
-              <GoogleIcon />
-              Continue with Google
-            </a>
+        {/* Primary CTA */}
+        <a
+          href="/api/auth/google"
+          className="flex items-center justify-center gap-3 w-full px-4 py-3.5 bg-zinc-900 text-white font-medium text-sm rounded-xl hover:bg-zinc-800 transition-colors min-h-[48px]"
+        >
+          <GoogleIcon />
+          Continue with Google
+        </a>
 
-            {/* Email fallback */}
-            {!showEmail ? (
-              <button
-                onClick={() => setShowEmail(true)}
-                className="w-full text-zinc-400 text-sm hover:text-zinc-600 transition-colors"
-              >
-                Use email instead
-              </button>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  autoFocus
-                  className="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
-                />
-                <button
-                  type="submit"
-                  disabled={status === "loading"}
-                  className="w-full py-2.5 px-4 bg-white text-zinc-900 font-medium text-sm rounded-lg border border-zinc-200 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
-                >
-                  {status === "loading" ? "Sending…" : "Send login link"}
-                </button>
-                {status === "error" && (
-                  <p className="text-red-500 text-xs">{errorMsg}</p>
-                )}
-              </form>
-            )}
-
-            {/* Skip */}
-            <div className="text-center">
-              <button
-                onClick={onDismiss}
-                className="text-zinc-400 text-xs hover:text-zinc-600 transition-colors"
-              >
-                Skip for now
-              </button>
-            </div>
-          </>
-        )}
+        {/* Skip */}
+        <div className="text-center">
+          <button
+            onClick={onDismiss}
+            className="text-zinc-400 text-xs hover:text-zinc-600 transition-colors"
+          >
+            Skip for now
+          </button>
+        </div>
       </div>
     </div>
   );
