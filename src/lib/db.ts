@@ -229,6 +229,17 @@ try { db.exec("ALTER TABLE users ADD COLUMN google_id TEXT"); } catch {}
 try { db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL"); } catch {}
 try { db.exec("ALTER TABLE briefs ADD COLUMN is_public INTEGER NOT NULL DEFAULT 0"); } catch {}
 
+// Email nurture tracking
+db.exec(`
+  CREATE TABLE IF NOT EXISTS email_nurture (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    touch INTEGER NOT NULL,
+    sent_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(user_id, touch)
+  );
+`);
+
 export function getBriefCountForUser(userId: string): number {
   const row = db.prepare("SELECT COUNT(*) as cnt FROM briefs WHERE user_id = ?").get(userId) as any;
   return row?.cnt ?? 0;
@@ -327,6 +338,31 @@ export function getAdminMetrics(): AdminMetrics {
   `).all() as Array<{ email: string; plan: string; created_at: string; brief_count: number }>;
 
   return { totalUsers, usersToday, totalBriefs, briefsToday, briefs7d, payingUsers, freeUsers, briefsPerUserDistribution, recentSignups };
+}
+
+/** Returns set of touch numbers (1,2,3) already sent to this user. */
+export function getNurtureSentTouches(userId: string): Set<number> {
+  const rows = db.prepare("SELECT touch FROM email_nurture WHERE user_id = ?").all(userId) as Array<{ touch: number }>;
+  return new Set(rows.map(r => r.touch));
+}
+
+/** Record that a nurture touch was sent. */
+export function markNurtureSent(userId: string, touch: number): void {
+  db.prepare(
+    "INSERT OR IGNORE INTO email_nurture (id, user_id, touch) VALUES (?, ?, ?)"
+  ).run(crypto.randomUUID(), userId, touch);
+}
+
+/** Get all free-plan users who have at least one brief, with their first brief date. */
+export function getFreeUsersWithBriefs(): Array<{ id: string; email: string; first_brief_at: string }> {
+  return db.prepare(`
+    SELECT u.id, u.email, MIN(b.created_at) as first_brief_at
+    FROM users u
+    JOIN briefs b ON b.user_id = u.id
+    LEFT JOIN subscriptions s ON s.user_id = u.id
+    WHERE COALESCE(s.plan, 'free') = 'free'
+    GROUP BY u.id
+  `).all() as Array<{ id: string; email: string; first_brief_at: string }>;
 }
 
 export default db;
