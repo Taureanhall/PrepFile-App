@@ -748,6 +748,16 @@ async function startServer() {
       title: "How to Prepare for a Goldman Sachs Interview | PrepFile",
       description: "Goldman Sachs interview prep: technical finance, markets knowledge, and Super Day strategy. Generate a personalized Goldman Sachs prep brief for your division in 10 minutes.",
     },
+    microsoft: {
+      name: "Microsoft",
+      title: "How to Prepare for a Microsoft Interview | PrepFile",
+      description: "Microsoft's loop ends with an As-Appropriate interview most candidates don't understand. Here's how the full process works, what growth mindset actually means in practice, and how the AA round can change your offer.",
+    },
+    apple: {
+      name: "Apple",
+      title: "How to Prepare for an Apple Interview | PrepFile",
+      description: "Apple's interview process has no standard format — each team runs its own loop. Here's what actually matters: the culture signals, the loop structure, and the one question that kills most candidates.",
+    },
   };
 
   // Helper: inject SEO meta tags for /interview-prep index page
