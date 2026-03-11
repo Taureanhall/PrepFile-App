@@ -8,6 +8,7 @@ import { MyBriefs } from "./components/MyBriefs";
 import { UpgradePrompt } from "./components/UpgradePrompt";
 import { LandingPage } from "./components/LandingPage";
 import { PublicBrief } from "./components/PublicBrief";
+import { InterviewPrepPage } from "./components/InterviewPrepPage";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin } from "./lib/analytics";
 
@@ -47,6 +48,12 @@ export default function Page() {
     return <PublicBrief briefId={publicBriefId} />;
   }
 
+  // Route: /interview-prep/:slug — SEO marketing pages
+  const interviewPrepSlug = window.location.pathname.match(/^\/interview-prep\/([^/]+)$/)?.[1] ?? null;
+  if (interviewPrepSlug) {
+    return <InterviewPrepPage slug={interviewPrepSlug} />;
+  }
+
   // Auth state
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -59,8 +66,9 @@ export default function Page() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
-  // Core Inputs
-  const [companyName, setCompanyName] = useState("");
+  // Core Inputs — pre-fill company from ?company= param (SEO page CTA)
+  const prefilledCompany = new URLSearchParams(window.location.search).get("company") ?? "";
+  const [companyName, setCompanyName] = useState(prefilledCompany);
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
 

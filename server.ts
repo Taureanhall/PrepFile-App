@@ -720,6 +720,66 @@ async function startServer() {
     res.send(html);
   });
 
+  // SEO page data for /interview-prep/:slug
+  const INTERVIEW_PREP_PAGES: Record<string, { title: string; description: string; name: string }> = {
+    google: {
+      name: "Google",
+      title: "How to Prepare for a Google Interview | PrepFile",
+      description: "Everything you need to know about Google's interview process: culture, hiring rounds, coding expectations, and system design. Generate a personalized Google prep brief in 10 minutes.",
+    },
+    amazon: {
+      name: "Amazon",
+      title: "How to Prepare for an Amazon Interview | PrepFile",
+      description: "Master Amazon's Leadership Principles, Bar Raiser process, and behavioral interview format. Generate a personalized Amazon prep brief with specific LP examples in 10 minutes.",
+    },
+    meta: {
+      name: "Meta",
+      title: "How to Prepare for a Meta Interview | PrepFile",
+      description: "Meta's interview process decoded: coding expectations, system design at scale, and behavioral format. Generate a personalized Meta prep brief with round-by-round strategy in 10 minutes.",
+    },
+    mckinsey: {
+      name: "McKinsey",
+      title: "How to Prepare for a McKinsey Interview | PrepFile",
+      description: "McKinsey case interview preparation: structured thinking, MECE frameworks, and PEI storytelling. Generate a personalized McKinsey prep brief tailored to your background in 10 minutes.",
+    },
+    "goldman-sachs": {
+      name: "Goldman Sachs",
+      title: "How to Prepare for a Goldman Sachs Interview | PrepFile",
+      description: "Goldman Sachs interview prep: technical finance, markets knowledge, and Super Day strategy. Generate a personalized Goldman Sachs prep brief for your division in 10 minutes.",
+    },
+  };
+
+  // Helper: inject SEO meta tags for /interview-prep/:slug pages
+  function injectInterviewPrepMeta(html: string, slug: string, appUrl: string): string {
+    const page = INTERVIEW_PREP_PAGES[slug];
+    if (!page) return html;
+
+    const url = `${appUrl}/interview-prep/${slug}`;
+    const schemaJson = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: `How to Prepare for a ${page.name} Interview`,
+      description: page.description,
+      url,
+      publisher: {
+        "@type": "Organization",
+        name: "PrepFile",
+        url: appUrl,
+      },
+    });
+
+    return html
+      .replace(/<title>[^<]*<\/title>/, `<title>${page.title}</title>`)
+      .replace(/(<meta\s+name="description"\s+content=")[^"]*(")/g, `$1${page.description}$2`)
+      .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/g, `$1${page.title}$2`)
+      .replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/g, `$1${page.description}$2`)
+      .replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/g, `$1${url}$2`)
+      .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/g, `$1${page.title}$2`)
+      .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/g, `$1${page.description}$2`)
+      .replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/g, `$1${url}$2`)
+      .replace("</head>", `<script type="application/ld+json">${schemaJson}</script>\n</head>`);
+  }
+
   // Helper: inject dynamic OG meta tags into an HTML template for /b/:id brief share pages
   function injectBriefOgTags(html: string, briefId: string, appUrl: string): string {
     const meta = getPublicBriefMeta(briefId);
@@ -739,6 +799,24 @@ async function startServer() {
       .replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/g, `$1${url}$2`);
   }
 
+  // Sitemap
+  app.get("/sitemap.xml", (_req, res) => {
+    const slugs = Object.keys(INTERVIEW_PREP_PAGES);
+    const urls = [
+      `<url><loc>${APP_URL}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>`,
+      ...slugs.map(
+        (slug) =>
+          `<url><loc>${APP_URL}/interview-prep/${slug}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>`
+      ),
+    ].join("\n  ");
+
+    res.setHeader("Content-Type", "application/xml");
+    res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  ${urls}
+</urlset>`);
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -757,6 +835,17 @@ async function startServer() {
       }
     });
 
+    // Intercept /interview-prep/:slug to inject SEO meta tags
+    app.get("/interview-prep/:slug", async (req, res, next) => {
+      try {
+        const template = await vite.transformIndexHtml(req.url, (await import("fs")).readFileSync("index.html", "utf-8"));
+        const html = injectInterviewPrepMeta(template, req.params.slug, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch {
+        next();
+      }
+    });
+
     app.use(vite.middlewares);
   } else {
     app.use(express.static("dist"));
@@ -767,6 +856,15 @@ async function startServer() {
       const indexPath = (require("path") as typeof import("path")).join(process.cwd(), "dist", "index.html");
       const template = fs.readFileSync(indexPath, "utf-8");
       const html = injectBriefOgTags(template, req.params.id, APP_URL);
+      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+    });
+
+    // Intercept /interview-prep/:slug to inject SEO meta tags
+    app.get("/interview-prep/:slug", (req, res) => {
+      const fs = require("fs") as typeof import("fs");
+      const indexPath = (require("path") as typeof import("path")).join(process.cwd(), "dist", "index.html");
+      const template = fs.readFileSync(indexPath, "utf-8");
+      const html = injectInterviewPrepMeta(template, req.params.slug, APP_URL);
       res.status(200).set({ "Content-Type": "text/html" }).end(html);
     });
 
