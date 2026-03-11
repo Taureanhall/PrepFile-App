@@ -1,7 +1,72 @@
+import { useEffect } from "react";
 import { COMPANIES } from "./InterviewPrepPage";
 
 export function InterviewPrepIndex() {
   const companies = Object.values(COMPANIES);
+
+  useEffect(() => {
+    const title = "Company Interview Prep Guides | PrepFile";
+    const description =
+      "Browse interview prep guides for Google, Amazon, Meta, Microsoft, Apple, and more. Detailed breakdowns of culture, rounds, and what interviewers actually evaluate.";
+    const canonicalUrl = "https://prepfile.app/interview-prep";
+
+    document.title = title;
+
+    const setMeta = (attr: string, val: string, isName = false) => {
+      const sel = isName ? `meta[name="${attr}"]` : `meta[property="${attr}"]`;
+      let el = document.head.querySelector(sel) as HTMLMetaElement | null;
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(isName ? "name" : "property", attr);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", val);
+    };
+
+    setMeta("description", description, true);
+    setMeta("og:title", title);
+    setMeta("og:description", description);
+    setMeta("og:url", canonicalUrl);
+    setMeta("twitter:title", title, true);
+    setMeta("twitter:description", description, true);
+
+    // Canonical link
+    let canonical = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute("href", canonicalUrl);
+
+    // Schema.org ItemList
+    const schemaId = "schema-interview-prep-index";
+    document.getElementById(schemaId)?.remove();
+    const script = document.createElement("script");
+    script.id = schemaId;
+    script.type = "application/ld+json";
+    script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Company Interview Prep Guides",
+      description,
+      url: canonicalUrl,
+      itemListElement: companies.map((co, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: co.tagline,
+        url: `https://prepfile.app/interview-prep/${co.slug}`,
+        description: co.metaDescription,
+      })),
+    });
+    document.head.appendChild(script);
+
+    return () => {
+      document.title = "PrepFile — AI Interview Prep Briefs";
+      document.getElementById(schemaId)?.remove();
+      document.head.querySelector('link[rel="canonical"]')?.remove();
+    };
+  }, []);
 
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans">

@@ -145,6 +145,34 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         </div>
       </section>
 
+      {/* Company Interview Prep Guides */}
+      <section className="max-w-4xl mx-auto px-6 py-16">
+        <h2 className="text-2xl font-bold text-center text-zinc-900 mb-3">Company Interview Prep Guides</h2>
+        <p className="text-center text-zinc-500 mb-10">Free, detailed breakdowns of how top companies hire.</p>
+        <div className="grid sm:grid-cols-5 gap-3 mb-6">
+          {[
+            { name: "Google", slug: "google" },
+            { name: "Amazon", slug: "amazon" },
+            { name: "Meta", slug: "meta" },
+            { name: "Microsoft", slug: "microsoft" },
+            { name: "Apple", slug: "apple" },
+          ].map(({ name, slug }) => (
+            <a
+              key={slug}
+              href={`/interview-prep/${slug}`}
+              className="flex items-center justify-center py-3 px-4 bg-white border border-zinc-200 rounded-xl text-sm font-medium text-zinc-700 hover:border-zinc-400 hover:text-zinc-900 transition-colors text-center"
+            >
+              {name}
+            </a>
+          ))}
+        </div>
+        <div className="text-center">
+          <a href="/interview-prep" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
+            See all company guides →
+          </a>
+        </div>
+      </section>
+
       {/* Footer CTA */}
       <section className="bg-zinc-900 text-white py-16">
         <div className="max-w-3xl mx-auto px-6 text-center">
