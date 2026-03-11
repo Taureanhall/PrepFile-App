@@ -218,6 +218,51 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         </div>
       </section>
 
+      {/* Prep by Role */}
+      <section className="max-w-4xl mx-auto px-6 py-16">
+        <h2 className="text-2xl font-bold text-center text-zinc-900 mb-3">Prep by Role</h2>
+        <p className="text-center text-zinc-500 mb-10">Tailored interview advice for your career path.</p>
+        <div className="grid sm:grid-cols-5 gap-3">
+          {[
+            { name: "Product Management", slug: "pm" },
+            { name: "Software Engineering", slug: "swe" },
+            { name: "Data Science", slug: "data-science" },
+            { name: "Consulting", slug: "consulting" },
+            { name: "Finance", slug: "finance" },
+          ].map(({ name, slug }) => (
+            <a
+              key={slug}
+              href={`/interview-prep/roles/${slug}`}
+              className="flex items-center justify-center py-3 px-4 bg-white border border-zinc-200 rounded-xl text-sm font-medium text-zinc-700 hover:border-zinc-400 hover:text-zinc-900 transition-colors text-center"
+            >
+              {name}
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* Segment Pages */}
+      <section className="max-w-4xl mx-auto px-6 pb-16">
+        <h2 className="text-2xl font-bold text-center text-zinc-900 mb-3">Built For You</h2>
+        <p className="text-center text-zinc-500 mb-10">Interview prep tailored to where you are in your career.</p>
+        <div className="grid sm:grid-cols-3 gap-4">
+          {[
+            { name: "New Graduates", slug: "new-grads", desc: "Landing your first role after school" },
+            { name: "Career Changers", slug: "career-changers", desc: "Pivoting into a new industry or function" },
+            { name: "Experienced Pros", slug: "experienced", desc: "Leveling up to senior and leadership roles" },
+          ].map(({ name, slug, desc }) => (
+            <a
+              key={slug}
+              href={`/for/${slug}`}
+              className="bg-white border border-zinc-200 rounded-xl p-5 hover:border-zinc-400 transition-colors"
+            >
+              <h3 className="font-semibold text-zinc-900 mb-1">{name}</h3>
+              <p className="text-sm text-zinc-500">{desc}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+
       {/* Footer CTA */}
       <section className="bg-zinc-900 text-white py-16">
         <div className="max-w-3xl mx-auto px-6 text-center">
@@ -231,6 +276,18 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
           </button>
         </div>
       </section>
+
+      {/* Footer Nav */}
+      <footer className="border-t border-zinc-800 bg-zinc-900 text-zinc-400 py-10">
+        <div className="max-w-4xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <span className="text-sm">&copy; {new Date().getFullYear()} PrepFile</span>
+          <nav className="flex gap-6 text-sm">
+            <a href="/interview-prep" className="hover:text-white transition-colors">Interview Guides</a>
+            <a href="/blog" className="hover:text-white transition-colors">Blog</a>
+            <a href="/faq" className="hover:text-white transition-colors">FAQ</a>
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }

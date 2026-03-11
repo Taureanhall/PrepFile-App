@@ -143,9 +143,35 @@ export function InterviewPrepIndex() {
           </a>
         </div>
 
+        {/* Prep by Role */}
+        <div className="mt-12">
+          <h2 className="text-xl font-bold text-zinc-900 mb-4">Prep by Role</h2>
+          <div className="grid sm:grid-cols-5 gap-3">
+            {[
+              { name: "Product Management", slug: "pm" },
+              { name: "Software Engineering", slug: "swe" },
+              { name: "Data Science", slug: "data-science" },
+              { name: "Consulting", slug: "consulting" },
+              { name: "Finance", slug: "finance" },
+            ].map(({ name, slug }) => (
+              <a
+                key={slug}
+                href={`/interview-prep/roles/${slug}`}
+                className="flex items-center justify-center py-3 px-4 bg-white border border-zinc-200 rounded-xl text-sm font-medium text-zinc-700 hover:border-zinc-400 hover:text-zinc-900 transition-colors text-center"
+              >
+                {name}
+              </a>
+            ))}
+          </div>
+        </div>
+
         {/* Footer */}
-        <div className="pt-8 border-t border-zinc-200 text-sm text-zinc-400">
+        <div className="pt-8 mt-8 border-t border-zinc-200 flex justify-between items-center text-sm text-zinc-400">
           <a href="/" className="hover:text-zinc-600 transition-colors">← Back to PrepFile</a>
+          <nav className="flex gap-4">
+            <a href="/blog" className="hover:text-zinc-600 transition-colors">Blog</a>
+            <a href="/faq" className="hover:text-zinc-600 transition-colors">FAQ</a>
+          </nav>
         </div>
       </main>
     </div>
