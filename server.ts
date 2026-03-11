@@ -750,6 +750,24 @@ async function startServer() {
     },
   };
 
+  // Helper: inject SEO meta tags for /interview-prep index page
+  function injectInterviewPrepIndexMeta(html: string, appUrl: string): string {
+    const title = "Company Interview Prep Guides | PrepFile";
+    const description =
+      "Detailed interview prep guides for Google, Amazon, Meta, McKinsey, Goldman Sachs, and more. Learn the culture, hiring process, and what interviewers actually evaluate.";
+    const url = `${appUrl}/interview-prep`;
+
+    return html
+      .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
+      .replace(/(<meta\s+name="description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
+      .replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/g, `$1${url}$2`)
+      .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
+      .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/g, `$1${url}$2`);
+  }
+
   // Helper: inject SEO meta tags for /interview-prep/:slug pages
   function injectInterviewPrepMeta(html: string, slug: string, appUrl: string): string {
     const page = INTERVIEW_PREP_PAGES[slug];
@@ -805,6 +823,7 @@ async function startServer() {
     const slugs = Object.keys(INTERVIEW_PREP_PAGES);
     const urls = [
       `<url><loc>${APP_URL}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>`,
+      `<url><loc>${APP_URL}/interview-prep</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>`,
       ...slugs.map(
         (slug) =>
           `<url><loc>${APP_URL}/interview-prep/${slug}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>`
@@ -836,6 +855,17 @@ async function startServer() {
       }
     });
 
+    // Intercept /interview-prep (index) to inject SEO meta tags
+    app.get("/interview-prep", async (req, res, next) => {
+      try {
+        const template = await vite.transformIndexHtml(req.url, (await import("fs")).readFileSync("index.html", "utf-8"));
+        const html = injectInterviewPrepIndexMeta(template, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch {
+        next();
+      }
+    });
+
     // Intercept /interview-prep/:slug to inject SEO meta tags
     app.get("/interview-prep/:slug", async (req, res, next) => {
       try {
@@ -857,6 +887,15 @@ async function startServer() {
       const indexPath = (require("path") as typeof import("path")).join(process.cwd(), "dist", "index.html");
       const template = fs.readFileSync(indexPath, "utf-8");
       const html = injectBriefOgTags(template, req.params.id, APP_URL);
+      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+    });
+
+    // Intercept /interview-prep (index) to inject SEO meta tags
+    app.get("/interview-prep", (req, res) => {
+      const fs = require("fs") as typeof import("fs");
+      const indexPath = (require("path") as typeof import("path")).join(process.cwd(), "dist", "index.html");
+      const template = fs.readFileSync(indexPath, "utf-8");
+      const html = injectInterviewPrepIndexMeta(template, APP_URL);
       res.status(200).set({ "Content-Type": "text/html" }).end(html);
     });
 

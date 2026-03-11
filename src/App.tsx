@@ -9,6 +9,7 @@ import { UpgradePrompt } from "./components/UpgradePrompt";
 import { LandingPage } from "./components/LandingPage";
 import { PublicBrief } from "./components/PublicBrief";
 import { InterviewPrepPage } from "./components/InterviewPrepPage";
+import { InterviewPrepIndex } from "./components/InterviewPrepIndex";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin } from "./lib/analytics";
 
@@ -46,6 +47,11 @@ export default function Page() {
   const publicBriefId = window.location.pathname.match(/^\/b\/([^/]+)$/)?.[1] ?? null;
   if (publicBriefId) {
     return <PublicBrief briefId={publicBriefId} />;
+  }
+
+  // Route: /interview-prep — index listing all company guides
+  if (window.location.pathname === "/interview-prep") {
+    return <InterviewPrepIndex />;
   }
 
   // Route: /interview-prep/:slug — SEO marketing pages
