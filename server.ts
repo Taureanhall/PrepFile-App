@@ -976,6 +976,56 @@ async function startServer() {
     },
   };
 
+  // Segment landing page SEO data
+  const SEGMENT_PAGES: Record<string, { title: string; description: string }> = {
+    "new-grads": {
+      title: "Interview Prep for New Graduates | PrepFile",
+      description: "Walk into your first interview knowing exactly what they're looking for. PrepFile generates a personalized brief covering company culture, interview format, and what skills they'll probe — in 10 minutes.",
+    },
+    "career-changers": {
+      title: "Interview Prep for Career Changers | PrepFile",
+      description: "Switching industries? PrepFile maps your background to what your target company actually looks for — and closes the gaps before your interview.",
+    },
+    "experienced": {
+      title: "Interview Prep for Experienced Professionals | PrepFile",
+      description: "10 minutes of prep that makes you the best-informed person in the room. PrepFile generates a complete briefing on the company, role, and interview format.",
+    },
+  };
+
+  // Helper: inject SEO meta tags for /faq page
+  function injectFaqMeta(html: string, appUrl: string): string {
+    const title = "Frequently Asked Questions | PrepFile";
+    const description = "Common questions about PrepFile — how it works, pricing tiers, what's included in free vs. Pro, and how to get started.";
+    const url = `${appUrl}/faq`;
+
+    return html
+      .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
+      .replace(/(<meta\s+name="description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
+      .replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/g, `$1${url}$2`)
+      .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
+      .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/g, `$1${url}$2`);
+  }
+
+  // Helper: inject SEO meta tags for /for/:slug segment pages
+  function injectSegmentMeta(html: string, slug: string, appUrl: string): string {
+    const segment = SEGMENT_PAGES[slug];
+    if (!segment) return html;
+
+    const url = `${appUrl}/for/${slug}`;
+    return html
+      .replace(/<title>[^<]*<\/title>/, `<title>${segment.title}</title>`)
+      .replace(/(<meta\s+name="description"\s+content=")[^"]*(")/g, `$1${segment.description}$2`)
+      .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/g, `$1${segment.title}$2`)
+      .replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/g, `$1${segment.description}$2`)
+      .replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/g, `$1${url}$2`)
+      .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/g, `$1${segment.title}$2`)
+      .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/g, `$1${segment.description}$2`)
+      .replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/g, `$1${url}$2`);
+  }
+
   // Helper: inject SEO meta tags for /blog index page
   function injectBlogIndexMeta(html: string, appUrl: string): string {
     const title = "Interview Prep Blog | PrepFile";
@@ -1097,6 +1147,7 @@ async function startServer() {
   app.get("/sitemap.xml", (_req, res) => {
     const slugs = Object.keys(INTERVIEW_PREP_PAGES);
     const blogSlugs = Object.keys(BLOG_ARTICLES);
+    const segmentSlugs = Object.keys(SEGMENT_PAGES);
     const urls = [
       `<url><loc>${APP_URL}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>`,
       `<url><loc>${APP_URL}/interview-prep</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>`,
@@ -1108,6 +1159,11 @@ async function startServer() {
       ...blogSlugs.map(
         (slug) =>
           `<url><loc>${APP_URL}/blog/${slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`
+      ),
+      `<url><loc>${APP_URL}/faq</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`,
+      ...segmentSlugs.map(
+        (slug) =>
+          `<url><loc>${APP_URL}/for/${slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`
       ),
     ].join("\n  ");
 
@@ -1180,6 +1236,28 @@ async function startServer() {
       }
     });
 
+    // Intercept /faq to inject SEO meta tags
+    app.get("/faq", async (req, res, next) => {
+      try {
+        const template = await vite.transformIndexHtml(req.url, (await import("fs")).readFileSync("index.html", "utf-8"));
+        const html = injectFaqMeta(template, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch {
+        next();
+      }
+    });
+
+    // Intercept /for/:slug to inject SEO meta tags
+    app.get("/for/:slug", async (req, res, next) => {
+      try {
+        const template = await vite.transformIndexHtml(req.url, (await import("fs")).readFileSync("index.html", "utf-8"));
+        const html = injectSegmentMeta(template, req.params.slug, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch {
+        next();
+      }
+    });
+
     app.use(vite.middlewares);
   } else {
     app.use(express.static("dist"));
@@ -1219,6 +1297,32 @@ async function startServer() {
         res.status(200).set({ "Content-Type": "text/html" }).end(html);
       } catch (err) {
         console.error("[/interview-prep/:slug] Failed to render:", err);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    // Intercept /faq to inject SEO meta tags
+    app.get("/faq", (req, res) => {
+      try {
+        const indexPath = path.join(process.cwd(), "dist", "index.html");
+        const template = fs.readFileSync(indexPath, "utf-8");
+        const html = injectFaqMeta(template, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch (err) {
+        console.error("[/faq] Failed to render:", err);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    // Intercept /for/:slug to inject SEO meta tags
+    app.get("/for/:slug", (req, res) => {
+      try {
+        const indexPath = path.join(process.cwd(), "dist", "index.html");
+        const template = fs.readFileSync(indexPath, "utf-8");
+        const html = injectSegmentMeta(template, req.params.slug, APP_URL);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch (err) {
+        console.error("[/for/:slug] Failed to render:", err);
         res.status(500).send("Internal Server Error");
       }
     });

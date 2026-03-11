@@ -56,3 +56,13 @@ export function trackAbVariant(variantId: string) {
   if (!POSTHOG_KEY) return;
   posthog.capture("ab_variant_shown", { variant_id: variantId, experiment: "landing_headline_v1" });
 }
+
+export function trackUpgradeCTAShown(variantId: string) {
+  if (!POSTHOG_KEY) return;
+  posthog.capture("upgrade_cta_shown", { variant: variantId });
+}
+
+export function trackUpgradeCTAClicked(variantId: string) {
+  if (!POSTHOG_KEY) return;
+  posthog.capture("upgrade_cta_clicked", { variant: variantId });
+}
