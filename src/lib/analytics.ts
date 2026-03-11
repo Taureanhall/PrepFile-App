@@ -27,9 +27,24 @@ export function trackPageView() {
   posthog.capture("page_view");
 }
 
-export function trackBriefGenerated(company: string, jobTitle: string) {
+export function trackBriefGenerated(companyName: string, jobTitle: string, userTier: string, isAuthenticated: boolean) {
   if (!POSTHOG_KEY) return;
-  posthog.capture("brief_generated", { company, job_title: jobTitle });
+  posthog.capture("brief_generated", { company_name: companyName, job_title: jobTitle, user_tier: userTier, is_authenticated: isAuthenticated });
+}
+
+export function trackUpgradeClicked(location: string, plan: string) {
+  if (!POSTHOG_KEY) return;
+  posthog.capture("upgrade_clicked", { location, plan });
+}
+
+export function trackSignupCompleted(method: string) {
+  if (!POSTHOG_KEY) return;
+  posthog.capture("signup_completed", { method });
+}
+
+export function trackSeoPageViewed(companySlug: string, pageType: string) {
+  if (!POSTHOG_KEY) return;
+  posthog.capture("seo_page_viewed", { company_slug: companySlug, page_type: pageType });
 }
 
 export function trackLogin() {

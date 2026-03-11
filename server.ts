@@ -355,7 +355,7 @@ async function startServer() {
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
       res.clearCookie("free_brief_used");
-      res.redirect("/");
+      res.redirect("/?auth_method=google");
     } catch (err: any) {
       console.error("Google OAuth error:", err);
       res.status(500).send("Google sign-in failed. Please try again.");
@@ -958,6 +958,21 @@ async function startServer() {
       title: "Why Most Interview Prep Advice Is Wrong | PrepFile",
       description: "The standard interview prep advice — practice questions, use STAR format, do mock interviews — isn't wrong. It just optimizes for the wrong constraint.",
       keywords: "how to actually prepare for interviews, interview prep advice, effective interview preparation",
+    },
+    "complete-interview-prep-checklist-2026": {
+      title: "The Complete Interview Prep Checklist (2026) | PrepFile",
+      description: "A step-by-step interview prep checklist covering company research, role alignment, behavioral prep, logistics, and the day-of routine — so nothing falls through the cracks.",
+      keywords: "interview prep checklist, how to prepare for an interview, job interview checklist, interview preparation steps",
+    },
+    "behavioral-interview-questions": {
+      title: "Top 30 Behavioral Interview Questions | PrepFile",
+      description: "The 30 behavioral interview questions that come up most often — what interviewers are actually asking, and how to structure your answer using the STAR method.",
+      keywords: "behavioral interview questions, common behavioral interview questions, how to answer behavioral interview questions",
+    },
+    "star-method-interview": {
+      title: "The STAR Method for Interview Answers | PrepFile",
+      description: "The STAR method — Situation, Task, Action, Result — is the standard framework for behavioral interviews. Here's how to use it correctly, and why most candidates get it wrong.",
+      keywords: "STAR method interview, STAR interview technique, how to use STAR method, STAR format behavioral interview",
     },
   };
 

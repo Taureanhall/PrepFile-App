@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { trackSeoPageViewed } from "../lib/analytics";
 import { content as googleContent } from "../marketing/content/google";
 import { content as amazonContent } from "../marketing/content/amazon";
 import { content as metaContent } from "../marketing/content/meta";
@@ -307,6 +308,14 @@ export function InterviewPrepPage({ slug }: InterviewPrepPageProps) {
 
   useEffect(() => {
     if (!data) return;
+
+    // Determine page type: comparison pages have "prepfile-vs-" prefix
+    const pageType = slug.startsWith("prepfile-vs-") ? "comparison" : (
+      ["data-scientist", "marketing-manager", "product-manager", "software-engineer",
+       "ux-designer", "data-engineer", "business-analyst", "management-consultant",
+       "investment-banking-analyst", "devops-sre-engineer"].includes(slug) ? "role" : "company"
+    );
+    trackSeoPageViewed(slug, pageType);
 
     const canonicalUrl = `https://prepfile.app/interview-prep/${data.slug}`;
 
