@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 interface CompanyData {
   name: string;
   slug: string;
@@ -181,6 +183,76 @@ interface InterviewPrepPageProps {
 
 export function InterviewPrepPage({ slug }: InterviewPrepPageProps) {
   const data = COMPANIES[slug];
+
+  useEffect(() => {
+    if (!data) return;
+
+    const canonicalUrl = `https://prepfile.app/interview-prep/${data.slug}`;
+
+    document.title = data.metaTitle;
+
+    const setMeta = (attr: string, val: string, isName = false) => {
+      const sel = isName ? `meta[name="${attr}"]` : `meta[property="${attr}"]`;
+      let el = document.head.querySelector(sel) as HTMLMetaElement | null;
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(isName ? "name" : "property", attr);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", val);
+    };
+
+    setMeta("description", data.metaDescription, true);
+    setMeta("og:title", data.metaTitle);
+    setMeta("og:description", data.metaDescription);
+    setMeta("og:url", canonicalUrl);
+    setMeta("twitter:title", data.metaTitle, true);
+    setMeta("twitter:description", data.metaDescription, true);
+
+    // Inject canonical link
+    let canonical = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute("href", canonicalUrl);
+
+    // Inject HowTo schema markup
+    const schemaId = "interview-prep-schema";
+    let schemaEl = document.getElementById(schemaId) as HTMLScriptElement | null;
+    if (!schemaEl) {
+      schemaEl = document.createElement("script");
+      schemaEl.id = schemaId;
+      schemaEl.setAttribute("type", "application/ld+json");
+      document.head.appendChild(schemaEl);
+    }
+    schemaEl.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      name: data.metaTitle,
+      description: data.metaDescription,
+      url: canonicalUrl,
+      publisher: {
+        "@type": "Organization",
+        name: "PrepFile",
+        url: "https://prepfile.app",
+      },
+      step: [
+        { "@type": "HowToStep", name: data.culture.heading, text: data.culture.body },
+        { "@type": "HowToStep", name: data.hiring.heading, text: data.hiring.body },
+        { "@type": "HowToStep", name: data.lookFor.heading, text: data.lookFor.body },
+        ...data.tips.map((tip, i) => ({ "@type": "HowToStep", name: `Tip ${i + 1}`, text: tip })),
+      ],
+    });
+
+    return () => {
+      document.title = "PrepFile — AI Interview Prep Briefs";
+      document.getElementById(schemaId)?.remove();
+      document.head.querySelector('link[rel="canonical"]')?.remove();
+    };
+  }, [slug, data]);
+
   if (!data) return null;
 
   const ctaUrl = `/?company=${encodeURIComponent(data.ctaCompany)}`;
