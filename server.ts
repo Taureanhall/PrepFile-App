@@ -775,6 +775,41 @@ async function startServer() {
       title: "How to Prepare for a Deloitte Interview | PrepFile",
       description: "Deloitte's case interviews are candidate-led, not interviewer-led — the opposite of McKinsey. The group exercise is real and evaluated. Here's what the process actually looks like across Consulting, Advisory, and Audit.",
     },
+    bcg: {
+      name: "BCG",
+      title: "How to Prepare for a BCG Interview | PrepFile",
+      description: "BCG case interviews are candidate-led, not interviewer-led. Understand the full process: online assessment, PEI, written case, and what evaluators score. Generate a personalized BCG prep brief in 10 minutes.",
+    },
+    uber: {
+      name: "Uber",
+      title: "How to Prepare for an Uber Interview | PrepFile",
+      description: "Uber's system design rounds are domain-specific: ride matching, surge pricing, real-time geo at scale. Here's the full loop, what interviewers score, and how to prep for each round.",
+    },
+    "software-engineer": {
+      name: "Software Engineer",
+      title: "Software Engineer Interview Prep Guide | PrepFile",
+      description: "Crack your software engineer interview: understand coding round formats, what interviewers actually evaluate, and how to prep for behavioral rounds. Get a personalized prep brief in minutes.",
+    },
+    "product-manager": {
+      name: "Product Manager",
+      title: "Product Manager Interview Prep Guide | PrepFile",
+      description: "Prepare for your PM interview: product sense rounds, analytical cases, behavioral questions, and what top companies look for in product managers. Get a personalized prep brief in minutes.",
+    },
+    "data-scientist": {
+      name: "Data Scientist",
+      title: "Data Scientist Interview Prep Guide | PrepFile",
+      description: "Ace your data science interview: SQL rounds, statistics questions, ML system design, and what hiring managers look for in DS candidates. Get a personalized prep brief in minutes.",
+    },
+    "ux-designer": {
+      name: "UX Designer",
+      title: "UX Designer Interview Prep Guide | PrepFile",
+      description: "Prepare for your UX design interview: portfolio presentation tips, design challenge strategy, whiteboard exercises, and what hiring managers look for in UX candidates. Get a personalized prep brief in minutes.",
+    },
+    "marketing-manager": {
+      name: "Marketing Manager",
+      title: "Marketing Manager Interview Prep Guide | PrepFile",
+      description: "Ace your marketing manager interview: campaign strategy questions, metrics rounds, behavioral assessments, and what hiring managers look for in marketing candidates. Get a personalized prep brief in minutes.",
+    },
   };
 
   // Helper: inject SEO meta tags for /interview-prep index page

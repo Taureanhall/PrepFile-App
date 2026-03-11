@@ -1,4 +1,9 @@
 import { useEffect } from "react";
+import { content as googleContent } from "../marketing/content/google";
+import { content as amazonContent } from "../marketing/content/amazon";
+import { content as metaContent } from "../marketing/content/meta";
+import { content as appleContent } from "../marketing/content/apple";
+import { content as microsoftContent } from "../marketing/content/microsoft";
 
 interface CompanyData {
   name: string;
@@ -15,102 +20,11 @@ interface CompanyData {
 }
 
 const COMPANIES: Record<string, CompanyData> = {
-  google: {
-    name: "Google",
-    slug: "google",
-    tagline: "How to Prepare for a Google Interview",
-    metaTitle: "How to Prepare for a Google Interview | PrepFile",
-    metaDescription:
-      "Everything you need to know about Google's interview process: culture, hiring rounds, coding expectations, and system design. Generate a personalized Google prep brief in 10 minutes.",
-    intro:
-      "Google receives millions of applications each year and runs one of the most rigorous technical hiring processes in the industry. Preparation isn't optional — it's the difference between an offer and a rejection.",
-    culture: {
-      heading: "Google's Culture",
-      body:
-        "Google values intellectual curiosity, comfort with ambiguity, and what they call \"Googleyness\" — a mix of passion, humility, and collaborative drive. Data-driven decision-making is deeply embedded: interviewers expect you to reason from first principles and back hypotheses with structure. Psychological safety is valued; showing how you handle being wrong is as important as being right.",
-    },
-    hiring: {
-      heading: "The Hiring Process",
-      body:
-        "Google's interview loop typically involves a recruiter screen, one or two technical phone screens, and a full onsite (now often virtual) with four to five interviews. Rounds include coding (two to three), system design (one), and behavioral (one or two). The hiring committee, not just your interviewer panel, makes the final call — your written feedback packet matters as much as the live impression.",
-    },
-    lookFor: {
-      heading: "What Google Looks For",
-      body:
-        "Coding rounds focus on LeetCode-style algorithmic problems: arrays, graphs, dynamic programming, and search. System design rounds test your ability to design scalable distributed systems at Google scale (think: YouTube search, Gmail storage). Behavioral questions follow a loose STAR format with emphasis on impact and collaboration. Interviewers also look for clear communication — thinking out loud is expected, not optional.",
-    },
-    tips: [
-      "Practice explaining your thought process before writing any code",
-      "For system design, start with requirements, then capacity, then architecture",
-      "Prepare two or three strong examples of large-scope impact for behavioral rounds",
-      "Ask clarifying questions — rushing to a solution before understanding the problem is a red flag",
-    ],
-    ctaCompany: "Google",
-  },
-  amazon: {
-    name: "Amazon",
-    slug: "amazon",
-    tagline: "How to Prepare for an Amazon Interview",
-    metaTitle: "How to Prepare for an Amazon Interview | PrepFile",
-    metaDescription:
-      "Master Amazon's Leadership Principles, Bar Raiser process, and behavioral interview format. Generate a personalized Amazon prep brief with specific LP examples in 10 minutes.",
-    intro:
-      "Amazon's interview process is unlike any other. Before you practice a single LeetCode problem, you need to understand the Leadership Principles — they are the lens through which every decision, story, and answer is evaluated.",
-    culture: {
-      heading: "Amazon's Culture",
-      body:
-        "Amazon runs on 16 Leadership Principles (LPs), from Customer Obsession and Bias for Action to Frugality and Earn Trust. These aren't corporate slogans — interviewers are explicitly trained to assess each LP during the loop. Decisions are justified by connecting them to one or more LPs. Amazon's culture is intensely data-driven, fast-moving, and comfortable with a high degree of ownership at every level.",
-    },
-    hiring: {
-      heading: "The Hiring Process",
-      body:
-        "The process typically includes a recruiter screen, an online assessment (OA) for technical roles, one or two phone screens, and a full loop of four to seven interviews. One interviewer in every loop is the Bar Raiser — an independent evaluator with veto power whose job is to raise the overall hiring bar. Bar Raisers often focus on behavioral depth and LP consistency. Decisions are made by consensus, but a Bar Raiser objection can block an offer.",
-    },
-    lookFor: {
-      heading: "What Amazon Looks For",
-      body:
-        "Behavioral interviews at Amazon are structured around the STAR format (Situation, Task, Action, Result), and you should have two to three distinct stories prepared for each LP. Interviewers will probe for specificity: vague answers fail. Technical rounds cover coding (arrays, trees, graphs) and for senior roles, system design at Amazon scale. Ownership signals — moments where you took initiative beyond your defined scope — are heavily weighted.",
-    },
-    tips: [
-      "Prepare at least two STAR stories for Customer Obsession, Ownership, Deliver Results, and Bias for Action",
-      "Use real numbers in your stories — \"reduced latency by 40%\" beats \"improved performance\"",
-      "For system design, discuss trade-offs explicitly; Amazon values frugality in architecture decisions",
-      "The Bar Raiser will push back — practice holding your position with data, not capitulating under pressure",
-    ],
-    ctaCompany: "Amazon",
-  },
-  meta: {
-    name: "Meta",
-    slug: "meta",
-    tagline: "How to Prepare for a Meta Interview",
-    metaTitle: "How to Prepare for a Meta Interview | PrepFile",
-    metaDescription:
-      "Meta's interview process decoded: coding expectations, system design at scale, and behavioral format. Generate a personalized Meta prep brief with round-by-round strategy in 10 minutes.",
-    intro:
-      "Meta moves fast and expects engineers who can keep up. The interview process is technically demanding, but what sets Meta apart is the emphasis on cross-functional collaboration and product sense — even in engineering roles.",
-    culture: {
-      heading: "Meta's Culture",
-      body:
-        "Meta's operating principles center on moving fast, building for impact, and being direct. The company has a famously flat organizational structure and rewards engineers who ship, not those who plan endlessly. Data drives all major product decisions, and a bias toward building fast — even at the risk of breaking things — remains core to how teams operate. Engineers are expected to have opinions on product direction, not just technical execution.",
-    },
-    hiring: {
-      heading: "The Hiring Process",
-      body:
-        "Meta's loop includes a recruiter screen, one or two coding phone screens, and a full virtual onsite of four to five interviews: two coding rounds, one system design round, one behavioral round, and sometimes a product sense or cross-functional round for senior candidates. The process is relatively standardized and moves quickly once the loop begins — Meta typically closes within two weeks of the full loop.",
-    },
-    lookFor: {
-      heading: "What Meta Looks For",
-      body:
-        "Coding rounds at Meta are LeetCode-hard in difficulty and emphasize clean, production-quality code — not just a working solution. System design questions focus on large-scale distributed systems (news feed, messaging at billions of users) with explicit trade-off discussion. Behavioral rounds use a modified STAR format and probe for collaboration, cross-functional influence, and specific examples of impact. Meta interviewers respond well to candidates who show strong engineering judgment, not just pattern matching.",
-    },
-    tips: [
-      "Practice LeetCode hard problems, especially graphs, dynamic programming, and sliding window patterns",
-      "For system design, always quantify scale (DAUs, QPS) before diving into architecture",
-      "Prepare examples of working through disagreement with another team or function",
-      "Show product thinking: why does this feature matter, who does it serve, what's the trade-off?",
-    ],
-    ctaCompany: "Meta",
-  },
+  google: googleContent,
+  amazon: amazonContent,
+  meta: metaContent,
+  microsoft: microsoftContent,
+  apple: appleContent,
   mckinsey: {
     name: "McKinsey",
     slug: "mckinsey",
@@ -175,69 +89,168 @@ const COMPANIES: Record<string, CompanyData> = {
     ],
     ctaCompany: "Goldman Sachs",
   },
-  microsoft: {
-    name: "Microsoft",
-    slug: "microsoft",
-    tagline: "How to Prepare for a Microsoft Interview",
-    metaTitle: "How to Prepare for a Microsoft Interview | PrepFile",
+  netflix: {
+    name: "Netflix",
+    slug: "netflix",
+    tagline: "How to Prepare for a Netflix Interview",
+    metaTitle: "How to Prepare for a Netflix Interview | PrepFile",
     metaDescription:
-      "Microsoft's loop ends with an As-Appropriate interview most candidates don't understand. Here's how the full process works, what growth mindset actually means in practice, and how the AA round can change your offer.",
+      "Netflix's hiring bar is uniquely high — and uniquely different. Culture alignment, autonomous decision-making, and system design depth matter more than LeetCode grinding. Here's what actually gets you hired.",
     intro:
-      "Microsoft's interview process is more behavioral-heavy than most candidates expect — and it ends with a round that can override everything that came before it.",
+      "Netflix runs one of the most distinct hiring processes in tech. The culture deck isn't a talking point — it's operationally enforced, and every interviewer is trained to assess it. Before you prep a single coding problem, understand that Netflix is evaluating whether you'd pass the keeper test from day one.",
     culture: {
-      heading: "What Growth Mindset Actually Means in an Interview",
+      heading: "Netflix's Culture",
       body:
-        "Satya Nadella's shift from \"know-it-all\" to \"learn-it-all\" is not HR language at Microsoft — it's the behavioral signal interviewers are explicitly trained to capture. What they're watching for is not whether you describe yourself as a quick learner. The framing Microsoft rewards is about feedback loops and course corrections: situations where you received hard feedback, integrated it, and changed your behavior. When your interviewer gives you a hint mid-problem, how you respond is data — candidates who integrate the hint and acknowledge what it unlocked score higher than those who treat it as interference. Behavioral stories where \"I\" did everything alone read as a cultural flag; Microsoft rewards collaborative narratives.",
+        "The Netflix culture memo has one central premise: extraordinary freedom in exchange for extraordinary accountability. There are no expense approval workflows, no strict process documentation, and no vacation policy. Managers give context, not directives. Employees are expected to act like owners — make the call, fix the problem, don't wait for permission. The keeper test defines the bar: Reed Hastings asks, \"Would I fight hard to keep this person if they said they were leaving?\" If the answer is no, letting that person go is considered a management obligation. Netflix only hires people who pass that test from day one.",
     },
     hiring: {
-      heading: "The Loop Structure",
+      heading: "The Hiring Process",
       body:
-        "Microsoft's standard process runs in five stages: recruiter screen, optional online assessment, technical phone screen, the Loop (Super Day), and the As-Appropriate interview. The recruiter screen is 30–45 minutes — no technical content. Some roles include a Codility online assessment: 60–90 minutes, 2–3 algorithmic problems. The technical phone screen is 45–60 minutes with one coding problem plus behavioral questions. The Loop is 4–5 consecutive virtual interviews via Microsoft Teams, each 45–60 minutes — 2–3 coding rounds (medium to hard difficulty), one system design round for Level 61+ roles, and one hiring manager round. Behavioral questions are woven into every round, not isolated to one interview. Everything is virtual.",
+        "The loop starts with a 30-minute recruiter screen, followed by a 45-60 minute technical phone screen with medium-difficulty coding. The onsite consists of approximately 8 interviews, sometimes split across two days, and can be virtual or in-person depending on the team. Unlike most FAANG processes, unanimity is required — any single interviewer who votes no can block an offer. This makes every round consequential. Total timeline is typically 3-6 weeks from first contact to offer.",
     },
     lookFor: {
-      heading: "The As-Appropriate Interview",
+      heading: "What Netflix Looks For",
       body:
-        "The AA interview is the final round, scheduled 1–2 weeks after a successful Loop. Conducted by a Principal Engineering Manager, Director, or higher — and it has veto power. A unanimous Hire from the Loop can be overturned here. Before the meeting, the AA interviewer reads all loop feedback. If your loop left culture fit unclear, expect heavy behavioral probing. If there's a technical gap, expect technical probing — including system design despite what recruiters may describe. For system design, Microsoft interviewers expect Azure-adjacent reasoning: cost efficiency, security, and compliance at enterprise scale. Generic distributed systems answers work at other companies; at Microsoft, reasoning about Azure services reads as signal. If the AA pivots to selling Microsoft to you — specific team projects, career trajectory, growth opportunities — that's a positive sign you're being closed, not evaluated.",
+        "Netflix evaluates on three axes: culture alignment (freedom/responsibility, candor, self-discipline), functional excellence (operating autonomously at the required level), and systems thinking (reasoning about problems at Netflix's scale). System design carries the most weight for engineering roles. Questions are domain-specific: streaming infrastructure, recommendation systems, distributed data at 200M+ user scale. Behavioral rounds probe for evidence that you've made significant calls without manager input, delivered candid feedback upward, and owned failures with clear takeaways. Stories where the manager was the decision-maker, or that show reliance on approval chains, are rejection signals.",
     },
     tips: [
-      "Behavioral questions appear in every round, including coding — prepare 3–4 strong stories upfront",
-      "Demonstrate growth mindset through feedback integration, not self-promotion",
-      "For system design at Level 61+: reason about Azure services and enterprise-scale trade-offs",
-      "The AA interview has veto power — treat it as seriously as the Loop itself",
+      "Invest more in system design than LeetCode — Netflix treats it as the most important technical signal for engineers",
+      "For every behavioral story, ask: 'Was I the decision-maker here, or was my manager?' Netflix wants the former",
+      "Study Netflix's actual domain (streaming, CDN, recommendation) — generic architecture prep misses the target",
+      "Compensation is almost entirely base salary — no annual bonus, options instead of RSUs. Know this going into the negotiation",
+      "One weak round can kill an offer due to the unanimity rule — treat every interview as if the outcome depends on it",
     ],
-    ctaCompany: "Microsoft",
+    ctaCompany: "Netflix",
   },
-  apple: {
-    name: "Apple",
-    slug: "apple",
-    tagline: "How to Prepare for an Apple Interview",
-    metaTitle: "How to Prepare for an Apple Interview | PrepFile",
+  jpmorgan: {
+    name: "JPMorgan",
+    slug: "jpmorgan",
+    tagline: "How to Prepare for a JPMorgan Interview",
+    metaTitle: "How to Prepare for a JPMorgan Interview | PrepFile",
     metaDescription:
-      "Apple's interview process has no standard format — each team runs its own loop. Here's what actually matters: the culture signals, the loop structure, and the one question that kills most candidates.",
+      "JPMorgan's interview process starts with Pymetrics before any human sees your resume. Division matters — IB, S&T, AWM, and Tech each have distinct formats. Here's how to prep for each.",
     intro:
-      "Apple's interview is unlike any other big tech process because there is no single Apple interview — every team designs its own loop with near-total autonomy.",
+      "JPMorgan eliminates 60-80% of applicants through a Pymetrics assessment before a recruiter ever reads a resume. Most candidates miss this entirely. The process is also deeply division-specific — what gets you hired in Investment Banking, Sales & Trading, Asset Management, or Technology are meaningfully different skillsets.",
     culture: {
-      heading: "\"Why Apple?\" Is the Interview",
+      heading: "JPMorgan's Culture",
       body:
-        "Apple interviewers probe your motivation until they get an authentic emotional response, not a polished answer. Generic answers like \"I love the products\" are disqualifying. What works: tie your answer to a specific product decision, a design tradeoff that resonated with you, or a moment a product changed how you worked. Saying you don't regularly use Apple hardware is reported as a fatal flaw — Apple hires genuine product users because they believe product intuition comes from habitual use. Privacy is not a marketing position at Apple; it's a first-class engineering constraint. System design answers that ignore data minimization or on-device processing miss what Apple's engineers actually optimize for.",
+        "JPMorgan has a notably hierarchical culture compared to most major banks. Excellence within established systems is valued over disrupting them. The firm rewards analytical rigor, commercial awareness, and collaborative drive — interviewers consistently probe for teamwork instincts and the ability to lead without authority. Behavioral questions reliably test resilience under pressure, self-awareness from failure, and genuine market curiosity. Candidates who arrive with an intent to disrupt established processes tend not to land well.",
     },
     hiring: {
-      heading: "The Loop Structure (And Why It Varies)",
+      heading: "The Hiring Process",
       body:
-        "Apple has no standardized interview format, no shared question bank, and no centralized debrief process. A software engineer interviewing for Core OS will face a completely different loop than someone on Maps — both are Apple SWE interviews. For software engineers: recruiter screen, one or two technical phone screens on CoderPad, then an onsite loop of 3–8 rounds lasting 4–6 hours. Some teams run the full day; others cut short mid-onsite on a clear mismatch — don't interpret an early wrap-up as positive. For product managers: 7–10 interviews covering behavioral, product design, strategy, technical depth, and analytical reasoning. Lunch on campus counts as an interview. Before each stage, ask your recruiter directly whether the upcoming round is LeetCode-style or domain-specific — recruiters attend debriefs and know what's coming.",
+        "The process runs in five stages: Pymetrics (gamified cognitive/emotional assessment, hardest filter), an online aptitude test with coding problems for tech roles, a HireVue video interview with AI-graded behavioral questions, a recruiter phone screen, and a Super Day of 3-5 back-to-back interviews. HireVue is assessed on pacing, camera eye contact, and energy — not just content. Offer rates post-Super Day run 10-20% in Investment Banking; the end-to-end process typically takes 4-8 weeks.",
     },
     lookFor: {
-      heading: "How Apple Evaluates You in Practice",
+      heading: "What JPMorgan Looks For",
       body:
-        "Apple uses the SPSIL framework internally — Situation, Problem, Solution, Impact, Lessons. The Lessons component is not optional; an answer that shows you succeeded is only half the evaluation. The DRI model (Directly Responsible Individual) is a real operational artifact, not a values statement — stories where \"the team\" did X without a clear DRI read as cultural misfit. For engineering roles: medium-to-hard LeetCode difficulty, weighted toward core data structures. Domain-specific roles may replace generic algorithmic rounds with domain questions — the job description signals this. Apple's functional org structure (hardware, software, silicon, and services are separate orgs that collaborate horizontally) means cross-functional stories are required, not optional. Stories where you drove alignment across teams with competing priorities and no shared manager will land harder here than at most companies.",
+        "Division shapes everything. IB rounds are 70% technical: DCF mechanics, enterprise vs. equity value, merger accretion/dilution, LBO returns — interviewers probe until they find your ceiling. S&T candidates must know which desk they want before Super Day; JPMorgan interviews by desk, not general interest. AWM interviews are 50/50 behavioral and investment philosophy — bring a current, defensible investment idea. Tech roles test Java OOP, financial systems design, and LeetCode medium coding. Across all divisions, a specific, well-researched 'Why JPMorgan?' is the most-failed question.",
     },
     tips: [
-      "Research Apple's specific product decisions — generic \"love Apple\" answers are disqualifying",
-      "Use SPSIL: Situation, Problem, Solution, Impact, Lessons — the Lessons component is weighted heavily",
-      "Know who owned what in your past projects; diffuse ownership reads as cultural misfit",
-      "Ask your recruiter whether the round is algorithmic or domain-specific before each stage",
+      "Prep Pymetrics seriously — it eliminates 60-80% of applicants before any human review, yet most candidates treat it as a checkbox",
+      "For IB: be able to walk a full DCF from EBITDA to equity value from memory, including why and how beta is relevered",
+      "For S&T: decide which desk (rates, equities, credit, FX) before Super Day — JPMorgan interviews by desk, not by general interest",
+      "Record your HireVue answers and watch them back — AI scores pacing and energy, and most people sound flatter on video than they feel",
+      "Have a specific 'Why JPMorgan?' ready: reference a deal, a group's recent mandate, or a product area they lead in",
     ],
-    ctaCompany: "Apple",
+    ctaCompany: "JPMorgan",
+  },
+  bcg: {
+    name: "BCG",
+    slug: "bcg",
+    tagline: "How to Prepare for a BCG Interview",
+    metaTitle: "How to Prepare for a BCG Interview | PrepFile",
+    metaDescription:
+      "BCG case interviews are candidate-led, not interviewer-led. Understand the full process: online assessment, PEI, written case, and what evaluators score. Generate a personalized BCG prep brief in 10 minutes.",
+    intro:
+      "BCG is one of the three most selective consulting firms in the world, and their interview format has a defining characteristic most candidates miss: you drive the case, not the interviewer. Prepping for McKinsey-style interviewer-led cases and showing up to BCG is a reliable way to fail.",
+    culture: {
+      heading: "BCG's Culture",
+      body:
+        "BCG prizes intellectual curiosity, hypothesis-driven thinking, and collaborative problem-solving. The firm's core identity is built around asking hard questions and blazing new paths — not just applying standard frameworks. BCG consultants are expected to form a hypothesis early and test it rather than exhaustively structure every possible option. The culture is less hierarchical than McKinsey: junior consultants are expected to challenge analysis and push back with evidence. BCG also places significant weight on social impact and operating with integrity, and these values appear explicitly in PEI evaluation.",
+    },
+    hiring: {
+      heading: "The Hiring Process",
+      body:
+        "BCG's process typically runs four stages. First, an online chatbot-based case assessment: a 25–30 minute tool with six to ten questions (multiple choice, short answer, data interpretation) followed by a 60–90 second recorded video recommendation. Second, a first-round interview with one case interview and a PEI segment (10 minutes of behavioral, 35 minutes of case). Third, a second-round interview with one to two more cases and a deeper PEI. Some US offices add a written case in second round — you'll receive a document set, have roughly two hours to analyze it, then present a 3–5 slide recommendation. BCG cases are candidate-led throughout: you structure the problem, drive the analysis, and synthesize the insight without being guided question by question.",
+    },
+    lookFor: {
+      heading: "What BCG Evaluates",
+      body:
+        "Case rounds assess four things: problem structuring (can you build a MECE hypothesis tree quickly?), quantitative reasoning (accurate mental math, data interpretation under time pressure), insight generation (the \"so what\" behind the numbers), and communication (are recommendations clear and specific, not hedged?). The PEI probes for concrete examples of entrepreneurial drive, personal impact, and leadership — BCG uses the same three PEI dimensions as McKinsey. Stories must be first-person, involve real stakes, and show your specific decision-making, not team effort. The online assessment filters heavily on data interpretation and numerical reasoning before any human review.",
+    },
+    tips: [
+      "Practice candidate-led cases from day one — BCG cases require you to define the structure and drive the analysis; passive listening fails here",
+      "Form your hypothesis early and explicitly: say 'I think the issue is X because of Y — let me test that' rather than exhaustively mapping every branch",
+      "PEI stories must be personal, specific, and show real stakes — generic leadership stories where the team succeeded are rejection signals",
+      "If applying to US offices, prepare for the written case: practice synthesizing multi-document sets into a 3-slide recommendation under time pressure",
+    ],
+    ctaCompany: "BCG",
+  },
+  uber: {
+    name: "Uber",
+    slug: "uber",
+    tagline: "How to Prepare for an Uber Interview",
+    metaTitle: "How to Prepare for an Uber Interview | PrepFile",
+    metaDescription:
+      "Uber's system design rounds are domain-specific: ride matching, surge pricing, real-time geo at scale. Here's the full loop, what interviewers score, and how to prep for each round.",
+    intro:
+      "Uber's engineering interview is more domain-grounded than most big tech processes. The system design rounds aren't generic distributed systems questions — they map directly to Uber's marketplace problems, and generic answers land poorly. Understanding Uber's actual systems is part of the prep.",
+    culture: {
+      heading: "Uber's Culture",
+      body:
+        "Uber operates on a set of cultural norms anchored by customer obsession and acting like owners. 'Act like an owner' is not a slogan — interviewers specifically probe for candidates who identify problems beyond their defined scope and drive them to resolution without being asked. Uber rewards execution speed and bias for action: finishing what you start and building for the long term, not just shipping incrementally. The culture values directness and candor, and behavioral interviewers are trained to distinguish candidates who influenced outcomes from those who participated in them.",
+    },
+    hiring: {
+      heading: "The Hiring Process",
+      body:
+        "The loop typically runs in four stages. A recruiter screen (30 minutes, no technical content). A phone screen (45–60 minutes, one coding problem on data structures and algorithms). A full virtual onsite of four to six rounds: two to three coding rounds, one system design round, one behavioral round, and sometimes a hiring manager round for senior levels. Coding rounds are 30–40 minutes each with one problem per round. System design runs 45–60 minutes. Behavioral rounds focus on ownership, ambiguity, and cross-functional influence.",
+    },
+    lookFor: {
+      heading: "What Uber Looks For",
+      body:
+        "Coding rounds cover core data structures and algorithms — arrays, trees, graphs, and recursion — at medium to hard difficulty. Correctness and complexity analysis are both evaluated; partial credit for an O(n²) solution that you can optimize is fine, but unexplained inefficiency is not. System design rounds are domain-anchored: expect ride-matching algorithms, surge pricing systems, real-time location tracking, or map routing at city-and-region scale. Interviewers want you to reason about geographic distribution, load variability, consistency trade-offs, and failure modes — not just draw a generic microservices diagram. Behavioral rounds use STAR format and probe specifically for ownership signals: moments you identified and resolved a problem that wasn't yours to own.",
+    },
+    tips: [
+      "Study Uber's actual domains before system design: ride matching, surge pricing, real-time geo — generic distributed systems prep misses the target",
+      "For coding rounds, state your complexity analysis before you finish — correctness and efficiency are both scored, and interviewers notice when you skip it",
+      "Behavioral stories should show you as the decision-maker, not a participant — 'the team decided' is a weak signal at Uber",
+      "Prepare a specific 'Why Uber?' answer grounded in a product or market problem you find compelling — ambiguity about why Uber over other big tech reads poorly",
+    ],
+    ctaCompany: "Uber",
+  },
+  deloitte: {
+    name: "Deloitte",
+    slug: "deloitte",
+    tagline: "How to Prepare for a Deloitte Interview",
+    metaTitle: "How to Prepare for a Deloitte Interview | PrepFile",
+    metaDescription:
+      "Deloitte's case interviews are candidate-led, not interviewer-led — the opposite of McKinsey. The group exercise is real and evaluated. Here's what the process actually looks like across Consulting, Advisory, and Audit.",
+    intro:
+      "Deloitte is not one interview process — it's several. Consulting, Advisory, and Audit all run distinct formats, and prepping generically is a reliable way to get cut. The case interview is candidate-led (not McKinsey-style), and the group case exercise in Round 2 is an active evaluation, not filler.",
+    culture: {
+      heading: "Deloitte's Culture",
+      body:
+        "Deloitte's stated purpose is \"make an impact that matters\" — and they mean it structurally, not as a slogan. The phrase \"lead at every level\" signals that positional authority is not required to demonstrate leadership; interviewers look for initiative on team projects, not just managerial responsibility. Collaboration signals matter more here than at MBB: being analytically strong but poor at group dynamics is a disqualifying profile. The five official values — lead the way, serve with integrity, take care of each other, foster inclusion, collaborate for measurable impact — show up in behavioral assessment, particularly in the group case and partner round.",
+    },
+    hiring: {
+      heading: "The Hiring Process",
+      body:
+        "The pipeline: an immersive online assessment (multimedia-based, ~80-100 minutes, blending numerical reasoning, verbal reasoning, and situational judgment — not a standard SHL test), a recruiter phone screen, Round 1 interviews (behavioral + case for consulting; scenario-based for audit), and a Round 2 or assessment center that adds a group case exercise and a presentation round for graduate tracks. The final partner interview runs 40-90 minutes with no fixed structure — the partner is asking: \"Would I bring this person to a client meeting tomorrow?\" For audit/assurance roles, cases are replaced by Deloitte's Scenario Interview Tool, which covers audit judgment calls and financial statement interpretation.",
+    },
+    lookFor: {
+      heading: "What Deloitte Looks For",
+      body:
+        "Deloitte cases are candidate-led — you define the problem, structure the approach, and drive the analysis. Waiting to be guided is the most common case failure. Deloitte uses the SOAR behavioral framework (Situation, Obstacle, Action, Result), not just STAR — the Obstacle component surfaces real friction and judgment rather than polished success stories. In the group case, both dominating the room and going silent are evaluated negatively; Deloitte observes whether you draw in quieter participants. A specific, practice-referenced 'Why Deloitte?' is essential at the partner stage — generic Big 4 answers are the most-cited partner-round rejection reason.",
+    },
+    tips: [
+      "Practice candidate-led cases — Deloitte cases require you to drive the structure; McKinsey-only prep will fail you here",
+      "Use SOAR (Situation, Obstacle, Action, Result) for behavioral stories — they specifically want to hear about real friction, not clean wins",
+      "In the group case, focus on collaborative signals: build on others' ideas and draw in quieter participants — Deloitte observes this directly",
+      "Prepare for the immersive assessment with mixed-mode practice, not standard SHL banks — the format shifts cognitive modes frequently",
+      "Have a specific 'Why Deloitte?' answer that references a practice area or recent client work — 'great culture and training' gets you cut at the partner round",
+    ],
+    ctaCompany: "Deloitte",
   },
 };
 

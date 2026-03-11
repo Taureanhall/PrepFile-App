@@ -20,13 +20,13 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-6 pt-16 pb-20 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 rounded-full text-xs text-zinc-600 mb-8">
-          AI-powered interview prep
+          Personalized prep brief in 60 seconds
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 mb-6 leading-tight">
           Know exactly what the<br className="hidden sm:block" /> company needs —<br className="hidden sm:block" /> before you walk in.
         </h1>
         <p className="text-xl text-zinc-500 mb-10 max-w-2xl mx-auto leading-relaxed">
-          PrepFile analyzes the job description and generates a precise prep brief: company signals, role intelligence, round expectations, and questions that show you've done your homework.
+          Drop in the job description. Get a personalized brief covering the company's competitive position, what the interviewer is actually evaluating, and the questions to ask that signal strategic thinking — in under a minute.
         </p>
         <button
           onClick={onGetStarted}
@@ -58,7 +58,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               {
                 step: "3",
                 title: "Get your prep brief",
-                desc: "AI analyzes the company using Porter's Five Forces and Deming frameworks. You get a structured brief in under a minute.",
+                desc: "PrepFile generates a structured brief covering the company's competitive position, what your interviewer is evaluating, and tailored talking points — in under a minute.",
               },
             ].map(({ step, title, desc }) => (
               <div key={step} className="flex flex-col gap-3">
@@ -76,7 +76,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       {/* Pricing */}
       <section className="max-w-4xl mx-auto px-6 py-20">
         <h2 className="text-2xl font-bold text-center text-zinc-900 mb-3">Pricing</h2>
-        <p className="text-center text-zinc-500 mb-14">Start free. Upgrade when you need more.</p>
+        <p className="text-center text-zinc-500 mb-14">Free briefs to get started. Pro when an interview is on the line.</p>
         <div className="grid sm:grid-cols-3 gap-6">
           {/* Free */}
           <div className="bg-white rounded-2xl border border-zinc-200 p-6 flex flex-col gap-4">
@@ -117,7 +117,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               onClick={onGetStarted}
               className="w-full py-3 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors"
             >
-              Buy pack
+              Get 5 briefs
             </button>
           </div>
 
@@ -145,10 +145,38 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         </div>
       </section>
 
+      {/* Company Interview Prep Guides */}
+      <section className="max-w-4xl mx-auto px-6 py-16">
+        <h2 className="text-2xl font-bold text-center text-zinc-900 mb-3">Company Interview Prep Guides</h2>
+        <p className="text-center text-zinc-500 mb-10">Free, detailed breakdowns of how top companies hire.</p>
+        <div className="grid sm:grid-cols-5 gap-3 mb-6">
+          {[
+            { name: "Google", slug: "google" },
+            { name: "Amazon", slug: "amazon" },
+            { name: "Meta", slug: "meta" },
+            { name: "Microsoft", slug: "microsoft" },
+            { name: "Apple", slug: "apple" },
+          ].map(({ name, slug }) => (
+            <a
+              key={slug}
+              href={`/interview-prep/${slug}`}
+              className="flex items-center justify-center py-3 px-4 bg-white border border-zinc-200 rounded-xl text-sm font-medium text-zinc-700 hover:border-zinc-400 hover:text-zinc-900 transition-colors text-center"
+            >
+              {name}
+            </a>
+          ))}
+        </div>
+        <div className="text-center">
+          <a href="/interview-prep" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
+            See all company guides →
+          </a>
+        </div>
+      </section>
+
       {/* Footer CTA */}
       <section className="bg-zinc-900 text-white py-16">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-2xl font-bold mb-4">Ready to walk in prepared?</h2>
+          <h2 className="text-2xl font-bold mb-4">Your next interview is coming. Start prepping now.</h2>
           <p className="text-zinc-400 mb-8">Get a prep brief for your next interview in under a minute.</p>
           <button
             onClick={onGetStarted}

@@ -249,7 +249,7 @@ export default function Page() {
     } catch (error: any) {
       console.error("Error generating brief:", error);
       if (error.message?.includes("Rate limit exceeded")) {
-        alert("You've reached your 5-brief daily limit. Try again tomorrow.");
+        alert("You've used your 3 free briefs this week. Upgrade to Pro for unlimited briefs, or your limit resets next week.");
       } else {
         alert(error.message || "Something went wrong. Please try again.");
       }
@@ -278,7 +278,7 @@ export default function Page() {
 
     if (output && companyName && jobTitle) {
       const briefTitle = `${companyName} — ${jobTitle} Prep Brief | PrepFile`;
-      const briefDesc = `Interview prep brief for ${jobTitle} at ${companyName}. Built with Porter's Five Forces + Deming analysis.`;
+      const briefDesc = `Interview prep brief for ${jobTitle} at ${companyName}. Competitive position, role expectations, and tailored talking points.`;
       document.title = briefTitle;
       setMeta("og:title", briefTitle);
       setMeta("og:description", briefDesc);
@@ -325,7 +325,7 @@ export default function Page() {
         <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2">
-              Interview Intel
+              PrepFile
             </h1>
             <p className="text-zinc-600 text-lg">
               Prep briefs that show what the company actually needs.

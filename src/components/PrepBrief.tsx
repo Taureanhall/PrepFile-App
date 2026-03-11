@@ -146,6 +146,65 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
   return (
     <div className="bg-white p-5 md:p-8 lg:p-12 rounded-2xl shadow-sm border border-zinc-200/60 max-w-4xl mx-auto print:shadow-none print:border-none print:p-0">
 
+      {/* Brief header — share button */}
+      {user && briefId && (
+        <div className="flex justify-end mb-4 print:hidden">
+          <button
+            onClick={handleShare}
+            disabled={shareStatus === "loading"}
+            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              isPublic
+                ? "border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-800"
+                : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300"
+            }`}
+          >
+            {shareStatus === "loading" ? (
+              <>
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Updating...
+              </>
+            ) : shareStatus === "copied" ? (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                Link copied!
+              </>
+            ) : isPublic ? (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                Shared — make private
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                Share this brief
+              </>
+            )}
+          </button>
+          {isPublic && (
+            <p className="text-xs text-zinc-400 mt-1 text-right hidden">
+              {window.location.origin}/b/{briefId}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Jump nav */}
+      <nav className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-zinc-100 -mx-5 md:-mx-8 lg:-mx-12 px-5 md:px-8 lg:px-12 py-2.5 mb-8 print:hidden overflow-x-auto">
+        <div className="flex gap-5 text-xs font-medium text-zinc-400 whitespace-nowrap">
+          <a href="#section-1" className="hover:text-zinc-800 transition-colors">Company Snapshot</a>
+          <a href="#section-2" className="hover:text-zinc-800 transition-colors">Role Intelligence</a>
+          <a href="#section-3" className="hover:text-zinc-800 transition-colors">Interview Themes</a>
+          <a href="#section-4" className="hover:text-zinc-800 transition-colors">Process Questions</a>
+          <a href="#section-5" className="hover:text-zinc-800 transition-colors">Behavioral Bank</a>
+          <a href="#section-6" className="hover:text-zinc-800 transition-colors">Round Expectations</a>
+          <a href="#section-7" className="hover:text-zinc-800 transition-colors">Questions to Ask</a>
+          <a href="#section-8" className="hover:text-zinc-800 transition-colors">Reading</a>
+        </div>
+      </nav>
+
       {/* Blind Spots Callout */}
       {blindSpots && blindSpots.length > 0 && (
         <div className="mb-10 p-5 bg-amber-50 border border-amber-200 rounded-xl">
@@ -164,7 +223,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
       <div className="space-y-12">
 
         {/* Section 1 — Company Snapshot */}
-        <section>
+        <section id="section-1">
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
             1. Company Snapshot
           </h2>
@@ -211,123 +270,14 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
           </div>
         </section>
 
-        {/* Section 2 — Role Intelligence */}
-        <section>
-          <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-            2. Role Intelligence
-          </h2>
-          <div className="space-y-4">
-            <p className="text-zinc-700 leading-relaxed"><span className="font-semibold text-zinc-900">Core Mandate:</span> {data.roleIntelligence?.coreMandate}</p>
-
-            {data.roleIntelligence?.success90Days?.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">90-Day Success Metrics</h4>
-                <ul className="space-y-2">
-                  {data.roleIntelligence.success90Days.map((point, i) => (
-                    <li key={i} className="flex items-start gap-3 text-zinc-700">
-                      <span className="text-zinc-400 mt-1.5 text-xs">■</span>
-                      <span className="leading-relaxed">{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {data.roleIntelligence?.commonFailureModes?.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">Common Failure Modes</h4>
-                <ul className="space-y-2">
-                  {data.roleIntelligence.commonFailureModes.map((point, i) => (
-                    <li key={i} className="flex items-start gap-3 text-zinc-700">
-                      <span className="text-zinc-400 mt-1.5 text-xs">■</span>
-                      <span className="leading-relaxed">{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Section 3 — Likely Interview Themes */}
-        {data.interviewThemes && data.interviewThemes.length > 0 && (
-          <section>
-            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-              3. Likely Interview Themes
-            </h2>
-            <div className="space-y-8">
-              {data.interviewThemes.map((theme, i) => (
-                <div key={i} className="space-y-3">
-                  <div>
-                    <h3 className="font-semibold text-zinc-900">{theme.theme}</h3>
-                    <p className="text-zinc-500 text-sm mt-1">{theme.whyItMatters}</p>
-                  </div>
-                  <ul className="space-y-2">
-                    {theme.questions.map((q, j) => (
-                      <li key={j} className="flex items-start gap-3">
-                        <span className="text-zinc-400 mt-1.5 shrink-0 text-xs font-medium">{j + 1}.</span>
-                        <span className="text-zinc-700 leading-relaxed">{q}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Section 4 — Process & Operational Questions */}
-        {data.processOperationalQuestions && (
-          <section>
-            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-              4. Process & Operational Questions
-            </h2>
-            <div className="space-y-4">
-              <p className="text-zinc-600 text-sm leading-relaxed italic">{data.processOperationalQuestions.context}</p>
-              <ul className="space-y-2">
-                {data.processOperationalQuestions.questions.map((q, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <span className="text-zinc-400 mt-1.5 shrink-0 text-xs font-medium">{i + 1}.</span>
-                    <span className="text-zinc-700 leading-relaxed">{q}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        )}
-
-        {/* Section 5 — Behavioral Question Bank */}
-        {data.behavioralQuestionBank && data.behavioralQuestionBank.length > 0 && (
-          <section>
-            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-              5. Behavioral Question Bank
-            </h2>
-            <div className="space-y-8">
-              {data.behavioralQuestionBank.map((item, i) => (
-                <div key={i} className="space-y-3">
-                  <h3 className="font-semibold text-zinc-900">{item.competency}</h3>
-                  <ul className="space-y-2">
-                    {item.questions.map((q, j) => (
-                      <li key={j} className="flex items-start gap-3">
-                        <span className="text-zinc-400 mt-1.5 shrink-0 text-xs font-medium">{j + 1}.</span>
-                        <span className="text-zinc-700 leading-relaxed">{q}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Resume Enhancement CTA — placed above Round Expectations */}
+        {/* Resume Enhancement CTA — moved to just below section 1 */}
         {!bridging ? (
           userPlan === "free" || (!user && !userPlan) ? (
             /* Free tier: upgrade callout instead of upload button */
             <div className="print:hidden rounded-xl border border-zinc-200 bg-zinc-50 p-5">
               <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-zinc-900 text-sm">Resume match is available on Pro and Pack</h3>
+                  <h3 className="font-semibold text-zinc-900 text-sm">See how your resume stacks up against this role</h3>
                   <p className="text-zinc-500 text-sm mt-0.5">
                     See how your resume stacks up against this role — tailored talking points, gap analysis, and personalized blind spots.
                   </p>
@@ -336,7 +286,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
                   onClick={onUpgradeClick}
                   className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors whitespace-nowrap"
                 >
-                  See plans
+                  Unlock Resume Match
                 </button>
               </div>
             </div>
@@ -404,8 +354,117 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
           </section>
         )}
 
+        {/* Section 2 — Role Intelligence */}
+        <section id="section-2">
+          <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+            2. Role Intelligence
+          </h2>
+          <div className="space-y-4">
+            <p className="text-zinc-700 leading-relaxed"><span className="font-semibold text-zinc-900">Core Mandate:</span> {data.roleIntelligence?.coreMandate}</p>
+
+            {data.roleIntelligence?.success90Days?.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">90-Day Success Metrics</h4>
+                <ul className="space-y-2">
+                  {data.roleIntelligence.success90Days.map((point, i) => (
+                    <li key={i} className="flex items-start gap-3 text-zinc-700">
+                      <span className="text-zinc-400 mt-1.5 text-xs">■</span>
+                      <span className="leading-relaxed">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {data.roleIntelligence?.commonFailureModes?.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">Common Failure Modes</h4>
+                <ul className="space-y-2">
+                  {data.roleIntelligence.commonFailureModes.map((point, i) => (
+                    <li key={i} className="flex items-start gap-3 text-zinc-700">
+                      <span className="text-zinc-400 mt-1.5 text-xs">■</span>
+                      <span className="leading-relaxed">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Section 3 — Likely Interview Themes */}
+        {data.interviewThemes && data.interviewThemes.length > 0 && (
+          <section id="section-3">
+            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+              3. Likely Interview Themes
+            </h2>
+            <div className="space-y-8">
+              {data.interviewThemes.map((theme, i) => (
+                <div key={i} className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-zinc-900">{theme.theme}</h3>
+                    <p className="text-zinc-500 text-sm mt-1">{theme.whyItMatters}</p>
+                  </div>
+                  <ul className="space-y-2">
+                    {theme.questions.map((q, j) => (
+                      <li key={j} className="flex items-start gap-3">
+                        <span className="text-zinc-400 mt-1.5 shrink-0 text-xs font-medium">{j + 1}.</span>
+                        <span className="text-zinc-700 leading-relaxed">{q}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Section 4 — Process & Operational Questions */}
+        {data.processOperationalQuestions && (
+          <section id="section-4">
+            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+              4. Process & Operational Questions
+            </h2>
+            <div className="space-y-4">
+              <p className="text-zinc-600 text-sm leading-relaxed italic">{data.processOperationalQuestions.context}</p>
+              <ul className="space-y-2">
+                {data.processOperationalQuestions.questions.map((q, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="text-zinc-400 mt-1.5 shrink-0 text-xs font-medium">{i + 1}.</span>
+                    <span className="text-zinc-700 leading-relaxed">{q}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+
+        {/* Section 5 — Behavioral Question Bank */}
+        {data.behavioralQuestionBank && data.behavioralQuestionBank.length > 0 && (
+          <section id="section-5">
+            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+              5. Behavioral Question Bank
+            </h2>
+            <div className="space-y-8">
+              {data.behavioralQuestionBank.map((item, i) => (
+                <div key={i} className="space-y-3">
+                  <h3 className="font-semibold text-zinc-900">{item.competency}</h3>
+                  <ul className="space-y-2">
+                    {item.questions.map((q, j) => (
+                      <li key={j} className="flex items-start gap-3">
+                        <span className="text-zinc-400 mt-1.5 shrink-0 text-xs font-medium">{j + 1}.</span>
+                        <span className="text-zinc-700 leading-relaxed">{q}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Section 6 — Round Expectations */}
-        <section>
+        <section id="section-6">
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
             6. Round Expectations
           </h2>
@@ -445,7 +504,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
         </section>
 
         {/* Section 7 — Questions to Ask */}
-        <section>
+        <section id="section-7">
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
             7. Questions to Ask Them
           </h2>
@@ -461,7 +520,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
 
         {/* Section 8 — Recommended Reading */}
         {data.recommendedReading && data.recommendedReading.length > 0 && (
-          <section>
+          <section id="section-8">
             <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
               8. Recommended Reading
             </h2>
@@ -481,7 +540,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
 
       </div>
 
-      {/* Regenerate + Email Capture */}
+      {/* Bottom actions — regenerate + email capture (unauthenticated only) */}
       <div className="mt-16 pt-10 border-t border-zinc-100 print:hidden space-y-10">
 
         {/* Regenerate */}
@@ -507,88 +566,47 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
                 </>
               )}
             </button>
-            <p className="text-xs text-zinc-400 mt-2">Uses one of your daily briefs</p>
+            <p className="text-xs text-zinc-400 mt-2">Uses one of your weekly briefs</p>
           </div>
         )}
 
-        {/* Share Button — only for authenticated users with a saved brief */}
-        {user && briefId && (
-          <div className="text-center">
-            <button
-              onClick={handleShare}
-              disabled={shareStatus === "loading"}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium border rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                isPublic
-                  ? "border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-800"
-                  : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300"
-              }`}
-            >
-              {shareStatus === "loading" ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Updating...
-                </>
-              ) : shareStatus === "copied" ? (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
-                  Link copied!
-                </>
-              ) : isPublic ? (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                  Shared — make private
-                </>
-              ) : (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                  Share this brief
-                </>
-              )}
-            </button>
-            <p className="text-xs text-zinc-400 mt-2">
-              {isPublic ? `Shareable link: ${window.location.origin}/b/${briefId}` : "Creates a read-only link anyone can view"}
+        {/* Email Capture — only for unauthenticated users */}
+        {!user && (
+          <div className="max-w-md mx-auto text-center">
+            <h3 className="text-lg font-semibold text-zinc-900 mb-2">Email Me This Brief</h3>
+            <p className="text-zinc-500 text-sm mb-6">
+              Save this brief. Review it the night before, share it with a mentor, or reference it during prep.
             </p>
+
+            {status === "success" ? (
+              <div className="bg-emerald-50 text-emerald-800 p-4 rounded-xl border border-emerald-200 flex flex-col items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                <span className="font-medium">Brief sent! Check your inbox.</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSave} className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="flex-1 px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors text-base sm:text-sm"
+                />
+                <button
+                  type="submit"
+                  disabled={status === "loading" || !email}
+                  className="px-6 py-3 sm:py-2.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                >
+                  {status === "loading" ? "Sending..." : "Send to Me"}
+                </button>
+              </form>
+            )}
+            {status === "error" && (
+              <p className="text-red-600 text-sm mt-3">Failed to send. Please try again.</p>
+            )}
           </div>
         )}
-
-        {/* Email Capture */}
-        <div className="max-w-md mx-auto text-center">
-          <h3 className="text-lg font-semibold text-zinc-900 mb-2">Save My Guide</h3>
-          <p className="text-zinc-500 text-sm mb-6">
-            Get a copy of this brief sent directly to your inbox so you can review it before the interview.
-          </p>
-
-          {status === "success" ? (
-            <div className="bg-emerald-50 text-emerald-800 p-4 rounded-xl border border-emerald-200 flex flex-col items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
-              <span className="font-medium">Brief sent! Check your inbox.</span>
-            </div>
-          ) : (
-            <form onSubmit={handleSave} className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="flex-1 px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors text-base sm:text-sm"
-              />
-              <button
-                type="submit"
-                disabled={status === "loading" || !email}
-                className="px-6 py-3 sm:py-2.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
-              >
-                {status === "loading" ? "Sending..." : "Send to Me"}
-              </button>
-            </form>
-          )}
-          {status === "error" && (
-            <p className="text-red-600 text-sm mt-3">Failed to send. Please try again.</p>
-          )}
-        </div>
       </div>
     </div>
   );

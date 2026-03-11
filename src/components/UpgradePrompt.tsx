@@ -7,9 +7,11 @@ interface Props {
 
 export function UpgradePrompt({ reason, onDismiss }: Props) {
   const [loading, setLoading] = useState<"pro" | "pack" | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   async function startCheckout(product: "pro" | "pack") {
     setLoading(product);
+    setCheckoutError(null);
     try {
       const res = await fetch("/api/stripe/create-checkout-session", {
         method: "POST",
@@ -20,7 +22,7 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
       if (error) throw new Error(error);
       window.location.href = url;
     } catch (err: any) {
-      alert(err.message || "Something went wrong. Please try again.");
+      setCheckoutError(err.message || "Something went wrong. Please try again.");
       setLoading(null);
     }
   }
@@ -42,13 +44,14 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
         {/* Pro */}
         <div className="border-2 border-zinc-900 rounded-xl p-5 flex flex-col gap-3">
           <div>
-            <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Best value</div>
+            <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Most popular</div>
             <div className="text-lg font-bold text-zinc-900">PrepFile Pro</div>
             <div className="text-3xl font-bold text-zinc-900 mt-1">$9.99<span className="text-base font-normal text-zinc-500">/mo</span></div>
           </div>
           <ul className="text-sm text-zinc-600 space-y-1">
-            <li>✓ Unlimited briefs</li>
-            <li>✓ Save & revisit all briefs</li>
+            <li>✓ Unlimited full briefs</li>
+            <li>✓ Resume match & personalized blind spots</li>
+            <li>✓ Brief history saved</li>
             <li>✓ Cancel anytime</li>
           </ul>
           <button
@@ -68,8 +71,9 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
             <div className="text-3xl font-bold text-zinc-900 mt-1">$4.99<span className="text-base font-normal text-zinc-500"> once</span></div>
           </div>
           <ul className="text-sm text-zinc-600 space-y-1">
-            <li>✓ 5 briefs, never expire</li>
-            <li>✓ Save & revisit all briefs</li>
+            <li>✓ Resume match & personalized blind spots</li>
+            <li>✓ 5 full briefs, never expire</li>
+            <li>✓ Brief history saved</li>
             <li>✓ No subscription</li>
           </ul>
           <button
@@ -81,6 +85,10 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
           </button>
         </div>
       </div>
+
+      {checkoutError && (
+        <p className="text-sm text-red-600">{checkoutError}</p>
+      )}
 
       <button
         onClick={onDismiss}
