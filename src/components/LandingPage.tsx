@@ -1,11 +1,55 @@
+import { useEffect, useState } from "react";
+import { landingBaseline, landingVariants, type LandingVariant } from "../marketing/content/landing-variants";
+import { trackAbVariant } from "../lib/analytics";
+
+const AB_STORAGE_KEY = "prepfile_ab_landing_v1";
+const ALL_VARIANTS: LandingVariant[] = [landingBaseline, ...landingVariants];
+
+function pickVariant(): LandingVariant {
+  try {
+    const stored = localStorage.getItem(AB_STORAGE_KEY);
+    if (stored) {
+      const found = ALL_VARIANTS.find((v) => v.id === stored);
+      if (found) return found;
+    }
+    const picked = ALL_VARIANTS[Math.floor(Math.random() * ALL_VARIANTS.length)];
+    localStorage.setItem(AB_STORAGE_KEY, picked.id);
+    return picked;
+  } catch {
+    return landingBaseline;
+  }
+}
 
 interface LandingPageProps {
   onGetStarted: () => void;
 }
 
+async function startCheckout(product: "pro" | "pack") {
+  try {
+    const res = await fetch("/api/stripe/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product }),
+    });
+    const { url, error } = await res.json();
+    if (error) throw new Error(error);
+    window.location.href = url;
+  } catch (err) {
+    console.error("Checkout error:", err);
+  }
+}
+
 export function LandingPage({ onGetStarted }: LandingPageProps) {
+  const [variant, setVariant] = useState<LandingVariant>(landingBaseline);
+
+  useEffect(() => {
+    const v = pickVariant();
+    setVariant(v);
+    trackAbVariant(v.id);
+  }, []);
+
   return (
-    <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans">
+    <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans" data-ab-variant={variant.id}>
       {/* Nav */}
       <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center">
         <span className="text-lg font-bold tracking-tight">PrepFile</span>
@@ -20,19 +64,19 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-6 pt-16 pb-20 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 rounded-full text-xs text-zinc-600 mb-8">
-          Personalized prep brief in 60 seconds
+          {variant.badge}
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 mb-6 leading-tight">
-          Know exactly what the<br className="hidden sm:block" /> company needs —<br className="hidden sm:block" /> before you walk in.
+          {variant.headline}
         </h1>
         <p className="text-xl text-zinc-500 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Drop in the job description. Get a personalized brief covering the company's competitive position, what the interviewer is actually evaluating, and the questions to ask that signal strategic thinking — in under a minute.
+          {variant.subheadline}
         </p>
         <button
           onClick={onGetStarted}
           className="inline-flex items-center gap-2 px-8 py-4 bg-zinc-900 text-white font-medium text-base rounded-xl hover:bg-zinc-800 transition-colors shadow-sm"
         >
-          Get Your Prep Brief
+          {variant.cta}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
         </button>
         <p className="mt-4 text-sm text-zinc-400">Free to try — no credit card required</p>
@@ -114,7 +158,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <li className="flex gap-2"><span className="text-zinc-400">✓</span> No subscription</li>
             </ul>
             <button
-              onClick={onGetStarted}
+              onClick={() => startCheckout("pack")}
               className="w-full py-3 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors"
             >
               Get 5 briefs
@@ -136,7 +180,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <li className="flex gap-2"><span className="text-zinc-500">✓</span> Cancel anytime</li>
             </ul>
             <button
-              onClick={onGetStarted}
+              onClick={() => startCheckout("pro")}
               className="w-full py-3 bg-white text-zinc-900 rounded-xl text-sm font-medium hover:bg-zinc-100 transition-colors"
             >
               Get Pro
