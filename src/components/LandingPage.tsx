@@ -20,7 +20,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-6 pt-16 pb-20 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 rounded-full text-xs text-zinc-600 mb-8">
-          AI-powered interview prep
+          Personalized prep brief in 60 seconds
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 mb-6 leading-tight">
           Know exactly what the<br className="hidden sm:block" /> company needs —<br className="hidden sm:block" /> before you walk in.
@@ -76,7 +76,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       {/* Pricing */}
       <section className="max-w-4xl mx-auto px-6 py-20">
         <h2 className="text-2xl font-bold text-center text-zinc-900 mb-3">Pricing</h2>
-        <p className="text-center text-zinc-500 mb-14">Start free. Upgrade when you need more.</p>
+        <p className="text-center text-zinc-500 mb-14">Free briefs to get started. Pro when an interview is on the line.</p>
         <div className="grid sm:grid-cols-3 gap-6">
           {/* Free */}
           <div className="bg-white rounded-2xl border border-zinc-200 p-6 flex flex-col gap-4">
@@ -117,7 +117,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               onClick={onGetStarted}
               className="w-full py-3 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors"
             >
-              Buy pack
+              Get 5 briefs
             </button>
           </div>
 

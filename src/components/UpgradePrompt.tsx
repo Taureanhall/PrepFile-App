@@ -44,13 +44,13 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
         {/* Pro */}
         <div className="border-2 border-zinc-900 rounded-xl p-5 flex flex-col gap-3">
           <div>
-            <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Best value</div>
+            <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Most popular</div>
             <div className="text-lg font-bold text-zinc-900">PrepFile Pro</div>
             <div className="text-3xl font-bold text-zinc-900 mt-1">$9.99<span className="text-base font-normal text-zinc-500">/mo</span></div>
           </div>
           <ul className="text-sm text-zinc-600 space-y-1">
-            <li>✓ Resume match & personalized blind spots</li>
             <li>✓ Unlimited full briefs</li>
+            <li>✓ Resume match & personalized blind spots</li>
             <li>✓ Brief history saved</li>
             <li>✓ Cancel anytime</li>
           </ul>

@@ -52,7 +52,7 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
     <div className="bg-zinc-900 text-white rounded-2xl p-6 mb-8 space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
-          <p className="font-semibold text-sm">Sign in to save your briefs</p>
+          <p className="font-semibold text-sm">Sign in to get started</p>
           <p className="text-zinc-400 text-sm mt-0.5">
             Free plan: 3 briefs per week.
           </p>

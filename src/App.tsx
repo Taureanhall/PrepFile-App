@@ -278,7 +278,7 @@ export default function Page() {
 
     if (output && companyName && jobTitle) {
       const briefTitle = `${companyName} — ${jobTitle} Prep Brief | PrepFile`;
-      const briefDesc = `Interview prep brief for ${jobTitle} at ${companyName}. Built with Porter's Five Forces + Deming analysis.`;
+      const briefDesc = `Interview prep brief for ${jobTitle} at ${companyName}. Competitive position, role expectations, and tailored talking points.`;
       document.title = briefTitle;
       setMeta("og:title", briefTitle);
       setMeta("og:description", briefDesc);
