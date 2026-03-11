@@ -228,8 +228,9 @@ try { db.exec("ALTER TABLE users ADD COLUMN onboarding_email_sent INTEGER NOT NU
 try { db.exec("ALTER TABLE users ADD COLUMN google_id TEXT"); } catch {}
 try { db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL"); } catch {}
 try { db.exec("ALTER TABLE briefs ADD COLUMN is_public INTEGER NOT NULL DEFAULT 0"); } catch {}
+try { db.exec("ALTER TABLE users ADD COLUMN email_unsubscribed INTEGER NOT NULL DEFAULT 0"); } catch {}
 
-// Email nurture tracking
+// Email nurture tracking (legacy — touch-based for free users with briefs)
 db.exec(`
   CREATE TABLE IF NOT EXISTS email_nurture (
     id TEXT PRIMARY KEY,
@@ -237,6 +238,17 @@ db.exec(`
     touch INTEGER NOT NULL,
     sent_at TEXT DEFAULT (datetime('now')),
     UNIQUE(user_id, touch)
+  );
+`);
+
+// Email sequence tracking — welcome + re-engagement sequences by email_id
+db.exec(`
+  CREATE TABLE IF NOT EXISTS email_sequences (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    email_id TEXT NOT NULL,
+    sent_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(user_id, email_id)
   );
 `);
 
@@ -363,6 +375,87 @@ export function getFreeUsersWithBriefs(): Array<{ id: string; email: string; fir
     WHERE COALESCE(s.plan, 'free') = 'free'
     GROUP BY u.id
   `).all() as Array<{ id: string; email: string; first_brief_at: string }>;
+}
+
+// --- Email sequence tracking (welcome + re-engagement) ---
+
+/** Returns the set of email_ids already sent to a user. */
+export function getEmailSequenceSent(userId: string): Set<string> {
+  const rows = db.prepare(
+    "SELECT email_id FROM email_sequences WHERE user_id = ?"
+  ).all(userId) as Array<{ email_id: string }>;
+  return new Set(rows.map(r => r.email_id));
+}
+
+/** Record that a sequence email was sent. Idempotent. */
+export function markEmailSequenceSent(userId: string, emailId: string): void {
+  db.prepare(
+    "INSERT OR IGNORE INTO email_sequences (id, user_id, email_id) VALUES (?, ?, ?)"
+  ).run(crypto.randomUUID(), userId, emailId);
+}
+
+/** Unsubscribe a user from all marketing emails. */
+export function setEmailUnsubscribed(userId: string): void {
+  db.prepare("UPDATE users SET email_unsubscribed = 1 WHERE id = ?").run(userId);
+}
+
+/** Look up a user id from their email for unsubscribe flows. */
+export function getUserIdByEmail(email: string): string | null {
+  const row = db.prepare("SELECT id FROM users WHERE email = ?").get(email.toLowerCase()) as any;
+  return row?.id ?? null;
+}
+
+/** Find user by email or create a new account. Returns user id. */
+export function getOrCreateUserByEmail(email: string): string {
+  const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email.toLowerCase()) as any;
+  if (existing) return existing.id;
+  const userId = crypto.randomUUID();
+  db.prepare("INSERT INTO users (id, email, last_login_at) VALUES (?, ?, datetime('now'))").run(userId, email.toLowerCase());
+  return userId;
+}
+
+/**
+ * Users who signed up >= delayDays ago, haven't received emailId, and are not unsubscribed.
+ * Used for welcome-2 (day 2) and welcome-3 (day 5).
+ */
+export function getUsersForWelcomeEmail(
+  emailId: string,
+  delayDays: number
+): Array<{ id: string; email: string }> {
+  return db.prepare(`
+    SELECT u.id, u.email
+    FROM users u
+    WHERE u.email_unsubscribed = 0
+      AND CAST((julianday('now') - julianday(u.created_at)) AS INTEGER) >= ?
+      AND NOT EXISTS (
+        SELECT 1 FROM email_sequences es WHERE es.user_id = u.id AND es.email_id = ?
+      )
+  `).all(delayDays, emailId) as Array<{ id: string; email: string }>;
+}
+
+/**
+ * Users whose last brief (or signup, if no briefs) was >= delayDays ago,
+ * haven't received emailId, and are not unsubscribed.
+ * Used for reengagement-1 (day 7) and reengagement-2 (day 14).
+ */
+export function getUsersForReengagement(
+  emailId: string,
+  delayDays: number
+): Array<{ id: string; email: string }> {
+  return db.prepare(`
+    SELECT u.id, u.email
+    FROM users u
+    WHERE u.email_unsubscribed = 0
+      AND NOT EXISTS (
+        SELECT 1 FROM email_sequences es WHERE es.user_id = u.id AND es.email_id = ?
+      )
+      AND CAST((julianday('now') - julianday(
+        COALESCE(
+          (SELECT MAX(b.created_at) FROM briefs b WHERE b.user_id = u.id),
+          u.created_at
+        )
+      )) AS INTEGER) >= ?
+  `).all(emailId, delayDays) as Array<{ id: string; email: string }>;
 }
 
 export default db;

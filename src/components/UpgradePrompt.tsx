@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 interface Props {
-  reason: "free_limit" | "pack_exhausted";
+  reason: "free_limit" | "pack_exhausted" | "pro_required";
   onDismiss: () => void;
 }
 
@@ -27,15 +27,17 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
     }
   }
 
-  return (
+  const content = (
     <div className="bg-white border border-zinc-200/60 rounded-2xl shadow-sm p-6 md:p-8 space-y-6">
       <div>
         <h2 className="text-xl font-bold text-zinc-900 mb-1">
-          {reason === "pack_exhausted" ? "Pack used up" : "You've hit your free limit"}
+          {reason === "pack_exhausted" ? "Pack used up" : reason === "pro_required" ? "Upgrade to unlock this feature" : "You've hit your free limit"}
         </h2>
         <p className="text-zinc-500 text-sm">
           {reason === "pack_exhausted"
             ? "Your 5-brief Interview Pack has been used. Upgrade to Pro for unlimited briefs."
+            : reason === "pro_required"
+            ? "Resume match, round expectations, and full company signals are available on Pro and Interview Pack."
             : "Free tier includes 3 briefs per week. Upgrade to keep prepping."}
         </p>
       </div>
@@ -98,4 +100,16 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
       </button>
     </div>
   );
+
+  // pro_required renders as a centered modal overlay; other reasons render inline
+  if (reason === "pro_required") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm -z-0" onClick={onDismiss} />
+        <div className="relative z-50 w-full max-w-lg">{content}</div>
+      </div>
+    );
+  }
+
+  return content;
 }

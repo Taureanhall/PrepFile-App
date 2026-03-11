@@ -36,3 +36,8 @@ export function trackLogin() {
   if (!POSTHOG_KEY) return;
   posthog.capture("login");
 }
+
+export function trackAbVariant(variantId: string) {
+  if (!POSTHOG_KEY) return;
+  posthog.capture("ab_variant_shown", { variant_id: variantId, experiment: "landing_headline_v1" });
+}

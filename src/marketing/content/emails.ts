@@ -1,94 +1,169 @@
 /**
  * Email nurture sequences — PrepFile
  *
- * Two sequences:
- *   1. welcome  — sent to new signups (3 emails: immediate, day 2, day 5)
- *   2. reengagement — sent to inactive users (2 emails: day 7, day 14)
+ * Four event-triggered sequences (wired via Resend):
+ *   1. welcome          — sent immediately on signup
+ *   2. activation-nudge — sent 24h post-signup if no brief has been created
+ *   3. upgrade-prompt   — sent after user generates their 2nd free brief
+ *   4. reengagement     — sent 7 days after last visit if no brief generated in that window
  *
- * Each email: subject, previewText, body (plain text), ctaText, ctaUrl (placeholder).
- * FE wires into Resend (or equivalent) transactional email API.
- * Keep each email under 150 words. No HTML formatting in body — plain text only.
+ * Each email includes two subject variants for A/B testing.
+ * Body: plain text only, under 150 words.
+ * ctaUrl: replace with dynamic URL at send time where noted.
  */
 
 export type Email = {
   id: string;
-  subject: string;
+  trigger: string;               // human-readable trigger condition for Resend wiring
+  subjectA: string;              // A/B variant A
+  subjectB: string;              // A/B variant B
   previewText: string;
-  body: string;
+  body: string;                  // plain text, no HTML
   ctaText: string;
-  ctaUrl: string; // Replace with actual URL at send time (may be dynamic)
-  delayDays: number; // Days after trigger event to send
+  ctaUrl: string;                // use production URL or dynamic URL at send time
+  delayDays: number;             // days after trigger before sending (0 = immediate)
 };
 
-export const welcomeSequence: Email[] = [
-  {
-    id: "welcome-1",
-    delayDays: 0,
-    subject: "Your first brief takes 60 seconds",
-    previewText: "Here's what PrepFile actually does.",
-    body: `Thanks for signing up.
+// ─── 1. Welcome ─────────────────────────────────────────────────────────────
+// Trigger: user completes signup
 
-Here's how PrepFile works: enter a company name, your job title, paste the job description, and answer 4 quick questions about your interview situation. You get a personalized prep brief — company snapshot, what the role actually requires, what your interviewer is evaluating, and the questions you should be asking.
+export const welcomeEmail: Email = {
+  id: "welcome-1",
+  delayDays: 0,
+  trigger: "user.signup",
+  subjectA: "Your first brief takes 60 seconds",
+  subjectB: "PrepFile is ready — here's how to use it",
+  previewText: "Enter a company, paste a job description, get a prep brief.",
+  body: `Thanks for signing up.
 
-It takes 60 seconds to generate. Most users say it surfaces something they didn't already know.
+Here's how PrepFile works: enter a company name, your job title, and paste the job description. Answer 4 quick questions about your interview situation. PrepFile generates a prep brief covering the company's competitive position, what your interviewer is evaluating in this role, the round structure you should expect, and the questions you should be asking.
+
+It takes under a minute. Most users find something in the brief they hadn't thought about.
 
 Generate your first one now.`,
-    ctaText: "Generate My First Brief",
-    ctaUrl: "https://prepfile-production.up.railway.app",
-  },
-  {
-    id: "welcome-2",
-    delayDays: 2,
-    subject: "What the free brief doesn't include",
-    previewText: "Pro goes deeper. Here's exactly how.",
-    body: `The free brief covers the essentials: company snapshot, role context, a few key signals.
+  ctaText: "Create My First Brief",
+  ctaUrl: "https://prepfile.work",
+};
 
-The Pro brief goes further: full round-by-round expectations, questions to ask your interviewer that signal strategic thinking, and a resume match that shows where you're underprepared for this specific role.
+export const welcome2Email: Email = {
+  id: "welcome-2",
+  delayDays: 2,
+  trigger: "user.signup + 2d",
+  subjectA: "One thing most candidates skip",
+  subjectB: "The part of prep most people miss",
+  previewText: "It's the questions you ask the interviewer.",
+  body: `Most candidates prep answers. Few prep questions.
 
-One way to see the difference: generate a brief for a Google PM role versus a Director role at an early-stage startup. The interview is a different game. PrepFile adjusts.`,
-    ctaText: "Try a Google Brief",
-    ctaUrl: "https://prepfile-production.up.railway.app",
-  },
-  {
-    id: "welcome-3",
-    delayDays: 5,
-    subject: "Most people prep the night before",
-    previewText: "That's the mistake. Here's how to avoid it.",
-    body: `Most job seekers Google "[Company] interview questions" the night before, get the same recycled lists, and walk in with generic answers.
+The questions you ask your interviewer signal whether you've done surface-level research or actually understand the role. PrepFile generates interviewer questions tailored to the specific company and position — the kind that make the interviewer think "this person gets it."
 
-PrepFile users spend 30 minutes with a brief personalized to their role, their background, and the specific job description. They go in knowing what the interviewer is actually evaluating — not what a forum post guesses they care about.
+If you haven't generated a brief yet, it takes under a minute.`,
+  ctaText: "Generate a Brief",
+  ctaUrl: "https://prepfile.work",
+};
 
-Pro is $9.99/month. One good prep session is worth more than a month of anxious Googling.`,
-    ctaText: "Upgrade to Pro",
-    ctaUrl: "https://prepfile-production.up.railway.app",
-  },
-];
+export const welcome3Email: Email = {
+  id: "welcome-3",
+  delayDays: 5,
+  trigger: "user.signup + 5d",
+  subjectA: "How PrepFile users prep differently",
+  subjectB: "What changes when you have a prep brief",
+  previewText: "Structure beats volume.",
+  body: `The difference between a good interview and a great one usually comes down to preparation structure, not volume.
 
-export const reengagementSequence: Email[] = [
-  {
-    id: "reengagement-1",
-    delayDays: 7, // 7 days since last activity
-    subject: "Your next interview is closer than you think",
-    previewText: "A brief takes 60 seconds.",
-    body: `You signed up for PrepFile a week ago. If you haven't generated a brief yet, this is a good time.
+PrepFile gives you a single document that covers what the company values in this role, what each round is designed to evaluate, where your background may have gaps, and what to ask that shows you've done real research.
 
-Most people wait until 24 hours before an interview to prep. The ones who do best start a few days early — they know the company's competitive position, what the role actually demands, and what questions to ask.
+One brief. Under a minute. Everything you need in one place.`,
+  ctaText: "Create a Brief",
+  ctaUrl: "https://prepfile.work",
+};
 
-Takes 60 seconds to generate. Whether you have an interview scheduled or not, run one for your target role.`,
-    ctaText: "Generate a Brief",
-    ctaUrl: "https://prepfile-production.up.railway.app",
-  },
-  {
-    id: "reengagement-2",
-    delayDays: 14, // 14 days since last activity
-    subject: "New: Stripe, Notion, Figma interview guides",
-    previewText: "Company-specific prep pages, freshly researched.",
-    body: `We've added interview guides for Stripe, Notion, Figma, and more — covering each company's hiring process, what they look for, and how to approach the interview.
+// ─── 2. Activation nudge ─────────────────────────────────────────────────────
+// Trigger: 24h post-signup, no brief generated yet
 
-These are a solid starting point. The brief you generate in PrepFile goes deeper: personalized to your role, your background, and the specific job description you're applying to.
+export const activationNudgeEmail: Email = {
+  id: "activation-nudge",
+  delayDays: 1,
+  trigger: "user.signup + 24h, no brief created",
+  subjectA: "Haven't tried PrepFile yet?",
+  subjectB: "What you get in 60 seconds",
+  previewText: "Paste a job description. That's the whole input.",
+  body: `You signed up yesterday but haven't generated a brief yet.
 
-Start with the Stripe guide, then generate a brief for your target role.`,
-    ctaText: "Read the Stripe Guide",
-    ctaUrl: "https://prepfile-production.up.railway.app/interview-prep/stripe",
-  },
+Here's what PrepFile produces: a structured summary of what the company looks for in your specific role, what your interview rounds will likely include, questions to ask your interviewer that show strategic thinking, and where your background may have gaps relative to the job description.
+
+You need a job description and a company name. That's it. Takes 60 seconds.
+
+If you have an interview scheduled, now is a good time.`,
+  ctaText: "Generate a Brief",
+  ctaUrl: "https://prepfile.work",
+};
+
+// ─── 3. Upgrade prompt ───────────────────────────────────────────────────────
+// Trigger: user has generated their 2nd free brief (1 remaining before weekly limit)
+
+export const upgradePromptEmail: Email = {
+  id: "upgrade-prompt",
+  delayDays: 0,
+  trigger: "user.brief_created, count == 2 (free tier)",
+  subjectA: "You've used 2 of 3 free briefs — here's what Pro unlocks",
+  subjectB: "Unlimited briefs, resume match, full analysis — $9.99/mo",
+  previewText: "One free brief left this week.",
+  body: `You've generated 2 free briefs. You have one left this week.
+
+Free briefs cover the essentials. Pro briefs include the full round-by-round breakdown, resume match against the job description, brief history across every role you're prepping for, and no weekly limits.
+
+The resume match alone changes how you prep — it shows specifically where your experience doesn't map to what the role requires, so you're not blindsided in the room.
+
+If you have more than one interview coming up, Pro pays for itself.`,
+  ctaText: "Upgrade to Pro — $9.99/mo",
+  ctaUrl: "https://prepfile.work/upgrade",
+};
+
+// ─── 4. Re-engagement ────────────────────────────────────────────────────────
+// Trigger: 7 days since last app visit, no brief generated in that window
+
+export const reengagementEmail: Email = {
+  id: "reengagement-1",
+  delayDays: 7,
+  trigger: "user.last_visit + 7d, no brief in 7d",
+  subjectA: "Still preparing for that interview?",
+  subjectB: "Your PrepFile account is here when you need it",
+  previewText: "When you have a job description, you're ready.",
+  body: `When you have an interview coming up, PrepFile turns one job description into a structured prep brief — what the company is looking for in your role, what interview format to expect, the questions you should ask your interviewer, and where you might be underprepared.
+
+Takes under a minute. No account setup needed beyond what you've already done.
+
+If you have something lined up, now is a good time to run one.`,
+  ctaText: "Open PrepFile",
+  ctaUrl: "https://prepfile.work",
+};
+
+export const reengagement2Email: Email = {
+  id: "reengagement-2",
+  delayDays: 14,
+  trigger: "user.last_visit + 14d, no brief in 14d",
+  subjectA: "One brief before your next interview",
+  subjectB: "PrepFile is still here when you need it",
+  previewText: "60 seconds of prep that changes the conversation.",
+  body: `Interviews come in waves. When your next one lands, PrepFile turns a job description into a structured prep brief — company context, role expectations, likely interview format, and questions that show strategic thinking.
+
+No setup required. You already have an account.
+
+When you're ready, it takes under a minute.`,
+  ctaText: "Open PrepFile",
+  ctaUrl: "https://prepfile.work",
+};
+
+// ─── Sequence arrays (consumed by email-sequences.ts) ────────────────────────
+
+export const welcomeSequence: Email[] = [welcomeEmail, welcome2Email, welcome3Email];
+export const reengagementSequence: Email[] = [reengagementEmail, reengagement2Email];
+
+// ─── Export all ──────────────────────────────────────────────────────────────
+
+export const allEmailSequences: Email[] = [
+  ...welcomeSequence,
+  activationNudgeEmail,
+  upgradePromptEmail,
+  ...reengagementSequence,
 ];

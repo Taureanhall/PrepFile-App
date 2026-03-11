@@ -10,6 +10,7 @@ import { LandingPage } from "./components/LandingPage";
 import { PublicBrief } from "./components/PublicBrief";
 import { InterviewPrepPage } from "./components/InterviewPrepPage";
 import { InterviewPrepIndex } from "./components/InterviewPrepIndex";
+import { BlogPage } from "./components/BlogPage";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin } from "./lib/analytics";
 
@@ -58,6 +59,17 @@ export default function Page() {
   const interviewPrepSlug = window.location.pathname.match(/^\/interview-prep\/([^/]+)$/)?.[1] ?? null;
   if (interviewPrepSlug) {
     return <InterviewPrepPage slug={interviewPrepSlug} />;
+  }
+
+  // Route: /blog — blog index
+  if (window.location.pathname === "/blog") {
+    return <BlogPage />;
+  }
+
+  // Route: /blog/:slug — individual blog article
+  const blogSlug = window.location.pathname.match(/^\/blog\/([^/]+)$/)?.[1] ?? null;
+  if (blogSlug) {
+    return <BlogPage slug={blogSlug} />;
   }
 
   // Auth state
@@ -414,8 +426,8 @@ export default function Page() {
               </div>
             )}
 
-            {/* Upgrade prompt — shown when plan limit hit */}
-            {upgradeReason ? (
+            {/* Upgrade prompt — shown when plan limit hit (not pro_required, which overlays the brief) */}
+            {upgradeReason && upgradeReason !== "pro_required" ? (
               <UpgradePrompt reason={upgradeReason} onDismiss={() => setUpgradeReason(null)} />
             ) : needsSignIn ? (
               <SignInGate />
@@ -587,6 +599,10 @@ export default function Page() {
           </div>
         ) : (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Pro upgrade overlay — shown on top of brief when user clicks upgrade CTAs */}
+            {upgradeReason === "pro_required" && (
+              <UpgradePrompt reason="pro_required" onDismiss={() => setUpgradeReason(null)} />
+            )}
             <PrepBrief
               data={output}
               user={user}

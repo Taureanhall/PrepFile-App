@@ -1,47 +1,4 @@
-import { useState, type FormEvent } from "react";
-
 export function SignInGate() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    setStatus("loading");
-    setErrorMsg("");
-
-    try {
-      const res = await fetch("/api/auth/request-magic-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-      if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error || "Failed to send link");
-      }
-      setStatus("sent");
-    } catch (err: any) {
-      setErrorMsg(err.message || "Something went wrong");
-      setStatus("error");
-    }
-  };
-
-  if (status === "sent") {
-    return (
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-zinc-200/60 text-center space-y-4">
-        <div className="text-4xl">✉️</div>
-        <h2 className="text-xl font-bold text-zinc-900">Check your inbox</h2>
-        <p className="text-zinc-500">
-          We sent a login link to <strong className="text-zinc-900">{email}</strong>.
-          Click it to sign in and keep generating briefs.
-        </p>
-        <p className="text-zinc-400 text-sm">Link expires in 15 minutes.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-white p-8 rounded-2xl shadow-sm border border-zinc-200/60 space-y-6">
       <div>
@@ -51,7 +8,6 @@ export function SignInGate() {
         </p>
       </div>
 
-      {/* Google OAuth — primary */}
       <a
         href="/api/auth/google"
         className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-zinc-900 text-white font-medium rounded-xl hover:bg-zinc-800 transition-colors"
@@ -64,34 +20,6 @@ export function SignInGate() {
         </svg>
         Continue with Google
       </a>
-
-      {/* Divider */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-zinc-200" />
-        <span className="text-zinc-400 text-xs">or use email</span>
-        <div className="flex-1 h-px bg-zinc-200" />
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="your@email.com"
-          required
-          className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors"
-        />
-        <button
-          type="submit"
-          disabled={status === "loading"}
-          className="w-full py-3 px-4 bg-white text-zinc-900 font-medium rounded-xl border border-zinc-200 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
-        >
-          {status === "loading" ? "Sending…" : "Send email link"}
-        </button>
-      </form>
-      {status === "error" && (
-        <p className="text-red-500 text-sm">{errorMsg}</p>
-      )}
     </div>
   );
 }
