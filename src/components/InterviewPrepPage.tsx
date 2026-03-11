@@ -175,6 +175,70 @@ const COMPANIES: Record<string, CompanyData> = {
     ],
     ctaCompany: "Goldman Sachs",
   },
+  microsoft: {
+    name: "Microsoft",
+    slug: "microsoft",
+    tagline: "How to Prepare for a Microsoft Interview",
+    metaTitle: "How to Prepare for a Microsoft Interview | PrepFile",
+    metaDescription:
+      "Microsoft's loop ends with an As-Appropriate interview most candidates don't understand. Here's how the full process works, what growth mindset actually means in practice, and how the AA round can change your offer.",
+    intro:
+      "Microsoft's interview process is more behavioral-heavy than most candidates expect — and it ends with a round that can override everything that came before it.",
+    culture: {
+      heading: "What Growth Mindset Actually Means in an Interview",
+      body:
+        "Satya Nadella's shift from \"know-it-all\" to \"learn-it-all\" is not HR language at Microsoft — it's the behavioral signal interviewers are explicitly trained to capture. What they're watching for is not whether you describe yourself as a quick learner. The framing Microsoft rewards is about feedback loops and course corrections: situations where you received hard feedback, integrated it, and changed your behavior. When your interviewer gives you a hint mid-problem, how you respond is data — candidates who integrate the hint and acknowledge what it unlocked score higher than those who treat it as interference. Behavioral stories where \"I\" did everything alone read as a cultural flag; Microsoft rewards collaborative narratives.",
+    },
+    hiring: {
+      heading: "The Loop Structure",
+      body:
+        "Microsoft's standard process runs in five stages: recruiter screen, optional online assessment, technical phone screen, the Loop (Super Day), and the As-Appropriate interview. The recruiter screen is 30–45 minutes — no technical content. Some roles include a Codility online assessment: 60–90 minutes, 2–3 algorithmic problems. The technical phone screen is 45–60 minutes with one coding problem plus behavioral questions. The Loop is 4–5 consecutive virtual interviews via Microsoft Teams, each 45–60 minutes — 2–3 coding rounds (medium to hard difficulty), one system design round for Level 61+ roles, and one hiring manager round. Behavioral questions are woven into every round, not isolated to one interview. Everything is virtual.",
+    },
+    lookFor: {
+      heading: "The As-Appropriate Interview",
+      body:
+        "The AA interview is the final round, scheduled 1–2 weeks after a successful Loop. Conducted by a Principal Engineering Manager, Director, or higher — and it has veto power. A unanimous Hire from the Loop can be overturned here. Before the meeting, the AA interviewer reads all loop feedback. If your loop left culture fit unclear, expect heavy behavioral probing. If there's a technical gap, expect technical probing — including system design despite what recruiters may describe. For system design, Microsoft interviewers expect Azure-adjacent reasoning: cost efficiency, security, and compliance at enterprise scale. Generic distributed systems answers work at other companies; at Microsoft, reasoning about Azure services reads as signal. If the AA pivots to selling Microsoft to you — specific team projects, career trajectory, growth opportunities — that's a positive sign you're being closed, not evaluated.",
+    },
+    tips: [
+      "Behavioral questions appear in every round, including coding — prepare 3–4 strong stories upfront",
+      "Demonstrate growth mindset through feedback integration, not self-promotion",
+      "For system design at Level 61+: reason about Azure services and enterprise-scale trade-offs",
+      "The AA interview has veto power — treat it as seriously as the Loop itself",
+    ],
+    ctaCompany: "Microsoft",
+  },
+  apple: {
+    name: "Apple",
+    slug: "apple",
+    tagline: "How to Prepare for an Apple Interview",
+    metaTitle: "How to Prepare for an Apple Interview | PrepFile",
+    metaDescription:
+      "Apple's interview process has no standard format — each team runs its own loop. Here's what actually matters: the culture signals, the loop structure, and the one question that kills most candidates.",
+    intro:
+      "Apple's interview is unlike any other big tech process because there is no single Apple interview — every team designs its own loop with near-total autonomy.",
+    culture: {
+      heading: "\"Why Apple?\" Is the Interview",
+      body:
+        "Apple interviewers probe your motivation until they get an authentic emotional response, not a polished answer. Generic answers like \"I love the products\" are disqualifying. What works: tie your answer to a specific product decision, a design tradeoff that resonated with you, or a moment a product changed how you worked. Saying you don't regularly use Apple hardware is reported as a fatal flaw — Apple hires genuine product users because they believe product intuition comes from habitual use. Privacy is not a marketing position at Apple; it's a first-class engineering constraint. System design answers that ignore data minimization or on-device processing miss what Apple's engineers actually optimize for.",
+    },
+    hiring: {
+      heading: "The Loop Structure (And Why It Varies)",
+      body:
+        "Apple has no standardized interview format, no shared question bank, and no centralized debrief process. A software engineer interviewing for Core OS will face a completely different loop than someone on Maps — both are Apple SWE interviews. For software engineers: recruiter screen, one or two technical phone screens on CoderPad, then an onsite loop of 3–8 rounds lasting 4–6 hours. Some teams run the full day; others cut short mid-onsite on a clear mismatch — don't interpret an early wrap-up as positive. For product managers: 7–10 interviews covering behavioral, product design, strategy, technical depth, and analytical reasoning. Lunch on campus counts as an interview. Before each stage, ask your recruiter directly whether the upcoming round is LeetCode-style or domain-specific — recruiters attend debriefs and know what's coming.",
+    },
+    lookFor: {
+      heading: "How Apple Evaluates You in Practice",
+      body:
+        "Apple uses the SPSIL framework internally — Situation, Problem, Solution, Impact, Lessons. The Lessons component is not optional; an answer that shows you succeeded is only half the evaluation. The DRI model (Directly Responsible Individual) is a real operational artifact, not a values statement — stories where \"the team\" did X without a clear DRI read as cultural misfit. For engineering roles: medium-to-hard LeetCode difficulty, weighted toward core data structures. Domain-specific roles may replace generic algorithmic rounds with domain questions — the job description signals this. Apple's functional org structure (hardware, software, silicon, and services are separate orgs that collaborate horizontally) means cross-functional stories are required, not optional. Stories where you drove alignment across teams with competing priorities and no shared manager will land harder here than at most companies.",
+    },
+    tips: [
+      "Research Apple's specific product decisions — generic \"love Apple\" answers are disqualifying",
+      "Use SPSIL: Situation, Problem, Solution, Impact, Lessons — the Lessons component is weighted heavily",
+      "Know who owned what in your past projects; diffuse ownership reads as cultural misfit",
+      "Ask your recruiter whether the round is algorithmic or domain-specific before each stage",
+    ],
+    ctaCompany: "Apple",
+  },
 };
 
 interface InterviewPrepPageProps {
