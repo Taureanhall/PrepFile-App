@@ -28,6 +28,7 @@ import {
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
+import { runNurtureEmailBatch } from "./src/lib/nurture.js";
 import { OAuth2Client } from "google-auth-library";
 
 const RATE_LIMIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -876,6 +877,11 @@ async function startServer() {
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+
+  // Nurture email batch — run once on startup (after 30s) then every 4 hours
+  const runNurture = () => runNurtureEmailBatch(APP_URL, FROM_EMAIL);
+  setTimeout(runNurture, 30_000);
+  setInterval(runNurture, 4 * 60 * 60 * 1000);
 }
 
 startServer();
