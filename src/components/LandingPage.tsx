@@ -26,7 +26,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
           Know exactly what the<br className="hidden sm:block" /> company needs —<br className="hidden sm:block" /> before you walk in.
         </h1>
         <p className="text-xl text-zinc-500 mb-10 max-w-2xl mx-auto leading-relaxed">
-          PrepFile analyzes the job description and generates a precise prep brief: company signals, role intelligence, round expectations, and questions that show you've done your homework.
+          Drop in the job description. Get a personalized brief covering the company's competitive position, what the interviewer is actually evaluating, and the questions to ask that signal strategic thinking — in under a minute.
         </p>
         <button
           onClick={onGetStarted}
@@ -58,7 +58,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               {
                 step: "3",
                 title: "Get your prep brief",
-                desc: "AI analyzes the company using Porter's Five Forces and Deming frameworks. You get a structured brief in under a minute.",
+                desc: "PrepFile generates a structured brief covering the company's competitive position, what your interviewer is evaluating, and tailored talking points — in under a minute.",
               },
             ].map(({ step, title, desc }) => (
               <div key={step} className="flex flex-col gap-3">
@@ -176,7 +176,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       {/* Footer CTA */}
       <section className="bg-zinc-900 text-white py-16">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-2xl font-bold mb-4">Ready to walk in prepared?</h2>
+          <h2 className="text-2xl font-bold mb-4">Your next interview is coming. Start prepping now.</h2>
           <p className="text-zinc-400 mb-8">Get a prep brief for your next interview in under a minute.</p>
           <button
             onClick={onGetStarted}

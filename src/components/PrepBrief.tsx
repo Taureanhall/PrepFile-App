@@ -277,7 +277,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
             <div className="print:hidden rounded-xl border border-zinc-200 bg-zinc-50 p-5">
               <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-zinc-900 text-sm">Resume match is available on Pro and Pack</h3>
+                  <h3 className="font-semibold text-zinc-900 text-sm">See how your resume stacks up against this role</h3>
                   <p className="text-zinc-500 text-sm mt-0.5">
                     See how your resume stacks up against this role — tailored talking points, gap analysis, and personalized blind spots.
                   </p>
@@ -286,7 +286,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
                   onClick={onUpgradeClick}
                   className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors whitespace-nowrap"
                 >
-                  See plans
+                  Unlock Resume Match
                 </button>
               </div>
             </div>
@@ -566,16 +566,16 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
                 </>
               )}
             </button>
-            <p className="text-xs text-zinc-400 mt-2">Uses one of your daily briefs</p>
+            <p className="text-xs text-zinc-400 mt-2">Uses one of your weekly briefs</p>
           </div>
         )}
 
         {/* Email Capture — only for unauthenticated users */}
         {!user && (
           <div className="max-w-md mx-auto text-center">
-            <h3 className="text-lg font-semibold text-zinc-900 mb-2">Save My Guide</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 mb-2">Email Me This Brief</h3>
             <p className="text-zinc-500 text-sm mb-6">
-              Get a copy of this brief sent directly to your inbox so you can review it before the interview.
+              Save this brief. Review it the night before, share it with a mentor, or reference it during prep.
             </p>
 
             {status === "success" ? (
