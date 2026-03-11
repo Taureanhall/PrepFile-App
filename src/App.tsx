@@ -13,9 +13,9 @@ import { InterviewPrepIndex } from "./components/InterviewPrepIndex";
 import { BlogPage } from "./components/BlogPage";
 import { FaqPage } from "./components/FaqPage";
 import { SegmentPage } from "./components/SegmentPage";
+import { UpgradeCTA } from "./components/UpgradeCTA";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted } from "./lib/analytics";
-import { upgradeNudges } from "./data/conversion-copy";
 
 // Canonical slug mapping for /interview-prep/roles/:shortSlug
 const ROLE_SLUG_MAP: Record<string, string> = {
@@ -648,19 +648,9 @@ export default function Page() {
               onUpgradeClick={() => setUpgradeReason("pro_required")}
             />
 
-            {/* Post-brief upgrade nudge — free users only, shown after brief renders */}
+            {/* Post-brief upgrade CTA — free users only, A/B tested copy variants */}
             {(!user || subscription?.plan === "free") && (
-              <div className="print:hidden bg-zinc-50 border border-zinc-200 rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
-                <p className="text-sm text-zinc-600 flex-1">
-                  {upgradeNudges[0].copy}
-                </p>
-                <button
-                  onClick={() => setUpgradeReason("pro_required")}
-                  className="shrink-0 text-sm font-medium text-zinc-900 underline underline-offset-2 hover:text-zinc-600 transition-colors whitespace-nowrap"
-                >
-                  {upgradeNudges[0].cta}
-                </button>
-              </div>
+              <UpgradeCTA onUpgradeClick={() => setUpgradeReason("pro_required")} />
             )}
 
             <div className="flex justify-center pt-8 print:hidden">
