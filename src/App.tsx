@@ -12,7 +12,17 @@ import { InterviewPrepPage } from "./components/InterviewPrepPage";
 import { InterviewPrepIndex } from "./components/InterviewPrepIndex";
 import { BlogPage } from "./components/BlogPage";
 import type { PrepBriefData } from "./types";
-import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin } from "./lib/analytics";
+import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted } from "./lib/analytics";
+import { upgradeNudges } from "./data/conversion-copy";
+
+// Canonical slug mapping for /interview-prep/roles/:shortSlug
+const ROLE_SLUG_MAP: Record<string, string> = {
+  pm: "product-manager",
+  swe: "software-engineer",
+  "data-science": "data-scientist",
+  consulting: "management-consultant",
+  finance: "investment-banking-analyst",
+};
 
 const EXAMPLES = [
   { company: "Stripe", title: "Product Manager" },
@@ -53,6 +63,13 @@ export default function Page() {
   // Route: /interview-prep — index listing all company guides
   if (window.location.pathname === "/interview-prep") {
     return <InterviewPrepIndex />;
+  }
+
+  // Route: /interview-prep/roles/:slug — job-function landing pages (pm, swe, data-science, consulting, finance)
+  const roleSlug = window.location.pathname.match(/^\/interview-prep\/roles\/([^/]+)$/)?.[1] ?? null;
+  if (roleSlug) {
+    const canonicalSlug = ROLE_SLUG_MAP[roleSlug] ?? roleSlug;
+    return <InterviewPrepPage slug={canonicalSlug} />;
   }
 
   // Route: /interview-prep/:slug — SEO marketing pages
@@ -124,10 +141,15 @@ export default function Page() {
     checkKey();
   }, []);
 
-  // Track page view on mount; handle Stripe return params
+  // Track page view on mount; handle Stripe return params and auth completion
   useEffect(() => {
     trackPageView();
     const params = new URLSearchParams(window.location.search);
+    const authMethod = params.get("auth_method");
+    if (authMethod) {
+      trackSignupCompleted(authMethod);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
     if (params.get("payment") === "success") {
       setPaymentSuccess(true);
       window.history.replaceState({}, "", "/");
@@ -255,7 +277,7 @@ export default function Page() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       const { briefId: newBriefId, ...briefData } = data;
-      trackBriefGenerated(companyName, jobTitle);
+      trackBriefGenerated(companyName, jobTitle, subscription?.plan ?? "free", !!user);
       setOutput(briefData as PrepBriefData);
       setBriefId(newBriefId ?? null);
     } catch (error: any) {
@@ -617,13 +639,13 @@ export default function Page() {
             {(!user || subscription?.plan === "free") && (
               <div className="print:hidden bg-zinc-50 border border-zinc-200 rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
                 <p className="text-sm text-zinc-600 flex-1">
-                  Want the full picture? Pro users get company signals, round expectations, and resume match.
+                  {upgradeNudges[0].copy}
                 </p>
                 <button
                   onClick={() => setUpgradeReason("pro_required")}
                   className="shrink-0 text-sm font-medium text-zinc-900 underline underline-offset-2 hover:text-zinc-600 transition-colors whitespace-nowrap"
                 >
-                  View plan comparison
+                  {upgradeNudges[0].cta}
                 </button>
               </div>
             )}

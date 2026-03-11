@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { landingBaseline, landingVariants, type LandingVariant } from "../marketing/content/landing-variants";
-import { trackAbVariant } from "../lib/analytics";
+import { trackAbVariant, trackUpgradeClicked } from "../lib/analytics";
 
 const AB_STORAGE_KEY = "prepfile_ab_landing_v1";
 const ALL_VARIANTS: LandingVariant[] = [landingBaseline, ...landingVariants];
@@ -25,6 +25,7 @@ interface LandingPageProps {
 }
 
 async function startCheckout(product: "pro" | "pack") {
+  trackUpgradeClicked("pricing_page", product);
   try {
     const res = await fetch("/api/stripe/create-checkout-session", {
       method: "POST",

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { trackUpgradeClicked } from "../lib/analytics";
 
 interface Props {
   reason: "free_limit" | "pack_exhausted" | "pro_required";
@@ -10,6 +11,7 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   async function startCheckout(product: "pro" | "pack") {
+    trackUpgradeClicked("post_brief", product);
     setLoading(product);
     setCheckoutError(null);
     try {
