@@ -100,7 +100,7 @@ export function MyBriefs({ onBack }: MyBriefsProps) {
           <p className="text-sm text-zinc-500 mb-6">Generate your first prep brief and it will be saved here.</p>
           <button
             onClick={onBack}
-            className="px-5 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors"
+            className="px-5 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
           >
             Generate your first brief
           </button>

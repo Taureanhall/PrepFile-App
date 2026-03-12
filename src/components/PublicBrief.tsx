@@ -62,7 +62,7 @@ export function PublicBrief({ briefId }: PublicBriefProps) {
           <p className="text-zinc-500 mb-6">This brief is private or no longer exists.</p>
           <a
             href="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
           >
             Generate your own brief
           </a>

@@ -154,7 +154,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
             disabled={shareStatus === "loading"}
             className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
               isPublic
-                ? "border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-800"
+                ? "border-brand-600 bg-brand-600 text-white hover:bg-brand-700"
                 : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300"
             }`}
           >
@@ -286,7 +286,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
                 </div>
                 <button
                   onClick={onUpgradeClick}
-                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors whitespace-nowrap"
+                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors whitespace-nowrap"
                 >
                   Unlock Resume Match
                 </button>
@@ -305,7 +305,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
                 <button
                   onClick={handleEnhanceClick}
                   disabled={enhanceStatus === "loading"}
-                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
                 >
                   {enhanceStatus === "loading" ? (
                     <>
@@ -520,7 +520,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
                 </div>
                 <button
                   onClick={onUpgradeClick}
-                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors whitespace-nowrap"
+                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors whitespace-nowrap"
                 >
                   Unlock Round Expectations
                 </button>
@@ -617,12 +617,12 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="flex-1 px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors text-base sm:text-sm"
+                  className="flex-1 px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors text-base sm:text-sm"
                 />
                 <button
                   type="submit"
                   disabled={status === "loading" || !email}
-                  className="px-6 py-3 sm:py-2.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                  className="px-6 py-3 sm:py-2.5 bg-brand-600 text-white font-medium rounded-lg hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
                 >
                   {status === "loading" ? "Sending..." : "Send to Me"}
                 </button>

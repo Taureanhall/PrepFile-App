@@ -28,7 +28,7 @@ export function UpgradeCTA({ onUpgradeClick }: Props) {
       <div className="flex flex-col sm:flex-row gap-3">
         <button
           onClick={handleClick}
-          className="px-5 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors"
+          className="px-5 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
         >
           {ACTIVE_VARIANT.cta}
         </button>

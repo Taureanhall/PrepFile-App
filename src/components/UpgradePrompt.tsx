@@ -53,9 +53,9 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Pro */}
-        <div className="border-2 border-zinc-900 rounded-xl p-5 flex flex-col gap-3">
+        <div className="border-2 border-brand-600 rounded-xl p-5 flex flex-col gap-3">
           <div>
-            <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Most popular</div>
+            <div className="text-xs font-semibold text-accent-500 uppercase tracking-wide mb-1">Most popular</div>
             <div className="text-lg font-bold text-zinc-900">PrepFile Pro</div>
             <div className="text-3xl font-bold text-zinc-900 mt-1">$9.99<span className="text-base font-normal text-zinc-500">/mo</span></div>
           </div>
@@ -68,7 +68,7 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
           <button
             onClick={() => startCheckout("pro")}
             disabled={loading !== null}
-            className="mt-auto w-full py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 disabled:opacity-50 transition-colors"
+            className="mt-auto w-full py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
           >
             {loading === "pro" ? "Redirecting..." : "Get Pro"}
           </button>

@@ -414,7 +414,7 @@ Preferred Qualifications:
           </p>
           <button
             onClick={handleSelectKey}
-            className="w-full py-3 px-4 bg-zinc-900 text-white font-medium rounded-xl hover:bg-zinc-800 transition-colors"
+            className="w-full py-3 px-4 bg-brand-600 text-white font-medium rounded-xl hover:bg-brand-700 transition-colors"
           >
             Select API Key
           </button>
@@ -437,7 +437,7 @@ Preferred Qualifications:
               {subscription && (
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                   subscription.plan === "pro"
-                    ? "bg-zinc-900 text-white"
+                    ? "bg-brand-600 text-white"
                     : subscription.plan === "pack"
                     ? "bg-blue-100 text-blue-800"
                     : "bg-zinc-100 text-zinc-500"
@@ -471,7 +471,7 @@ Preferred Qualifications:
         {isEditor && (
           <button
             onClick={handleSelectKey}
-            className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors font-medium shadow-sm"
+            className="text-sm px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors font-medium shadow-sm"
           >
             Connect / Change API Key
           </button>
@@ -542,7 +542,7 @@ Preferred Qualifications:
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       placeholder={`e.g. ${placeholders.company}`}
-                      className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors"
+                      className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
                     />
                   </div>
 
@@ -555,7 +555,7 @@ Preferred Qualifications:
                       value={jobTitle}
                       onChange={(e) => setJobTitle(e.target.value)}
                       placeholder={`e.g. ${placeholders.title}`}
-                      className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors"
+                      className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
                     />
                   </div>
 
@@ -568,7 +568,7 @@ Preferred Qualifications:
                       onChange={(e) => setJobDescription(e.target.value)}
                       placeholder="Paste the full job description here..."
                       rows={6}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors resize-y"
+                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors resize-y"
                     />
                   </div>
                 </div>
@@ -593,7 +593,7 @@ Preferred Qualifications:
                             onClick={() => setRound(option)}
                             className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
                               round === option
-                                ? "bg-zinc-900 text-white border-zinc-900"
+                                ? "bg-brand-600 text-white border-brand-600"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
                             }`}
                           >
@@ -615,7 +615,7 @@ Preferred Qualifications:
                             onClick={() => setFamiliarity(option)}
                             className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
                               familiarity === option
-                                ? "bg-zinc-900 text-white border-zinc-900"
+                                ? "bg-brand-600 text-white border-brand-600"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
                             }`}
                           >
@@ -637,7 +637,7 @@ Preferred Qualifications:
                             onClick={() => setTimeToPrep(option)}
                             className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
                               timeToPrep === option
-                                ? "bg-zinc-900 text-white border-zinc-900"
+                                ? "bg-brand-600 text-white border-brand-600"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
                             }`}
                           >
@@ -659,7 +659,7 @@ Preferred Qualifications:
                             onClick={() => setBiggestGap(option)}
                             className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
                               biggestGap === option
-                                ? "bg-zinc-900 text-white border-zinc-900"
+                                ? "bg-brand-600 text-white border-brand-600"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
                             }`}
                           >
@@ -674,7 +674,7 @@ Preferred Qualifications:
                       <button
                         onClick={handleGenerate}
                         disabled={!isFormValid || isGenerating}
-                        className="w-full flex items-center justify-center py-3.5 px-4 bg-zinc-900 text-white font-medium rounded-xl hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="w-full flex items-center justify-center py-3.5 px-4 bg-brand-600 text-white font-medium rounded-xl hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         {isGenerating ? (
                           <>

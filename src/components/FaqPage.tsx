@@ -159,7 +159,7 @@ export function FaqPage() {
           </p>
           <a
             href="/"
-            className="inline-block px-6 py-3 bg-zinc-900 text-white text-sm font-semibold rounded-xl hover:bg-zinc-700 transition-colors"
+            className="inline-block px-6 py-3 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-500 transition-colors"
           >
             Generate your first brief
           </a>

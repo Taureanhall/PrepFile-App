@@ -183,7 +183,7 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
                   onChange={(e) => { setEmail(e.target.value); setError(null); }}
                   onKeyDown={(e) => e.key === "Enter" && handleSendCode()}
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3.5 bg-white border-2 border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-900 transition-colors text-base"
+                  className="w-full px-4 py-3.5 bg-white border-2 border-zinc-200 rounded-xl focus:outline-none focus:border-brand-600 transition-colors text-base"
                   autoComplete="email"
                 />
               </div>
@@ -194,7 +194,7 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
               <button
                 onClick={handleSendCode}
                 disabled={loading || !email.includes("@")}
-                className="w-full flex items-center justify-center gap-2 py-4 bg-zinc-900 text-white font-semibold text-base rounded-xl hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[56px]"
+                className="w-full flex items-center justify-center gap-2 py-4 bg-brand-600 text-white font-semibold text-base rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[56px]"
               >
                 {loading ? "Sending..." : "Continue"}
                 {!loading && (
@@ -258,7 +258,7 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
                   onChange={(e) => { setCode(e.target.value.replace(/\D/g, "")); setError(null); }}
                   onKeyDown={(e) => e.key === "Enter" && handleVerifyCode()}
                   placeholder="000000"
-                  className="w-full px-4 py-3.5 bg-white border-2 border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-900 transition-colors text-xl tracking-widest text-center font-mono"
+                  className="w-full px-4 py-3.5 bg-white border-2 border-zinc-200 rounded-xl focus:outline-none focus:border-brand-600 transition-colors text-xl tracking-widest text-center font-mono"
                   autoComplete="one-time-code"
                 />
               </div>
@@ -285,7 +285,7 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
               <button
                 onClick={handleVerifyCode}
                 disabled={loading || code.length !== 6}
-                className="w-full flex items-center justify-center gap-2 py-4 bg-zinc-900 text-white font-semibold text-base rounded-xl hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[56px]"
+                className="w-full flex items-center justify-center gap-2 py-4 bg-brand-600 text-white font-semibold text-base rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[56px]"
               >
                 {loading ? "Verifying..." : "Sign in"}
                 {!loading && (

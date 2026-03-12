@@ -102,9 +102,9 @@ export function PricingPage() {
           </div>
 
           {/* Pro */}
-          <div className="bg-white border-2 border-zinc-900 rounded-2xl p-6 flex flex-col gap-4 relative">
+          <div className="bg-white border-2 border-brand-600 rounded-2xl p-6 flex flex-col gap-4 relative">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="bg-zinc-900 text-white text-xs font-semibold px-3 py-1 rounded-full">Most popular</span>
+              <span className="bg-brand-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Most popular</span>
             </div>
             <div>
               <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Monthly</div>
@@ -136,7 +136,7 @@ export function PricingPage() {
             <button
               onClick={() => startCheckout("pro")}
               disabled={loading !== null}
-              className="w-full py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 disabled:opacity-50 transition-colors"
+              className="w-full py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
             >
               {loading === "pro" ? "Redirecting..." : "Get Pro"}
             </button>

@@ -166,7 +166,7 @@ export function InterviewPrepIndex() {
             value={search}
             onChange={(e) => { setSearch(e.target.value); setActiveIndustry(null); }}
             placeholder="Search companies..."
-            className="w-full max-w-md px-4 py-2.5 bg-white border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors text-sm"
+            className="w-full max-w-md px-4 py-2.5 bg-white border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors text-sm"
           />
         </div>
 
@@ -273,7 +273,7 @@ export function InterviewPrepIndex() {
                     onClick={() => setActiveIndustry(activeIndustry === ind.title ? null : ind.title)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-sm font-medium transition-colors ${
                       activeIndustry === ind.title
-                        ? "bg-zinc-900 text-white"
+                        ? "bg-brand-600 text-white"
                         : "text-zinc-700 hover:bg-zinc-100"
                     }`}
                   >

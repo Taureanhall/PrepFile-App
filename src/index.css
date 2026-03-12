@@ -2,4 +2,27 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* PrepFile brand — owl logo palette */
+  --color-brand-50: #f0f4f6;
+  --color-brand-100: #d8e2e8;
+  --color-brand-200: #b0c4cf;
+  --color-brand-300: #7a9aab;
+  --color-brand-400: #4e7085;
+  --color-brand-500: #3a5d6f;
+  --color-brand-600: #2C4A5A;
+  --color-brand-700: #243d4b;
+  --color-brand-800: #1c303b;
+  --color-brand-900: #14232c;
+
+  --color-accent-50: #faf6ee;
+  --color-accent-100: #f0e6cc;
+  --color-accent-200: #e0cda0;
+  --color-accent-300: #cfb374;
+  --color-accent-400: #B8943E;
+  --color-accent-500: #9e7e34;
+  --color-accent-600: #7d642a;
+  --color-accent-700: #5c4a1f;
+  --color-accent-800: #3b3015;
+  --color-accent-900: #1e180b;
 }

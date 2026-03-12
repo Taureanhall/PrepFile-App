@@ -20,7 +20,7 @@ export function Nav({ cta, children }: NavProps) {
 
   const ctaElement = cta ? (
     "href" in cta ? (
-      <a href={cta.href} className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors">
+      <a href={cta.href} className="text-sm px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-500 transition-colors">
         {cta.label}
       </a>
     ) : (
@@ -29,7 +29,7 @@ export function Nav({ cta, children }: NavProps) {
       </button>
     )
   ) : (
-    <a href="/" className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors">
+    <a href="/" className="text-sm px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-500 transition-colors">
       Get your prep brief
     </a>
   );
@@ -37,7 +37,10 @@ export function Nav({ cta, children }: NavProps) {
   return (
     <>
       <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center border-b border-zinc-100">
-        <a href="/" className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">PrepFile</a>
+        <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <img src="/logo.png" alt="" className="h-8 w-8 rounded-full object-cover object-center" />
+          <span className="text-2xl font-bold tracking-tight">PrepFile</span>
+        </a>
         <div className="flex items-center gap-2">
           {children}
           {ctaElement}

@@ -139,7 +139,7 @@ export function SegmentPage({ slug }: SegmentPageProps) {
           <p className="text-lg text-zinc-600 leading-relaxed mb-8">{segment.subhead}</p>
           <a
             href="/"
-            className="inline-block px-6 py-3 bg-zinc-900 text-white text-sm font-semibold rounded-xl hover:bg-zinc-700 transition-colors"
+            className="inline-block px-6 py-3 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-500 transition-colors"
           >
             {segment.ctaLabel}
           </a>
@@ -177,7 +177,7 @@ export function SegmentPage({ slug }: SegmentPageProps) {
           </p>
           <a
             href="/"
-            className="inline-block px-6 py-3 bg-zinc-900 text-white text-sm font-semibold rounded-xl hover:bg-zinc-700 transition-colors"
+            className="inline-block px-6 py-3 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-500 transition-colors"
           >
             {segment.ctaLabel}
           </a>

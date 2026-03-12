@@ -45,7 +45,7 @@ export function GeneratingState({ companyName }: GeneratingStateProps) {
       <div className="w-full max-w-sm mx-auto">
         <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-zinc-900 rounded-full"
+            className="h-full bg-brand-600 rounded-full"
             initial={{ width: "0%" }}
             animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 0.5, ease: "easeOut" }}

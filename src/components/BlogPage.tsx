@@ -28,7 +28,7 @@ function renderMarkdown(body: string, inlineCta: BlogArticle["inlineCta"]) {
         result.push(
           <div key={`cta-${i}`} className="my-6 bg-zinc-50 border border-zinc-200 rounded-xl px-6 py-5">
             <p className="text-sm text-zinc-600 mb-3">{inlineCta.text}</p>
-            <a href="/" className="inline-block text-sm font-semibold px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors">{inlineCta.buttonLabel}</a>
+            <a href="/" className="inline-block text-sm font-semibold px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-500 transition-colors">{inlineCta.buttonLabel}</a>
           </div>
         );
       }
