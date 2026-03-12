@@ -138,7 +138,7 @@ function BlogIndexPage() {
                       <div className="pt-1">
                         <h3 className="text-base font-bold text-zinc-900 group-hover:text-zinc-600 transition-colors leading-snug mb-2">{article.title}</h3>
                         <p className="text-sm text-zinc-500 leading-relaxed line-clamp-3">{article.metaDescription}</p>
-                        <p className="text-xs text-zinc-400 mt-2">{formatDate(article.publishedDate)} &middot; Written by {article.author}, with AI assistance</p>
+                        <p className="text-xs text-zinc-400 mt-2">{formatDate(article.publishedDate)} &middot; Written with AI assistance</p>
                       </div>
                     </div>
                   </a>
@@ -199,7 +199,7 @@ function BlogArticlePage({ slug }: { slug: string }) {
     if (!schemaEl) { schemaEl = document.createElement("script"); schemaEl.id = schemaId; schemaEl.setAttribute("type", "application/ld+json"); document.head.appendChild(schemaEl); }
     schemaEl.textContent = JSON.stringify({
       "@context": "https://schema.org", "@type": "Article", headline: article.title, description: article.metaDescription, url: canonicalUrl,
-      author: { "@type": "Person", name: article.author }, datePublished: article.publishedDate, keywords: article.keywords.join(", "),
+      author: { "@type": "Organization", name: "PrepFile" }, datePublished: article.publishedDate, keywords: article.keywords.join(", "),
       publisher: { "@type": "Organization", name: "PrepFile", url: "https://prepfile.app" },
     });
     return () => { document.title = "PrepFile — AI Interview Prep Briefs"; document.getElementById(schemaId)?.remove(); document.head.querySelector('link[rel="canonical"]')?.remove(); };
@@ -223,7 +223,7 @@ function BlogArticlePage({ slug }: { slug: string }) {
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 mb-4">{article.title}</h1>
         <p className="text-lg text-zinc-500 leading-relaxed mb-5">{article.metaDescription}</p>
         <div className="flex flex-col gap-1 text-sm text-zinc-500 pb-6 border-b border-zinc-200">
-          <p>Written by <span className="font-semibold text-zinc-900">{article.author}</span>, with AI assistance</p>
+          <p>Written with AI assistance</p>
           <p className="text-zinc-400">Updated {formatDate(article.publishedDate)}</p>
         </div>
       </header>

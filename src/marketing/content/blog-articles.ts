@@ -35,6 +35,14 @@ export interface BlogArticle {
     text: string;
     buttonLabel: string;
   };
+  /** ISO date string YYYY-MM-DD */
+  publishedDate: string;
+  /** Tailwind gradient classes for hero card */
+  heroGradient?: string;
+  /** Emoji for hero card */
+  heroEmoji?: string;
+  /** Whether to feature in editor's picks */
+  featured?: boolean;
 }
 
 export const blogArticles: BlogArticle[] = [
@@ -119,6 +127,10 @@ One more thing: your brief will still be there tomorrow morning. Give it a 10-mi
       text: "Get a personalized prep brief specific to your company, role, and interview round — in under 10 minutes.",
       buttonLabel: "Get my brief now",
     },
+    publishedDate: "2026-02-18",
+    heroGradient: "from-blue-600 to-indigo-700",
+    heroEmoji: "⏰",
+    featured: true,
   },
 
   {
@@ -202,6 +214,10 @@ Most candidates don't have this kind of structured prep because building it from
       text: "Generate a prep brief that covers every item on this checklist — specific to your company, role, and interview round.",
       buttonLabel: "Build my brief",
     },
+    publishedDate: "2026-02-25",
+    heroGradient: "from-emerald-600 to-teal-700",
+    heroEmoji: "✅",
+    featured: true,
   },
 
   {
@@ -289,6 +305,10 @@ The research-first approach is not a new idea. It's what the best candidates hav
       text: "Start with context, not questions. Get a personalized prep brief built around your company, role, and interview round.",
       buttonLabel: "Build my brief",
     },
+    publishedDate: "2026-03-03",
+    heroGradient: "from-orange-500 to-red-600",
+    heroEmoji: "🎯",
+    featured: true,
   },
 
   // ─── New articles added PRE-107 ───────────────────────────────────────────
@@ -449,6 +469,7 @@ The brief is how you start. The rest is how you finish.`,
       text: "Get a personalized prep brief that organizes everything on this checklist — specific to your company, role, and interview round.",
       buttonLabel: "Get my brief now",
     },
+    publishedDate: "2026-03-05",
   },
 
   {
@@ -694,6 +715,7 @@ PrepFile generates a brief that tells you what a given company values, what this
       text: "Generate a company-specific brief before your behavioral round — so you know which stories to lead with and what this company is actually evaluating.",
       buttonLabel: "Build my brief",
     },
+    publishedDate: "2026-03-08",
   },
 
   {
@@ -838,5 +860,6 @@ PrepFile generates a brief that maps the company's current priorities, what this
       text: "Get a brief built around your company and role — so you know which stories to tell and what this interviewer is actually evaluating.",
       buttonLabel: "Build my brief",
     },
+    publishedDate: "2026-03-10",
   },
 ];
