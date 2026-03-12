@@ -28,6 +28,8 @@ import {
   setBriefPublic,
   getAdminMetrics,
   getOrCreateUserByEmail,
+  createOtpCode,
+  verifyOtpCode,
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
@@ -243,6 +245,79 @@ async function startServer() {
       console.error("Magic link error:", err);
       res.status(500).json({ error: "Failed to send login email" });
     }
+  });
+
+  // Auth: request email OTP code
+  app.post("/api/auth/request-otp", async (req, res) => {
+    const { email } = req.body;
+    if (!email || typeof email !== "string" || !email.includes("@")) {
+      return res.status(400).json({ error: "Valid email required" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Rate limit: 5 OTP requests per hour per email
+    if (!checkAndIncrementRateLimit(`otp:${normalizedEmail}`, 5, 60 * 60 * 1000)) {
+      return res.status(429).json({ error: "Too many requests. Please wait a few minutes." });
+    }
+
+    try {
+      const code = createOtpCode(normalizedEmail);
+
+      const { Resend } = await import("resend");
+      const resend = new Resend(process.env.RESEND_API_KEY);
+
+      await resend.emails.send({
+        from: FROM_EMAIL,
+        to: normalizedEmail,
+        subject: `${code} is your PrepFile verification code`,
+        html: `
+          <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px">
+            <h2 style="font-size:20px;font-weight:700;color:#18181b;margin-bottom:8px">Your verification code</h2>
+            <p style="color:#52525b;margin-bottom:24px">Enter this code to sign in to PrepFile. It expires in 10 minutes.</p>
+            <div style="background:#f4f4f5;border-radius:12px;padding:20px;text-align:center;margin-bottom:24px">
+              <span style="font-size:32px;font-weight:700;letter-spacing:8px;color:#18181b">${code}</span>
+            </div>
+            <p style="color:#a1a1aa;font-size:12px">If you didn't request this, you can ignore this email.</p>
+          </div>
+        `,
+      });
+
+      res.json({ success: true });
+    } catch (err: any) {
+      console.error("OTP email error:", err);
+      res.status(500).json({ error: "Failed to send verification code" });
+    }
+  });
+
+  // Auth: verify OTP code → set session cookie → return user
+  app.post("/api/auth/verify-otp", (req, res) => {
+    const { email, code } = req.body;
+    if (!email || !code || typeof email !== "string" || typeof code !== "string") {
+      return res.status(400).json({ error: "Email and code required" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const result = verifyOtpCode(normalizedEmail, code.trim());
+
+    if (!result.sessionToken) {
+      return res.status(400).json({ error: result.error });
+    }
+
+    const signedInUser = getUserBySession(result.sessionToken);
+    if (signedInUser) {
+      getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id, method: "email_otp" } });
+      sendWelcomeEmailImmediate(signedInUser.id, signedInUser.email, APP_URL, FROM_EMAIL).catch(() => {});
+    }
+
+    res.cookie("session", result.sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+    res.clearCookie("free_brief_used");
+    res.json({ success: true, user: signedInUser });
   });
 
   // Auth: verify magic link token → set session cookie → redirect home

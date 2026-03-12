@@ -458,4 +458,77 @@ export function getUsersForReengagement(
   `).all(emailId, delayDays) as Array<{ id: string; email: string }>;
 }
 
+// --- Email OTP authentication ---
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS otp_codes (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    code TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    attempts INTEGER DEFAULT 0,
+    verified INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_otp_codes_email ON otp_codes(email);
+`);
+
+/** Generate a 6-digit OTP for an email. Invalidates previous unused codes. */
+export function createOtpCode(email: string): string {
+  // Invalidate any existing unused codes for this email
+  db.prepare(
+    "UPDATE otp_codes SET verified = 1 WHERE email = ? AND verified = 0"
+  ).run(email);
+
+  const code = String(Math.floor(100000 + Math.random() * 900000)); // 6 digits
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min
+  db.prepare(
+    "INSERT INTO otp_codes (id, email, code, expires_at) VALUES (?, ?, ?, ?)"
+  ).run(crypto.randomUUID(), email, code, expiresAt);
+  return code;
+}
+
+/** Verify an OTP code. Returns session token on success, null on failure. */
+export function verifyOtpCode(email: string, code: string): { sessionToken: string | null; error?: string } {
+  const row = db.prepare(
+    "SELECT * FROM otp_codes WHERE email = ? AND verified = 0 AND expires_at > datetime('now') ORDER BY created_at DESC LIMIT 1"
+  ).get(email) as any;
+
+  if (!row) return { sessionToken: null, error: "Code expired or not found. Please request a new one." };
+
+  if (row.attempts >= 5) {
+    db.prepare("UPDATE otp_codes SET verified = 1 WHERE id = ?").run(row.id);
+    return { sessionToken: null, error: "Too many attempts. Please request a new code." };
+  }
+
+  if (row.code !== code) {
+    db.prepare("UPDATE otp_codes SET attempts = attempts + 1 WHERE id = ?").run(row.id);
+    return { sessionToken: null, error: "Incorrect code. Please try again." };
+  }
+
+  // Code is correct — mark as verified
+  db.prepare("UPDATE otp_codes SET verified = 1 WHERE id = ?").run(row.id);
+
+  // Upsert user
+  let user = db.prepare("SELECT * FROM users WHERE email = ?").get(email) as any;
+  if (!user) {
+    const userId = crypto.randomUUID();
+    db.prepare(
+      "INSERT INTO users (id, email, last_login_at) VALUES (?, ?, datetime('now'))"
+    ).run(userId, email);
+    user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId) as any;
+  } else {
+    db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
+  }
+
+  // Create session (30 days)
+  const sessionToken = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  db.prepare(
+    "INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)"
+  ).run(crypto.randomUUID(), user.id, sessionToken, expiresAt);
+
+  return { sessionToken };
+}
+
 export default db;
