@@ -432,6 +432,11 @@ export default function Page() {
           </div>
         </header>
 
+        {/* Global upgrade prompt — works from any view when triggered by header button */}
+        {upgradeReason === "pro_required" && (
+          <UpgradePrompt reason="pro_required" onDismiss={() => setUpgradeReason(null)} />
+        )}
+
         {showHistory ? (
           <MyBriefs onBack={() => setShowHistory(false)} />
         ) : !output ? (
