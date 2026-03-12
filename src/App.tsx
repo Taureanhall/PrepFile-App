@@ -370,14 +370,14 @@ export default function Page() {
 
         {/* Header */}
         <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2">
+          <a href="/" className="block">
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2 hover:opacity-70 transition-opacity">
               PrepFile
             </h1>
             <p className="text-zinc-600 text-lg">
               Prep briefs that show what the company actually needs.
             </p>
-          </div>
+          </a>
           <div className="flex items-center gap-3">
             {!authLoading && user && (
               <div className="flex items-center gap-3">
@@ -668,6 +668,16 @@ export default function Page() {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="max-w-3xl mx-auto px-6 py-8 mt-8 border-t border-zinc-200 flex justify-between items-center text-sm text-zinc-400 print:hidden">
+        <span>&copy; {new Date().getFullYear()} PrepFile</span>
+        <nav className="flex gap-5">
+          <a href="/interview-prep" className="hover:text-zinc-600 transition-colors">Interview Guides</a>
+          <a href="/blog" className="hover:text-zinc-600 transition-colors">Blog</a>
+          <a href="/faq" className="hover:text-zinc-600 transition-colors">FAQ</a>
+        </nav>
+      </footer>
     </div>
   );
 }
