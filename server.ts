@@ -267,7 +267,7 @@ async function startServer() {
       const { Resend } = await import("resend");
       const resend = new Resend(process.env.RESEND_API_KEY);
 
-      await resend.emails.send({
+      const { data, error: sendError } = await resend.emails.send({
         from: FROM_EMAIL,
         to: normalizedEmail,
         subject: `${code} is your PrepFile verification code`,
@@ -283,6 +283,12 @@ async function startServer() {
         `,
       });
 
+      if (sendError) {
+        console.error("OTP Resend error:", sendError);
+        return res.status(500).json({ error: "Failed to send verification code" });
+      }
+
+      console.log("OTP email sent:", data?.id, "to:", normalizedEmail);
       res.json({ success: true });
     } catch (err: any) {
       console.error("OTP email error:", err);
