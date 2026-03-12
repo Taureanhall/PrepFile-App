@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Nav } from "./Nav";
 
 export function PricingPage() {
   useEffect(() => {
@@ -46,10 +47,7 @@ export function PricingPage() {
 
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans">
-      <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center border-b border-zinc-100">
-        <a href="/" className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">PrepFile</a>
-        <a href="/" className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors">Get your prep brief</a>
-      </nav>
+      <Nav />
 
       <div className="max-w-5xl mx-auto px-6 pt-6 text-sm text-zinc-400">
         <a href="/" className="hover:text-zinc-600 transition-colors">Home</a>

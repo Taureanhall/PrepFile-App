@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Nav } from "./Nav";
 
 interface SegmentData {
   slug: string;
@@ -126,22 +127,10 @@ export function SegmentPage({ slug }: SegmentPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-zinc-200">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <a href="/" className="text-2xl font-bold text-zinc-900 tracking-tight">
-            PrepFile
-          </a>
-          <a
-            href="/"
-            className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
-          >
-            Generate a brief →
-          </a>
-        </div>
-      </header>
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans">
+      <Nav />
 
-      <main className="max-w-2xl mx-auto px-4 py-14">
+      <main className="max-w-3xl mx-auto px-6 py-14">
         {/* Hero */}
         <div className="mb-12">
           <h1 className="text-3xl font-bold text-zinc-900 mb-4 leading-snug">

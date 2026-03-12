@@ -1,36 +1,38 @@
 import { useEffect, useState, useMemo } from "react";
 import { COMPANIES } from "./InterviewPrepPage";
+import { Nav } from "./Nav";
 
-const CATEGORIES = [
+const INDUSTRIES = [
   {
     title: "Big Tech",
     emoji: "💻",
-    description: "Interview processes at the world's largest tech companies",
     gradient: "linear-gradient(135deg, #2563eb, #4338ca)",
     slugs: ["google", "amazon", "meta", "apple", "microsoft", "netflix"],
   },
   {
     title: "High-Growth Tech",
     emoji: "🚀",
-    description: "Fast-moving companies with competitive hiring bars",
     gradient: "linear-gradient(135deg, #059669, #0f766e)",
     slugs: ["stripe", "airbnb", "spotify", "uber", "linkedin", "tesla"],
   },
   {
     title: "Enterprise & Cloud",
     emoji: "☁️",
-    description: "Enterprise software giants and their interview styles",
     gradient: "linear-gradient(135deg, #7c3aed, #6d28d9)",
     slugs: ["salesforce", "adobe", "ibm"],
   },
   {
     title: "Finance & Consulting",
     emoji: "📊",
-    description: "Case-heavy interviews and structured hiring processes",
     gradient: "linear-gradient(135deg, #d97706, #b45309)",
     slugs: ["mckinsey", "bcg", "goldman-sachs", "jpmorgan", "deloitte"],
   },
 ];
+
+// 3 featured picks from different industries
+const FEATURED_SLUGS = ["google", "stripe", "mckinsey"];
+// 3 more guides from a mix
+const MORE_SLUGS = ["meta", "airbnb", "goldman-sachs"];
 
 const ROLES = [
   { name: "Product Management", slug: "pm" },
@@ -40,9 +42,15 @@ const ROLES = [
   { name: "Finance", slug: "finance" },
 ];
 
+function getGradientForSlug(slug: string): string {
+  const ind = INDUSTRIES.find((i) => i.slugs.includes(slug));
+  return ind?.gradient ?? "linear-gradient(135deg, #18181b, #3f3f46)";
+}
+
 export function InterviewPrepIndex() {
   const allCompanies = Object.values(COMPANIES);
   const [search, setSearch] = useState("");
+  const [activeIndustry, setActiveIndustry] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return null;
@@ -54,6 +62,23 @@ export function InterviewPrepIndex() {
         co.metaDescription.toLowerCase().includes(q)
     );
   }, [search]);
+
+  const industryCompanies = useMemo(() => {
+    if (!activeIndustry) return null;
+    const ind = INDUSTRIES.find((i) => i.title === activeIndustry);
+    if (!ind) return null;
+    return ind.slugs
+      .map((s) => allCompanies.find((co) => co.slug === s))
+      .filter(Boolean) as typeof allCompanies;
+  }, [activeIndustry]);
+
+  const featured = FEATURED_SLUGS
+    .map((s) => allCompanies.find((co) => co.slug === s))
+    .filter(Boolean) as typeof allCompanies;
+
+  const more = MORE_SLUGS
+    .map((s) => allCompanies.find((co) => co.slug === s))
+    .filter(Boolean) as typeof allCompanies;
 
   useEffect(() => {
     const title = "Company Interview Prep Guides | PrepFile";
@@ -119,10 +144,7 @@ export function InterviewPrepIndex() {
 
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans">
-      <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center border-b border-zinc-100">
-        <a href="/" className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">PrepFile</a>
-        <a href="/" className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors">Get your prep brief</a>
-      </nav>
+      <Nav />
 
       <div className="max-w-5xl mx-auto px-6 pt-6 text-sm text-zinc-400">
         <a href="/" className="hover:text-zinc-600 transition-colors">Home</a>
@@ -142,7 +164,7 @@ export function InterviewPrepIndex() {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setActiveIndustry(null); }}
             placeholder="Search companies..."
             className="w-full max-w-md px-4 py-2.5 bg-white border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors text-sm"
           />
@@ -173,28 +195,47 @@ export function InterviewPrepIndex() {
             )}
           </>
         ) : (
-          <div className="space-y-16">
-            {CATEGORIES.map((cat) => {
-              const companies = cat.slugs
-                .map((s) => allCompanies.find((co) => co.slug === s))
-                .filter(Boolean) as typeof allCompanies;
-              const cards = companies.slice(0, 3);
-              const sidebar = companies.slice(3);
-
-              return (
-                <section key={cat.title} className="border-t border-zinc-200 pt-10">
+          <div className="flex flex-col lg:flex-row gap-10">
+            {/* Main content */}
+            <div className="flex-1 min-w-0">
+              {activeIndustry && industryCompanies ? (
+                <>
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl">{cat.emoji}</span>
-                    <h2 className="text-2xl font-bold text-zinc-900">{cat.title}</h2>
+                    <span className="text-3xl">{INDUSTRIES.find((i) => i.title === activeIndustry)?.emoji}</span>
+                    <h2 className="text-2xl font-bold text-zinc-900">{activeIndustry}</h2>
                   </div>
-                  <p className="text-zinc-500 mb-8">{cat.description}</p>
-
-                  <div className="flex flex-col lg:flex-row gap-10">
-                    <div className="flex-1 space-y-8">
-                      {cards.map((co) => (
+                  <p className="text-zinc-500 mb-8">{industryCompanies.length} companies in this industry</p>
+                  <div className="space-y-8">
+                    {industryCompanies.map((co) => (
+                      <a key={co.slug} href={`/interview-prep/${co.slug}`} className="group block">
+                        <div className="flex gap-5 items-start">
+                          <div className="w-40 h-28 rounded-xl shrink-0 flex items-center justify-center" style={{ background: getGradientForSlug(co.slug) }}>
+                            <span className="text-white text-lg font-bold opacity-90">{co.name}</span>
+                          </div>
+                          <div className="pt-1">
+                            <h3 className="text-base font-bold text-zinc-900 group-hover:text-zinc-600 transition-colors leading-snug mb-2">{co.tagline}</h3>
+                            <p className="text-sm text-zinc-500 leading-relaxed line-clamp-3">{co.metaDescription}</p>
+                          </div>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setActiveIndustry(null)}
+                    className="mt-8 text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
+                  >
+                    &larr; Back to all guides
+                  </button>
+                </>
+              ) : (
+                <>
+                  <section>
+                    <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-6">Featured guides</h2>
+                    <div className="space-y-8">
+                      {featured.map((co) => (
                         <a key={co.slug} href={`/interview-prep/${co.slug}`} className="group block">
                           <div className="flex gap-5 items-start">
-                            <div className="w-40 h-28 rounded-xl shrink-0 flex items-center justify-center" style={{ background: cat.gradient }}>
+                            <div className="w-40 h-28 rounded-xl shrink-0 flex items-center justify-center" style={{ background: getGradientForSlug(co.slug) }}>
                               <span className="text-white text-lg font-bold opacity-90">{co.name}</span>
                             </div>
                             <div className="pt-1">
@@ -205,40 +246,57 @@ export function InterviewPrepIndex() {
                         </a>
                       ))}
                     </div>
+                  </section>
 
-                    {sidebar.length > 0 && (
-                      <div className="lg:w-64 shrink-0">
-                        <h3 className="text-base font-bold text-zinc-900 mb-4">More guides</h3>
-                        <div className="space-y-4">
-                          {sidebar.map((co) => (
-                            <a key={co.slug} href={`/interview-prep/${co.slug}`} className="block text-sm text-zinc-700 hover:text-zinc-900 transition-colors leading-snug">
-                              {co.tagline}
-                            </a>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </section>
-              );
-            })}
+                  <section className="mt-12 border-t border-zinc-200 pt-8">
+                    <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-5">More guides</h2>
+                    <div className="space-y-4">
+                      {more.map((co) => (
+                        <a key={co.slug} href={`/interview-prep/${co.slug}`} className="flex items-center justify-between py-2 group">
+                          <span className="text-base font-semibold text-zinc-900 group-hover:text-zinc-600 transition-colors">{co.tagline}</span>
+                          <span className="ml-6 text-zinc-300 group-hover:text-zinc-500 transition-colors shrink-0">&rarr;</span>
+                        </a>
+                      ))}
+                    </div>
+                  </section>
+                </>
+              )}
+            </div>
+
+            {/* Industry sidebar */}
+            <div className="lg:w-64 shrink-0">
+              <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4">Browse by industry</h3>
+              <div className="space-y-1">
+                {INDUSTRIES.map((ind) => (
+                  <button
+                    key={ind.title}
+                    onClick={() => setActiveIndustry(activeIndustry === ind.title ? null : ind.title)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-sm font-medium transition-colors ${
+                      activeIndustry === ind.title
+                        ? "bg-zinc-900 text-white"
+                        : "text-zinc-700 hover:bg-zinc-100"
+                    }`}
+                  >
+                    <span>{ind.emoji}</span>
+                    <span>{ind.title}</span>
+                    <span className={`ml-auto text-xs ${activeIndustry === ind.title ? "text-zinc-400" : "text-zinc-400"}`}>{ind.slugs.length}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-8 border-t border-zinc-200 pt-6">
+                <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4">Prep by role</h3>
+                <div className="space-y-1">
+                  {ROLES.map(({ name, slug }) => (
+                    <a key={slug} href={`/interview-prep/roles/${slug}`} className="block px-4 py-2.5 rounded-lg text-sm font-medium text-zinc-700 hover:bg-zinc-100 transition-colors">
+                      {name}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
-
-        <section className="border-t border-zinc-200 pt-10 mt-16">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-3xl">🎯</span>
-            <h2 className="text-2xl font-bold text-zinc-900">Prep by Role</h2>
-          </div>
-          <p className="text-zinc-500 mb-8">Tailored interview advice for your career path.</p>
-          <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {ROLES.map(({ name, slug }) => (
-              <a key={slug} href={`/interview-prep/roles/${slug}`} className="flex items-center justify-center py-3 px-4 bg-white border border-zinc-200 rounded-xl text-sm font-medium text-zinc-700 hover:border-zinc-400 hover:text-zinc-900 transition-colors text-center">
-                {name}
-              </a>
-            ))}
-          </div>
-        </section>
 
         <div className="mt-12 bg-zinc-900 rounded-2xl px-8 py-10 text-center">
           <h2 className="text-2xl font-bold text-white mb-3">Don&apos;t see your target company?</h2>

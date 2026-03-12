@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { blogArticles, type BlogArticle } from "../marketing/content/blog-articles";
+import { Nav } from "./Nav";
 
 function formatDate(iso: string): string {
   const d = new Date(iso + "T00:00:00");
@@ -86,10 +87,7 @@ function BlogIndexPage() {
 
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans">
-      <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center border-b border-zinc-100">
-        <a href="/" className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">PrepFile</a>
-        <a href="/" className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors">Get your prep brief</a>
-      </nav>
+      <Nav />
 
       <div className="max-w-5xl mx-auto px-6 pt-6 text-sm text-zinc-400">
         <a href="/" className="hover:text-zinc-600 transition-colors">Home</a>
@@ -211,10 +209,7 @@ function BlogArticlePage({ slug }: { slug: string }) {
 
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans">
-      <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center border-b border-zinc-100">
-        <a href="/" className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">PrepFile</a>
-        <a href="/" className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors">Get your prep brief</a>
-      </nav>
+      <Nav />
 
       <div className="max-w-3xl mx-auto px-6 pt-6 text-sm text-zinc-400">
         <a href="/" className="hover:text-zinc-600 transition-colors">Home</a>

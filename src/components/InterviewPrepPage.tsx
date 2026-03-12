@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { trackSeoPageViewed } from "../lib/analytics";
+import { Nav } from "./Nav";
 import { content as googleContent } from "../marketing/content/google";
 import { content as amazonContent } from "../marketing/content/amazon";
 import { content as metaContent } from "../marketing/content/meta";
@@ -389,18 +390,7 @@ export function InterviewPrepPage({ slug }: InterviewPrepPageProps) {
 
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans">
-      {/* Nav */}
-      <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center border-b border-zinc-100">
-        <a href="/" className="text-lg font-bold tracking-tight hover:opacity-80 transition-opacity">
-          PrepFile
-        </a>
-        <a
-          href={ctaUrl}
-          className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors"
-        >
-          Get your prep brief
-        </a>
-      </nav>
+      <Nav cta={{ label: "Get your prep brief", href: ctaUrl }} />
 
       {/* Breadcrumb */}
       <div className="max-w-3xl mx-auto px-6 pt-6 text-sm text-zinc-400">

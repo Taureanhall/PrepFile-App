@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Nav } from "./Nav";
 
 const FAQ_ITEMS = [
   {
@@ -114,22 +115,16 @@ export function FaqPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-zinc-200">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <a href="/" className="text-base font-semibold text-zinc-900 tracking-tight">
-            PrepFile
-          </a>
-          <a
-            href="/"
-            className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
-          >
-            Generate a brief →
-          </a>
-        </div>
-      </header>
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans">
+      <Nav />
 
-      <main className="max-w-2xl mx-auto px-4 py-12">
+      <div className="max-w-5xl mx-auto px-6 pt-6 text-sm text-zinc-400">
+        <a href="/" className="hover:text-zinc-600 transition-colors">Home</a>
+        <span className="mx-2">/</span>
+        <span className="text-zinc-600">FAQ</span>
+      </div>
+
+      <main className="max-w-3xl mx-auto px-6 py-12">
         <h1 className="text-3xl font-bold text-zinc-900 mb-2">Frequently asked questions</h1>
         <p className="text-base text-zinc-500 mb-10">
           Everything you need to know about PrepFile. Can't find your answer?{" "}
