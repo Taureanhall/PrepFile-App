@@ -459,8 +459,8 @@ export default function Page() {
               </div>
             )}
 
-            {/* Upgrade prompt — shown when plan limit hit (not pro_required, which overlays the brief) */}
-            {upgradeReason && upgradeReason !== "pro_required" ? (
+            {/* Upgrade prompt — shown when plan limit hit or user clicks Upgrade to Pro */}
+            {upgradeReason ? (
               <UpgradePrompt reason={upgradeReason} onDismiss={() => setUpgradeReason(null)} />
             ) : needsSignIn ? (
               <SignInGate />
