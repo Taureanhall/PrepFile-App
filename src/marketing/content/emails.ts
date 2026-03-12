@@ -65,19 +65,62 @@ export const welcome3Email: Email = {
   id: "welcome-3",
   delayDays: 5,
   trigger: "user.signup + 5d",
-  subjectA: "How PrepFile users prep differently",
-  subjectB: "What changes when you have a prep brief",
-  previewText: "Structure beats volume.",
-  body: `The difference between a good interview and a great one usually comes down to preparation structure, not volume.
+  subjectA: "What candidates say after using PrepFile",
+  subjectB: "The brief that changed how they prepped",
+  previewText: "\"I found something I hadn't thought about.\"",
+  body: `The most common thing people say after running a PrepFile brief: "I found something I hadn't thought about."
 
-PrepFile gives you a single document that covers what the company values in this role, what each round is designed to evaluate, where your background may have gaps, and what to ask that shows you've done real research.
+Usually it's the interviewer questions — specific, strategic ones tied to the company's actual competitive position. Or the blind spots section, which flags where their background doesn't match what the role requires.
 
-One brief. Under a minute. Everything you need in one place.`,
-  ctaText: "Create a Brief",
-  ctaUrl: "https://prepfile.work",
+If you're prepping for multiple roles, Pro gives you unlimited briefs, full round-by-round breakdowns, and resume match against each job description. No weekly limits.
+
+Free briefs are a good start. Pro is what you use when the stakes are higher.`,
+  ctaText: "Upgrade to Pro — $9.99/mo",
+  ctaUrl: "https://prepfile.work/upgrade",
 };
 
-// ─── 2. Activation nudge ─────────────────────────────────────────────────────
+// ─── 2. Feature discovery ────────────────────────────────────────────────────
+// Trigger: user generates their first brief
+
+export const featureDiscovery1Email: Email = {
+  id: "feature-discovery-1",
+  delayDays: 0,
+  trigger: "user.brief_created, count == 1",
+  subjectA: "You just scratched the surface",
+  subjectB: "What the full brief looks like",
+  previewText: "Free briefs are concise. Pro briefs go deeper.",
+  body: `You ran your first brief. Good.
+
+Free briefs give you the essentials — company snapshot, role signals, and a few interviewer questions. Pro briefs go deeper: full round-by-round expectations, resume match against the job description, and a complete blind spots analysis that shows exactly where your background doesn't map to what the role requires.
+
+If you're interviewing at a competitive company or preparing for multiple roles, that depth matters.
+
+Pro is $9.99/month. Unlimited briefs, brief history, resume match — no weekly limits.`,
+  ctaText: "See What Pro Unlocks",
+  ctaUrl: "https://prepfile.work/upgrade",
+};
+
+export const featureDiscovery2Email: Email = {
+  id: "feature-discovery-2",
+  delayDays: 1,
+  trigger: "user.brief_created + 24h, no upgrade",
+  subjectA: "Most interviews aren't won on answers",
+  subjectB: "The part of prep that actually moves outcomes",
+  previewText: "Resume match changes how you show up in the room.",
+  body: `The resume match feature is the part of Pro that changes preparation most.
+
+It runs your resume against the job description and tells you specifically where your experience doesn't align with what the role requires. Not in a general sense — line by line, competency by competency.
+
+That lets you prepare specific stories, reframe experience, or acknowledge gaps before you're asked. Candidates who do this walk in without blind spots.
+
+Free tier doesn't include resume match. Pro does.`,
+  ctaText: "Upgrade to Pro — $9.99/mo",
+  ctaUrl: "https://prepfile.work/upgrade",
+};
+
+export const featureDiscoverySequence: Email[] = [featureDiscovery1Email, featureDiscovery2Email];
+
+// ─── 3. Activation nudge ─────────────────────────────────────────────────────
 // Trigger: 24h post-signup, no brief generated yet
 
 export const activationNudgeEmail: Email = {
@@ -98,7 +141,7 @@ If you have an interview scheduled, now is a good time.`,
   ctaUrl: "https://prepfile.work",
 };
 
-// ─── 3. Upgrade prompt ───────────────────────────────────────────────────────
+// ─── 4. Upgrade nudge ────────────────────────────────────────────────────────
 // Trigger: user has generated their 2nd free brief (1 remaining before weekly limit)
 
 export const upgradePromptEmail: Email = {
@@ -118,6 +161,44 @@ If you have more than one interview coming up, Pro pays for itself.`,
   ctaText: "Upgrade to Pro — $9.99/mo",
   ctaUrl: "https://prepfile.work/upgrade",
 };
+
+export const upgradeNudge1Email: Email = {
+  id: "upgrade-nudge-1",
+  delayDays: 0,
+  trigger: "user.brief_created, count == 2 (free tier)",
+  subjectA: "2 of 3 free briefs used — your limit resets in 5 days",
+  subjectB: "One free brief left this week",
+  previewText: "Pro removes the weekly cap entirely.",
+  body: `You've used 2 of your 3 free briefs this week. One left before you hit your limit.
+
+If you have more interviews lined up, Pro removes the cap entirely — unlimited briefs, brief history, resume match, and full round-by-round breakdowns.
+
+Pro is $9.99/month. If you'd rather not commit, the Interview Pack is $4.99 one-time for 5 comprehensive briefs with resume match included. No subscription.
+
+Either way, you won't hit another limit.`,
+  ctaText: "Upgrade to Pro — $9.99/mo",
+  ctaUrl: "https://prepfile.work/upgrade",
+};
+
+export const upgradeNudge2Email: Email = {
+  id: "upgrade-nudge-2",
+  delayDays: 1,
+  trigger: "user.brief_created + 24h, count == 2 (free tier), no upgrade",
+  subjectA: "No subscription? The Interview Pack is $4.99",
+  subjectB: "5 full briefs + resume match, one-time $4.99",
+  previewText: "5 comprehensive briefs. No monthly charge.",
+  body: `Not ready for a monthly subscription? The Interview Pack is a one-time purchase.
+
+$4.99 gets you 5 comprehensive briefs — full round-by-round breakdowns, resume match against each job description, and no weekly limits. Pay once, use them whenever you need them.
+
+If you have a round of interviews coming up, that's the right option. One brief for each stage: phone screen, technical, behavioral, final panel.
+
+Five is usually enough for a full hiring process.`,
+  ctaText: "Get the Interview Pack — $4.99",
+  ctaUrl: "https://prepfile.work/upgrade",
+};
+
+export const upgradeNudgeSequence: Email[] = [upgradeNudge1Email, upgradeNudge2Email];
 
 // ─── 4. Re-engagement ────────────────────────────────────────────────────────
 // Trigger: 7 days since last app visit, no brief generated in that window
@@ -164,6 +245,8 @@ export const reengagementSequence: Email[] = [reengagementEmail, reengagement2Em
 export const allEmailSequences: Email[] = [
   ...welcomeSequence,
   activationNudgeEmail,
+  ...featureDiscoverySequence,
   upgradePromptEmail,
+  ...upgradeNudgeSequence,
   ...reengagementSequence,
 ];
