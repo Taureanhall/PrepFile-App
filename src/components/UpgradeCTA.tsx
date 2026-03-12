@@ -35,7 +35,6 @@ export function UpgradeCTA({ onUpgradeClick }: Props) {
         <a
           href="/pricing"
           className="px-5 py-2.5 border border-zinc-200 text-zinc-600 text-sm font-medium rounded-lg hover:bg-zinc-50 transition-colors text-center"
-          onClick={(e) => { e.preventDefault(); handleClick(); }}
         >
           See plans →
         </a>

@@ -14,6 +14,7 @@ import { BlogPage } from "./components/BlogPage";
 import { FaqPage } from "./components/FaqPage";
 import { SegmentPage } from "./components/SegmentPage";
 import { UpgradeCTA } from "./components/UpgradeCTA";
+import { PricingPage } from "./components/PricingPage";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted } from "./lib/analytics";
 
@@ -94,6 +95,11 @@ export default function Page() {
   // Route: /faq — FAQ page
   if (window.location.pathname === "/faq") {
     return <FaqPage />;
+  }
+
+  // Route: /pricing — pricing page
+  if (window.location.pathname === "/pricing") {
+    return <PricingPage />;
   }
 
   // Route: /for/:slug — segment landing pages
@@ -665,6 +671,17 @@ export default function Page() {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="max-w-3xl mx-auto px-6 py-8 mt-8 border-t border-zinc-200 flex justify-between items-center text-sm text-zinc-400 print:hidden">
+        <span>&copy; {new Date().getFullYear()} PrepFile</span>
+        <nav className="flex gap-5">
+          <a href="/pricing" className="hover:text-zinc-600 transition-colors">Pricing</a>
+          <a href="/interview-prep" className="hover:text-zinc-600 transition-colors">Interview Guides</a>
+          <a href="/blog" className="hover:text-zinc-600 transition-colors">Blog</a>
+          <a href="/faq" className="hover:text-zinc-600 transition-colors">FAQ</a>
+        </nav>
+      </footer>
     </div>
   );
 }
