@@ -15,6 +15,7 @@ import { FaqPage } from "./components/FaqPage";
 import { SegmentPage } from "./components/SegmentPage";
 import { UpgradeCTA } from "./components/UpgradeCTA";
 import { PricingPage } from "./components/PricingPage";
+import { Nav } from "./components/Nav";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted } from "./lib/analytics";
 
@@ -372,73 +373,60 @@ export default function Page() {
 
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans selection:bg-zinc-200">
-      <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
-
-        {/* Header */}
-        <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <a href="/" className="text-3xl font-bold tracking-tight text-zinc-900 mb-2 block hover:opacity-80 transition-opacity">
-              PrepFile
-            </a>
-            <p className="text-zinc-600 text-lg">
-              Prep briefs that show what the company actually needs.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {!authLoading && user && (
-              <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-2">
-                  <span className="text-sm text-zinc-500">{user.email}</span>
-                  {subscription && (
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      subscription.plan === "pro"
-                        ? "bg-zinc-900 text-white"
-                        : subscription.plan === "pack"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-zinc-100 text-zinc-500"
-                    }`}>
-                      {subscription.plan === "pro" ? "Pro" : subscription.plan === "pack" ? "Pack" : "Free"}
-                    </span>
-                  )}
-                  {subscription?.plan === "pack" && (
-                    <span className="text-xs text-zinc-400">
-                      {subscription.pack_briefs_remaining} briefs left
-                    </span>
-                  )}
-                </div>
-                {subscription?.plan === "pro" && subscription.has_stripe_customer && (
-                  <button
-                    onClick={handleManageSubscription}
-                    disabled={portalLoading}
-                    className="text-sm px-3 py-2.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors disabled:opacity-50"
-                  >
-                    {portalLoading ? "Loading..." : "Manage Plan"}
-                  </button>
-                )}
-                <button
-                  onClick={() => { setShowHistory(true); setOutput(null); }}
-                  className="text-sm px-3 py-2.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors"
-                >
-                  My Briefs
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="text-sm px-3 py-2.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors"
-                >
-                  Sign out
-                </button>
-              </div>
-            )}
-            {isEditor && (
+      <Nav cta={
+        !authLoading && user
+          ? { label: "Sign out", onClick: handleLogout }
+          : undefined
+      }>
+        {!authLoading && user && (
+          <>
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="text-sm text-zinc-500">{user.email}</span>
+              {subscription && (
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  subscription.plan === "pro"
+                    ? "bg-zinc-900 text-white"
+                    : subscription.plan === "pack"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-zinc-100 text-zinc-500"
+                }`}>
+                  {subscription.plan === "pro" ? "Pro" : subscription.plan === "pack" ? "Pack" : "Free"}
+                </span>
+              )}
+              {subscription?.plan === "pack" && (
+                <span className="text-xs text-zinc-400">
+                  {subscription.pack_briefs_remaining} briefs left
+                </span>
+              )}
+            </div>
+            {subscription?.plan === "pro" && subscription.has_stripe_customer && (
               <button
-                onClick={handleSelectKey}
-                className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors font-medium shadow-sm"
+                onClick={handleManageSubscription}
+                disabled={portalLoading}
+                className="text-sm px-3 py-2.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors disabled:opacity-50"
               >
-                Connect / Change API Key
+                {portalLoading ? "Loading..." : "Manage Plan"}
               </button>
             )}
-          </div>
-        </header>
+            <button
+              onClick={() => { setShowHistory(true); setOutput(null); }}
+              className="text-sm px-3 py-2.5 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors"
+            >
+              My Briefs
+            </button>
+          </>
+        )}
+        {isEditor && (
+          <button
+            onClick={handleSelectKey}
+            className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors font-medium shadow-sm"
+          >
+            Connect / Change API Key
+          </button>
+        )}
+      </Nav>
+
+      <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
 
         {showHistory ? (
           <MyBriefs onBack={() => setShowHistory(false)} />

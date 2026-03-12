@@ -11,9 +11,11 @@ const NAV_LINKS = [
 
 interface NavProps {
   cta?: { label: string; href: string } | { label: string; onClick: () => void };
+  /** Extra elements rendered before the hamburger (e.g. user controls) */
+  children?: React.ReactNode;
 }
 
-export function Nav({ cta }: NavProps) {
+export function Nav({ cta, children }: NavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const ctaElement = cta ? (
@@ -37,6 +39,7 @@ export function Nav({ cta }: NavProps) {
       <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center border-b border-zinc-100">
         <a href="/" className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">PrepFile</a>
         <div className="flex items-center gap-2">
+          {children}
           {ctaElement}
           <button
             onClick={() => setMenuOpen(true)}
