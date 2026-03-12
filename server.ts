@@ -774,6 +774,23 @@ async function startServer() {
     res.json({ ...brief, brief_data: JSON.parse(brief.brief_data) });
   });
 
+  // Cron endpoint — trigger email batches externally (e.g. Railway/Vercel cron)
+  app.post("/api/cron/emails", async (req, res) => {
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret) return res.status(503).json({ error: "CRON_SECRET not configured" });
+    const provided = req.headers["x-cron-secret"];
+    if (provided !== cronSecret) return res.status(401).json({ error: "Unauthorized" });
+
+    try {
+      await runWelcomeSequenceBatch(APP_URL, FROM_EMAIL);
+      await runReengagementBatch(APP_URL, FROM_EMAIL);
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("[/api/cron/emails] error:", err);
+      res.status(500).json({ error: "Internal error" });
+    }
+  });
+
   // Admin dashboard — password-gated via ADMIN_PASSWORD env var (HTTP Basic Auth)
   app.get("/admin", (req, res) => {
     const adminPassword = process.env.ADMIN_PASSWORD;
