@@ -17,7 +17,7 @@ import { UpgradeCTA } from "./components/UpgradeCTA";
 import { PricingPage } from "./components/PricingPage";
 import { Nav } from "./components/Nav";
 import type { PrepBriefData } from "./types";
-import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted } from "./lib/analytics";
+import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted, trackExampleBriefClicked } from "./lib/analytics";
 
 // Canonical slug mapping for /interview-prep/roles/:shortSlug
 const ROLE_SLUG_MAP: Record<string, string> = {
@@ -319,6 +319,44 @@ export default function Page() {
     biggestGap: ["Industry knowledge", "Technical skills", "Seniority jump", "Culture fit", "No obvious gap"],
   };
 
+  const EXAMPLE_DATA = {
+    companyName: "Google",
+    jobTitle: "Senior Software Engineer",
+    jobDescription: `We are looking for a Senior Software Engineer to join Google's Core Infrastructure team in Mountain View, CA.
+
+Responsibilities:
+- Design, build, and maintain scalable distributed systems serving billions of users
+- Lead technical design reviews and mentor junior engineers
+- Collaborate cross-functionally with product, design, and SRE teams
+- Drive adoption of best engineering practices including code review, testing, and documentation
+
+Minimum Qualifications:
+- BS/MS in Computer Science or equivalent practical experience
+- 5+ years of experience in software development using C++, Java, Go, or Python
+- Experience with distributed systems, large-scale storage, or network programming
+- Strong problem-solving skills and ability to handle ambiguous requirements
+
+Preferred Qualifications:
+- Experience with Kubernetes, Borg, or similar container orchestration systems
+- Familiarity with Google Cloud Platform products
+- Track record of leading technical projects end-to-end`,
+    round: "Final",
+    familiarity: "Know them well",
+    timeToPrep: "1-3 hours",
+    biggestGap: "Seniority jump",
+  };
+
+  const handleTryExample = () => {
+    trackExampleBriefClicked();
+    setCompanyName(EXAMPLE_DATA.companyName);
+    setJobTitle(EXAMPLE_DATA.jobTitle);
+    setJobDescription(EXAMPLE_DATA.jobDescription);
+    setRound(EXAMPLE_DATA.round);
+    setFamiliarity(EXAMPLE_DATA.familiarity);
+    setTimeToPrep(EXAMPLE_DATA.timeToPrep);
+    setBiggestGap(EXAMPLE_DATA.biggestGap);
+  };
+
   // Update document title + OG tags when viewing a generated brief
   useEffect(() => {
     const defaultTitle = "PrepFile — AI Interview Prep Briefs";
@@ -462,6 +500,20 @@ export default function Page() {
               <SignInGate />
             ) : (
               <div className="space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-zinc-200/60">
+
+                {/* Try with example */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-xl font-semibold text-zinc-900">Build your prep brief</h1>
+                    <p className="text-sm text-zinc-500 mt-0.5">Fill in the details below, or try a sample first.</p>
+                  </div>
+                  <button
+                    onClick={handleTryExample}
+                    className="shrink-0 ml-4 px-4 py-2 text-sm font-medium text-zinc-700 bg-zinc-100 border border-zinc-200 rounded-lg hover:bg-zinc-200 transition-colors"
+                  >
+                    Try with example
+                  </button>
+                </div>
 
                 {/* Core Inputs */}
                 <div className="space-y-6">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 const NAV_LINKS = [
@@ -12,7 +12,7 @@ const NAV_LINKS = [
 interface NavProps {
   cta?: { label: string; href: string } | { label: string; onClick: () => void };
   /** Extra elements rendered before the hamburger (e.g. user controls) */
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 export function Nav({ cta, children }: NavProps) {

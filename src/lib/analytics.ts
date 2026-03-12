@@ -66,3 +66,8 @@ export function trackUpgradeCTAClicked(variantId: string) {
   if (!POSTHOG_KEY) return;
   posthog.capture("upgrade_cta_clicked", { variant: variantId });
 }
+
+export function trackExampleBriefClicked() {
+  if (!POSTHOG_KEY) return;
+  posthog.capture("example_brief_clicked");
+}
