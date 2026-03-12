@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { Nav } from "./Nav";
 
 const FAQ_ITEMS = [
@@ -67,9 +68,19 @@ function FaqItem({ q, a }: { q: string; a: string; key?: string }) {
           <path d="m6 9 6 6 6-6" />
         </svg>
       </button>
-      {open && (
-        <div className="pb-5 text-sm text-zinc-600 leading-relaxed">{a}</div>
-      )}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="pb-5 text-sm text-zinc-600 leading-relaxed">{a}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

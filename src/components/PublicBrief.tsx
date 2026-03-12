@@ -17,6 +17,7 @@ export function PublicBrief({ briefId }: PublicBriefProps) {
   const [brief, setBrief] = useState<PublicBriefData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   useEffect(() => {
     fetch(`/api/public/briefs/${briefId}`)
@@ -326,21 +327,33 @@ export function PublicBrief({ briefId }: PublicBriefProps) {
       </main>
 
       {/* Sticky CTA Banner */}
-      <div className="fixed bottom-0 inset-x-0 z-50 bg-zinc-900 text-white shadow-2xl border-t border-zinc-700">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div>
-            <p className="font-semibold text-sm">Preparing for YOUR interview?</p>
-            <p className="text-zinc-400 text-sm">Generate a personalized brief for your exact role and company — in 60 seconds.</p>
+      {!bannerDismissed && (
+        <div className="fixed bottom-0 inset-x-0 z-50 bg-zinc-900 text-white shadow-2xl border-t border-zinc-700">
+          <div className="max-w-3xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm">Preparing for YOUR interview?</p>
+              <p className="text-zinc-400 text-sm">Generate a personalized brief for your exact role and company.</p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <a
+                href="/"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-zinc-900 text-sm font-semibold rounded-lg hover:bg-zinc-100 transition-colors whitespace-nowrap"
+              >
+                Generate my own brief
+              </a>
+              <button
+                onClick={() => setBannerDismissed(true)}
+                className="p-2 text-zinc-400 hover:text-white transition-colors"
+                aria-label="Dismiss banner"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
           </div>
-          <a
-            href="/"
-            className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-white text-zinc-900 text-sm font-semibold rounded-lg hover:bg-zinc-100 transition-colors whitespace-nowrap"
-          >
-            Generate my own brief
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </a>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 interface AuthPanelProps {
   onDismiss: () => void;
 }
@@ -12,6 +14,11 @@ const GoogleIcon = () => (
 );
 
 export function AuthPanel({ onDismiss }: AuthPanelProps) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"

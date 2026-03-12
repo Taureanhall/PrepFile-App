@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trackUpgradeClicked } from "../lib/analytics";
 
 interface Props {
@@ -7,6 +7,13 @@ interface Props {
 }
 
 export function UpgradePrompt({ reason, onDismiss }: Props) {
+  useEffect(() => {
+    if (reason === "pro_required") {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [reason]);
+
   const [loading, setLoading] = useState<"pro" | "pack" | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
