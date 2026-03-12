@@ -80,21 +80,29 @@ export function MyBriefs({ onBack }: MyBriefsProps) {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <svg className="animate-spin h-6 w-6 text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
+        <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm divide-y divide-zinc-100">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="px-6 py-4 flex items-center justify-between animate-pulse">
+              <div className="space-y-2">
+                <div className="h-4 w-36 bg-zinc-200 rounded" />
+                <div className="h-3 w-24 bg-zinc-100 rounded" />
+              </div>
+              <div className="h-3 w-16 bg-zinc-100 rounded" />
+            </div>
+          ))}
         </div>
       ) : briefs.length === 0 ? (
         <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-12 text-center">
-          <p className="text-zinc-500">No saved briefs yet.</p>
-          <p className="text-sm text-zinc-400 mt-1">Generate a brief and it will appear here.</p>
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-100 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 18v-2"/><path d="M14 18v-6"/></svg>
+          </div>
+          <h3 className="text-lg font-semibold text-zinc-900 mb-1">No briefs yet</h3>
+          <p className="text-sm text-zinc-500 mb-6">Generate your first prep brief and it will be saved here.</p>
           <button
             onClick={onBack}
-            className="mt-6 px-4 py-2 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors"
+            className="px-5 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors"
           >
-            Generate a Brief
+            Generate your first brief
           </button>
         </div>
       ) : (

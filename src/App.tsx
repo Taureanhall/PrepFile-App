@@ -16,6 +16,7 @@ import { SegmentPage } from "./components/SegmentPage";
 import { UpgradeCTA } from "./components/UpgradeCTA";
 import { PricingPage } from "./components/PricingPage";
 import { Nav } from "./components/Nav";
+import { GeneratingState } from "./components/GeneratingState";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted, trackExampleBriefClicked } from "./lib/analytics";
 
@@ -498,6 +499,8 @@ Preferred Qualifications:
               <UpgradePrompt reason={upgradeReason} onDismiss={() => setUpgradeReason(null)} />
             ) : needsSignIn ? (
               <SignInGate />
+            ) : isGenerating ? (
+              <GeneratingState companyName={companyName || "your company"} />
             ) : (
               <div className="space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-zinc-200/60">
 
