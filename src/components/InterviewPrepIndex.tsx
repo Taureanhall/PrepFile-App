@@ -84,7 +84,7 @@ export function InterviewPrepIndex() {
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans">
       {/* Nav */}
       <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center border-b border-zinc-100">
-        <a href="/" className="text-lg font-bold tracking-tight hover:opacity-80 transition-opacity">
+        <a href="/" className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">
           PrepFile
         </a>
         <a

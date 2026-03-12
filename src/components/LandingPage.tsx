@@ -54,7 +54,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans" data-ab-variant={variant.id}>
       {/* Nav */}
       <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center">
-        <span className="text-lg font-bold tracking-tight">PrepFile</span>
+        <span className="text-2xl font-bold tracking-tight">PrepFile</span>
         <button
           onClick={onGetStarted}
           className="text-sm px-4 py-3 border border-zinc-200 text-zinc-700 rounded-lg hover:bg-zinc-100 transition-colors"

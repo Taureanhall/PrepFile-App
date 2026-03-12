@@ -134,7 +134,7 @@ export function FaqPage() {
     <div className="min-h-screen bg-white">
       <header className="border-b border-zinc-200">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <a href="/" className="text-base font-semibold text-zinc-900 tracking-tight">
+          <a href="/" className="text-2xl font-bold text-zinc-900 tracking-tight">
             PrepFile
           </a>
           <a
