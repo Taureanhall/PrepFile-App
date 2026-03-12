@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface AuthPanelProps {
   onDismiss: () => void;
@@ -13,11 +13,61 @@ const GoogleIcon = () => (
   </svg>
 );
 
+type OtpStep = "idle" | "sending" | "sent" | "verifying" | "error";
+
 export function AuthPanel({ onDismiss }: AuthPanelProps) {
+  const [showOtp, setShowOtp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [otpStep, setOtpStep] = useState<OtpStep>("idle");
+  const [otpError, setOtpError] = useState("");
+
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
+
+  async function requestOtp() {
+    if (!email.trim()) return;
+    setOtpStep("sending");
+    setOtpError("");
+    try {
+      const res = await fetch("/api/auth/request-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({ error: "Something went wrong" }));
+        throw new Error(d.error || "Failed to send code");
+      }
+      setOtpStep("sent");
+    } catch (err: any) {
+      setOtpError(err.message);
+      setOtpStep("error");
+    }
+  }
+
+  async function verifyOtp() {
+    if (!code.trim()) return;
+    setOtpStep("verifying");
+    setOtpError("");
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), code: code.trim() }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({ error: "Invalid code" }));
+        throw new Error(d.error || "Invalid code");
+      }
+      window.location.reload();
+    } catch (err: any) {
+      setOtpError(err.message);
+      setOtpStep("sent");
+    }
+  }
 
   return (
     <div
@@ -43,14 +93,90 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
           <p className="text-zinc-500 text-sm">Ace your next interview</p>
         </div>
 
-        {/* Primary CTA */}
-        <a
-          href="/api/auth/google"
-          className="flex items-center justify-center gap-3 w-full px-4 py-3.5 bg-zinc-900 text-white font-medium text-sm rounded-xl hover:bg-zinc-800 transition-colors min-h-[48px]"
-        >
-          <GoogleIcon />
-          Continue with Google
-        </a>
+        {!showOtp ? (
+          <>
+            {/* Google */}
+            <a
+              href="/api/auth/google"
+              className="flex items-center justify-center gap-3 w-full px-4 py-3.5 bg-zinc-900 text-white font-medium text-sm rounded-xl hover:bg-zinc-800 transition-colors min-h-[48px]"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </a>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-zinc-200" />
+              <span className="text-xs text-zinc-400">or</span>
+              <div className="flex-1 h-px bg-zinc-200" />
+            </div>
+
+            {/* Email OTP toggle */}
+            <button
+              onClick={() => setShowOtp(true)}
+              className="w-full px-4 py-3.5 border border-zinc-200 text-zinc-700 font-medium text-sm rounded-xl hover:bg-zinc-50 transition-colors"
+            >
+              Sign in with email
+            </button>
+          </>
+        ) : otpStep === "sent" ? (
+          <>
+            <div className="text-center">
+              <p className="text-sm text-zinc-600">We sent a 6-digit code to</p>
+              <p className="text-sm font-semibold text-zinc-900">{email}</p>
+            </div>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              placeholder="Enter 6-digit code"
+              className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-center text-lg tracking-widest font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
+              autoFocus
+            />
+            {otpError && <p className="text-sm text-red-600 text-center">{otpError}</p>}
+            <button
+              onClick={verifyOtp}
+              disabled={code.length !== 6 || otpStep === "verifying"}
+              className="w-full px-4 py-3.5 bg-zinc-900 text-white font-medium text-sm rounded-xl hover:bg-zinc-800 disabled:opacity-50 transition-colors"
+            >
+              {otpStep === "verifying" ? "Verifying..." : "Verify code"}
+            </button>
+            <button
+              onClick={() => { setOtpStep("idle"); setCode(""); setOtpError(""); }}
+              className="w-full text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
+            >
+              Use a different email
+            </button>
+          </>
+        ) : (
+          <>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
+              autoFocus
+            />
+            {otpError && <p className="text-sm text-red-600">{otpError}</p>}
+            <button
+              onClick={requestOtp}
+              disabled={!email.trim() || otpStep === "sending"}
+              className="w-full px-4 py-3.5 bg-zinc-900 text-white font-medium text-sm rounded-xl hover:bg-zinc-800 disabled:opacity-50 transition-colors"
+            >
+              {otpStep === "sending" ? "Sending code..." : "Send verification code"}
+            </button>
+            <button
+              onClick={() => { setShowOtp(false); setOtpError(""); }}
+              className="w-full text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
+            >
+              Back to sign in options
+            </button>
+          </>
+        )}
 
         {/* Skip */}
         <div className="text-center">

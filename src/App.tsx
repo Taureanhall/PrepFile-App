@@ -377,9 +377,9 @@ export default function Page() {
         {/* Header */}
         <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2">
+            <a href="/" className="text-3xl font-bold tracking-tight text-zinc-900 mb-2 block hover:opacity-80 transition-opacity">
               PrepFile
-            </h1>
+            </a>
             <p className="text-zinc-600 text-lg">
               Prep briefs that show what the company actually needs.
             </p>
