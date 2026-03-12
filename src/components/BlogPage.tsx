@@ -1,6 +1,11 @@
 import { useEffect, type ReactNode } from "react";
 import { blogArticles, type BlogArticle } from "../marketing/content/blog-articles";
 
+function formatDate(iso: string): string {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
 // Simple markdown renderer for the limited subset used in blog articles:
 // ## heading → h2, **text** → bold, paragraphs separated by double newlines
 function renderMarkdown(body: string, inlineCta: BlogArticle["inlineCta"]) {
@@ -67,7 +72,17 @@ export function BlogPage({ slug }: BlogPageProps) {
   return <BlogIndexPage />;
 }
 
+// Gradient map — Tailwind v4 can't do dynamic class names, so map explicitly
+const GRADIENT_MAP: Record<string, string> = {
+  "from-blue-600 to-indigo-700": "linear-gradient(135deg, #2563eb, #4338ca)",
+  "from-emerald-600 to-teal-700": "linear-gradient(135deg, #059669, #0f766e)",
+  "from-orange-500 to-red-600": "linear-gradient(135deg, #f97316, #dc2626)",
+};
+
 function BlogIndexPage() {
+  const featured = blogArticles.filter((a) => a.featured);
+  const rest = blogArticles.filter((a) => !a.featured);
+
   useEffect(() => {
     const title = "Interview Prep Blog | PrepFile";
     const description = "Interview prep guides, strategy, and tactics from PrepFile. Learn how to prepare smarter, not longer.";
@@ -137,8 +152,38 @@ function BlogIndexPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 pb-16">
+        {/* Featured articles — card grid with hero gradients */}
+        {featured.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-5">Editor's picks</h2>
+            <div className="grid sm:grid-cols-3 gap-5">
+              {featured.map((article) => (
+                <a
+                  key={article.slug}
+                  href={`/blog/${article.slug}`}
+                  className="group block rounded-xl overflow-hidden bg-white border border-zinc-200 hover:border-zinc-400 transition-colors"
+                >
+                  <div
+                    className="h-36 flex items-center justify-center text-5xl"
+                    style={{ background: GRADIENT_MAP[article.heroGradient || ""] || "linear-gradient(135deg, #18181b, #3f3f46)" }}
+                  >
+                    {article.heroEmoji || "📝"}
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs text-zinc-400 mb-1.5">{formatDate(article.publishedDate)}</p>
+                    <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-zinc-600 transition-colors leading-snug">
+                      {article.title}
+                    </h3>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* All other articles — list */}
         <ul className="divide-y divide-zinc-100">
-          {blogArticles.map((article) => (
+          {rest.map((article) => (
             <li key={article.slug}>
               <a
                 href={`/blog/${article.slug}`}
@@ -150,6 +195,9 @@ function BlogIndexPage() {
                   </span>
                   <p className="text-sm text-zinc-400 mt-1 leading-snug max-w-prose">
                     {article.metaDescription}
+                  </p>
+                  <p className="text-xs text-zinc-400 mt-2">
+                    {formatDate(article.publishedDate)} · Written by {article.author}, with AI assistance
                   </p>
                 </div>
                 <span className="ml-6 text-zinc-300 group-hover:text-zinc-500 transition-colors shrink-0">
@@ -234,6 +282,8 @@ function BlogArticlePage({ slug }: { slug: string }) {
       headline: article.title,
       description: article.metaDescription,
       url: canonicalUrl,
+      author: { "@type": "Person", name: article.author },
+      datePublished: article.publishedDate,
       keywords: article.keywords.join(", "),
       publisher: {
         "@type": "Organization",
@@ -273,11 +323,15 @@ function BlogArticlePage({ slug }: { slug: string }) {
         <span className="text-zinc-600 truncate">{article.title}</span>
       </div>
 
-      <header className="max-w-3xl mx-auto px-6 pt-10 pb-8">
+      <header className="max-w-3xl mx-auto px-6 pt-10 pb-6">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 mb-4">
           {article.title}
         </h1>
-        <p className="text-lg text-zinc-500 leading-relaxed">{article.metaDescription}</p>
+        <p className="text-lg text-zinc-500 leading-relaxed mb-5">{article.metaDescription}</p>
+        <div className="flex flex-col gap-1 text-sm text-zinc-500 pb-6 border-b border-zinc-200">
+          <p>Written by <span className="font-semibold text-zinc-900">{article.author}</span>, with AI assistance</p>
+          <p className="text-zinc-400">Updated {formatDate(article.publishedDate)}</p>
+        </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 pb-12">

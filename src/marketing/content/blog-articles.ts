@@ -19,6 +19,16 @@ export interface BlogArticle {
   metaDescription: string;
   /** Primary + secondary keywords for this article */
   keywords: string[];
+  /** Publication date — ISO format YYYY-MM-DD */
+  publishedDate: string;
+  /** Author name */
+  author: string;
+  /** Optional hero image gradient for featured posts — CSS gradient string */
+  heroGradient?: string;
+  /** Optional hero image emoji/icon for featured cards */
+  heroEmoji?: string;
+  /** Whether this article is featured (shows as card with image on index) */
+  featured?: boolean;
   /** Full article body in markdown */
   body: string;
   /** Where to insert an inline CTA mid-article */
@@ -42,6 +52,11 @@ export const blogArticles: BlogArticle[] = [
     slug: "how-to-prepare-tech-interview-24-hours",
     title: "How to Prepare for a Tech Interview in 24 Hours",
     metaTitle: "How to Prepare for a Tech Interview in 24 Hours | PrepFile",
+    publishedDate: "2026-02-18",
+    author: "Jared Whitfield",
+    featured: true,
+    heroGradient: "from-blue-600 to-indigo-700",
+    heroEmoji: "⏰",
     metaDescription:
       "Got an interview tomorrow? Here's exactly how to use the next 24 hours — hour by hour — to prepare without burning yourself out.",
     keywords: [
@@ -125,6 +140,11 @@ One more thing: your brief will still be there tomorrow morning. Give it a 10-mi
     slug: "interview-prep-checklist",
     title: "The Interview Prep Checklist Most Candidates Skip",
     metaTitle: "The Interview Prep Checklist Most Candidates Skip | PrepFile",
+    publishedDate: "2026-02-24",
+    author: "Jared Whitfield",
+    featured: true,
+    heroGradient: "from-emerald-600 to-teal-700",
+    heroEmoji: "✅",
     metaDescription:
       "Most candidates do the visible prep and skip the items that actually matter. Here's the checklist that separates prepared candidates from everyone else.",
     keywords: [
@@ -208,6 +228,11 @@ Most candidates don't have this kind of structured prep because building it from
     slug: "why-interview-prep-advice-is-wrong",
     title: "Why Most Interview Prep Advice Is Wrong (And What Actually Works)",
     metaTitle: "Why Most Interview Prep Advice Is Wrong | PrepFile",
+    publishedDate: "2026-03-01",
+    author: "Jared Whitfield",
+    featured: true,
+    heroGradient: "from-orange-500 to-red-600",
+    heroEmoji: "🎯",
     metaDescription:
       "The standard interview prep advice — practice questions, use STAR format, do mock interviews — isn't wrong. It just optimizes for the wrong constraint.",
     keywords: [
@@ -297,6 +322,8 @@ The research-first approach is not a new idea. It's what the best candidates hav
     slug: "complete-interview-prep-checklist-2026",
     title: "The Complete Interview Prep Checklist (2026)",
     metaTitle: "The Complete Interview Prep Checklist (2026) | PrepFile",
+    publishedDate: "2026-03-05",
+    author: "Jared Whitfield",
     metaDescription:
       "A step-by-step interview prep checklist covering company research, role alignment, behavioral prep, logistics, and the day-of routine — so nothing falls through the cracks.",
     keywords: [
@@ -455,6 +482,8 @@ The brief is how you start. The rest is how you finish.`,
     slug: "behavioral-interview-questions",
     title: "Top 30 Behavioral Interview Questions (And How to Answer Each One)",
     metaTitle: "Top 30 Behavioral Interview Questions | PrepFile",
+    publishedDate: "2026-03-08",
+    author: "Jared Whitfield",
     metaDescription:
       "The 30 behavioral interview questions that come up most often — what interviewers are actually asking, and how to structure your answer using the STAR method.",
     keywords: [
@@ -700,6 +729,8 @@ PrepFile generates a brief that tells you what a given company values, what this
     slug: "star-method-interview",
     title: "The STAR Method: How to Answer Any Behavioral Interview Question",
     metaTitle: "The STAR Method for Interview Answers | PrepFile",
+    publishedDate: "2026-03-10",
+    author: "Jared Whitfield",
     metaDescription:
       "The STAR method — Situation, Task, Action, Result — is the standard framework for behavioral interviews. Here's how to use it correctly, and why most candidates get it wrong.",
     keywords: [
