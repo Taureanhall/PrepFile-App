@@ -60,16 +60,21 @@ if [[ -z "$ACCESS_TOKEN" ]]; then
   exit 1
 fi
 
-# --- Persist new refresh token to file ---
+# --- Persist new refresh token everywhere ---
 if [[ -n "$NEW_REFRESH_TOKEN" ]]; then
+  # 1. Token file (for future runs that don't set env var)
   echo "$NEW_REFRESH_TOKEN" > "$TOKEN_FILE"
   echo "Refresh token rotated → $TOKEN_FILE" >&2
+
+  # 2. Auto-update TOOLS.md so agents always have the latest token
+  TOOLS_FILE="${TWITTER_TOOLS_FILE:-/Users/taureanhall/Developer/Prepflow-Company/agents/marketing/TOOLS.md}"
+  if [[ -f "$TOOLS_FILE" ]]; then
+    sed -i '' "s|^TWITTER_REFRESH_TOKEN=.*|TWITTER_REFRESH_TOKEN=${NEW_REFRESH_TOKEN}|" "$TOOLS_FILE"
+    echo "TOOLS.md updated with new refresh token" >&2
+  fi
 fi
 
-# Always print new refresh token to stderr so callers can capture it
 echo "TWITTER_NEW_REFRESH_TOKEN=${NEW_REFRESH_TOKEN}" >&2
-
-# Also export for caller to capture if needed
 export TWITTER_NEW_REFRESH_TOKEN="$NEW_REFRESH_TOKEN"
 
 # --- Post the tweet ---
