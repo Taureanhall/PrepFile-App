@@ -381,25 +381,23 @@ export default function Page() {
           <div className="flex items-center gap-3">
             {!authLoading && user && (
               <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-2">
-                  <span className="text-sm text-zinc-500">{user.email}</span>
-                  {subscription && (
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      subscription.plan === "pro"
-                        ? "bg-zinc-900 text-white"
-                        : subscription.plan === "pack"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-zinc-100 text-zinc-500"
-                    }`}>
-                      {subscription.plan === "pro" ? "Pro" : subscription.plan === "pack" ? "Pack" : "Free"}
-                    </span>
-                  )}
-                  {subscription?.plan === "pack" && (
-                    <span className="text-xs text-zinc-400">
-                      {subscription.pack_briefs_remaining} briefs left
-                    </span>
-                  )}
-                </div>
+                <span className="hidden sm:inline text-sm text-zinc-500">{user.email}</span>
+                {subscription && subscription.plan !== "pro" && (
+                  <button
+                    onClick={() => setUpgradeReason("pro_required")}
+                    className="text-sm px-3 py-2.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 transition-colors"
+                  >
+                    Upgrade to Pro
+                  </button>
+                )}
+                {subscription?.plan === "pack" && (
+                  <span className="text-xs text-zinc-400">
+                    {subscription.pack_briefs_remaining} briefs left
+                  </span>
+                )}
+                {subscription?.plan === "pro" && (
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-zinc-900 text-white">Pro</span>
+                )}
                 {subscription?.plan === "pro" && subscription.has_stripe_customer && (
                   <button
                     onClick={handleManageSubscription}
