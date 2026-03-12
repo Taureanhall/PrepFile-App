@@ -4,7 +4,7 @@ export const content = {
   tagline: "How to Prepare for a Salesforce Interview",
   metaTitle: "How to Prepare for a Salesforce Interview | PrepFile",
   metaDescription:
-    "Salesforce interviews blend technical depth with Ohana culture fit. Here's the hiring process, what evaluators score in each round, and how to prep for a Salesforce loop.",
+    "Salesforce interviews blend technical depth with Ohana culture fit. The hiring process, what evaluators score in each round, and how to prep for a Salesforce loop.",
   intro:
     "Salesforce is the world's leading CRM company and one of the largest enterprise software employers, hiring tens of thousands annually across engineering, sales, customer success, and consulting. The company's 'Ohana' culture — Hawaiian for family — is operationally real in how interviews are run and evaluated. Technical competence alone won't get you through: values fit is explicitly scored at every stage.",
   culture: {

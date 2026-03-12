@@ -269,8 +269,9 @@ async function startServer() {
 
       const { data, error: sendError } = await resend.emails.send({
         from: FROM_EMAIL,
+        replyTo: "support@prepfile.work",
         to: normalizedEmail,
-        subject: `${code} is your PrepFile verification code`,
+        subject: `Your PrepFile code: ${code}`,
         html: `
           <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px">
             <h2 style="font-size:20px;font-weight:700;color:#18181b;margin-bottom:8px">Your verification code</h2>

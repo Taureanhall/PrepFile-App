@@ -4,7 +4,7 @@ export const content = {
   tagline: "How to Prepare for an IBM Interview",
   metaTitle: "How to Prepare for an IBM Interview | PrepFile",
   metaDescription:
-    "IBM's interviews span consulting, cloud, and AI roles — each with distinct formats. Here's the hiring process, what evaluators score, and how to prep for an IBM loop.",
+    "IBM's interviews span consulting, cloud, and AI roles — each with distinct formats. The hiring process, what evaluators score, and how to prep for an IBM loop.",
   intro:
     "IBM is one of the world's largest technology and consulting companies, hiring across cloud infrastructure, enterprise AI, consulting services, and research. The company's breadth means interview processes vary significantly by business unit — IBM Consulting evaluates differently than IBM Technology, and both differ from IBM Research. Knowing your specific division and its evaluation criteria before you walk in is table stakes.",
   culture: {

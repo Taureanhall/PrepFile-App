@@ -4,7 +4,7 @@ export const content = {
   tagline: "How to Prepare for a Tesla Interview",
   metaTitle: "How to Prepare for a Tesla Interview | PrepFile",
   metaDescription:
-    "Tesla's hiring bar is speed and ownership: they want builders who operate without hand-holding. Here's the full process, what interviewers score, and how to stand out in a Tesla loop.",
+    "Tesla's hiring bar is speed and ownership: they want builders who operate without hand-holding. The full process, what interviewers score, and how to stand out in a Tesla loop.",
   intro:
     "Tesla moves faster than almost any company at its scale — and its hiring process reflects that. Interviews are direct, the bar for ownership is high, and the culture filters aggressively for candidates who can execute with minimal direction. If you're used to environments with clear processes and structured escalation paths, Tesla will feel different. If you thrive in high-velocity, mission-driven work, the culture will feel like a fit from day one.",
   culture: {

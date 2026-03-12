@@ -4,7 +4,7 @@ export const content = {
   tagline: "How to Prepare for an Apple Interview",
   metaTitle: "How to Prepare for an Apple Interview | PrepFile",
   metaDescription:
-    "Apple's interview process has no standard format — each team runs its own loop. Here's what actually matters: the culture signals, the loop structure, and the one question that kills most candidates.",
+    "Apple's interview process has no standard format — each team runs its own loop. What actually matters: culture signals, loop structure, and the one question that kills most candidates.",
   intro:
     "Apple's interview is unlike any other big tech process because there is no single Apple interview — every team designs its own loop with near-total autonomy. A software engineer on Core OS will face a completely different set of rounds than a software engineer on Maps, even though both job titles are identical. The implication: the recruiter is your most important research source, not Glassdoor.",
   culture: {

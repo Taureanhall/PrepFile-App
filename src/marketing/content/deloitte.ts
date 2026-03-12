@@ -4,7 +4,7 @@ export const content = {
   tagline: "How to Prepare for a Deloitte Interview",
   metaTitle: "How to Prepare for a Deloitte Interview | PrepFile",
   metaDescription:
-    "Deloitte's case interviews are candidate-led, not interviewer-led — the opposite of McKinsey. The group exercise is real and evaluated. Here's what the process actually looks like across Consulting, Advisory, and Audit.",
+    "Deloitte's case interviews are candidate-led, not interviewer-led — the opposite of McKinsey. The group exercise is real and evaluated. What the process actually looks like across Consulting, Advisory, and Audit.",
   intro:
     "Deloitte is not one interview process — it's several. Consulting, Advisory, and Audit all run distinct formats, and prepping generically is a reliable way to get cut. The case interview is candidate-led (not McKinsey-style), and the group case exercise in Round 2 is an active evaluation, not filler.",
   culture: {

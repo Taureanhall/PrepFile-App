@@ -51,7 +51,7 @@ export const blogArticles: BlogArticle[] = [
     title: "How to Prepare for a Tech Interview in 24 Hours",
     metaTitle: "How to Prepare for a Tech Interview in 24 Hours | PrepFile",
     metaDescription:
-      "Got an interview tomorrow? Here's exactly how to use the next 24 hours — hour by hour — to prepare without burning yourself out.",
+      "Interview tomorrow? A realistic hour-by-hour plan to prepare without burning out — focused on what actually moves the needle.",
     keywords: [
       "last minute interview prep",
       "interview tomorrow what to do",
@@ -59,15 +59,11 @@ export const blogArticles: BlogArticle[] = [
       "24 hour interview prep",
       "interview prep the night before",
     ],
-    body: `You found out yesterday. The interview is tomorrow morning. Here's how to use the next 24 hours in a way that actually changes the outcome.
+    body: `You found out yesterday. The interview is tomorrow morning. You have 24 hours to make them count.
 
-**The wrong move is to try to learn everything.**
+The wrong move is to try to learn everything. Most candidates in this situation open 50 browser tabs, start a Glassdoor deep-dive, pull up a hundred practice questions, and try to cram three months of prep into one night. They stay up until 2 AM, walk in exhausted, and underperform.
 
-Most candidates in this situation open 50 browser tabs, start a Glassdoor deep-dive, pull up a hundred practice questions, and attempt to cover everything they might have been asked with three months of prep time. They stay up until 2 AM, walk in exhausted, and underperform.
-
-The right move is to prepare the minimum viable context to have a real conversation — and then sleep.
-
-Here's what that looks like, hour by hour.
+The right move is to prepare just enough context to have a real conversation — and then sleep.
 
 ## Hour 0–1: Build Your Prep Brief
 
@@ -75,7 +71,7 @@ Before you do anything else, generate a PrepFile brief for the role. Input the c
 
 What you get back is a structured brief: company snapshot, role intelligence, what this round is likely to evaluate, questions to ask your interviewer, and — critically — your blind spots. This is your prep plan. Everything you do for the next 23 hours should be filtered through it.
 
-**What not to do:** Don't start with Glassdoor. Reviews are written by people who may have interviewed for different roles, on different teams, 18 months ago. Your brief is specific to you, the role, and what the company cares about now.
+Skip Glassdoor for now. Reviews are written by people who may have interviewed for different roles, on different teams, 18 months ago. Your brief is specific to you, the role, and what the company cares about now.
 
 ## Hours 1–3: Company Context
 
@@ -87,7 +83,7 @@ Pull up the brief's company snapshot section. Your goal is not to memorize the c
 
 Use the brief to frame this, then spend 20 minutes on the company's recent blog posts or news. You want two or three specific data points — not a comprehensive history.
 
-**Why this matters:** Interviewers don't just evaluate your answers. They evaluate whether you understand the context you'd be working in. A candidate who demonstrates that understanding stands out, even if their technical answers are imperfect.
+Interviewers don't just evaluate your answers. They evaluate whether you understand the context you'd be working in. A candidate who demonstrates that understanding stands out, even if their technical answers are imperfect.
 
 ## Hours 3–5: Role Alignment
 
@@ -117,7 +113,7 @@ This is not the advice you want at 9 PM, but it is the highest-ROI decision you 
 
 Get eight hours if you can. Walk in rested, with a clear head and a plan.
 
-One more thing: your brief will still be there tomorrow morning. Give it a 10-minute re-read before you log on or walk in. That's enough.`,
+Your brief will still be there tomorrow morning. Give it a 10-minute re-read before you log on or walk in. That's enough.`,
     inlineCta: {
       afterHeading: "Hour 0–1: Build Your Prep Brief",
       text: "Generate your PrepFile brief before you read another Glassdoor review. Input the company, role, and job description — you'll have a structured prep plan in under 10 minutes.",
@@ -138,7 +134,7 @@ One more thing: your brief will still be there tomorrow morning. Give it a 10-mi
     title: "The Interview Prep Checklist Most Candidates Skip",
     metaTitle: "The Interview Prep Checklist Most Candidates Skip | PrepFile",
     metaDescription:
-      "Most candidates do the visible prep and skip the items that actually matter. Here's the checklist that separates prepared candidates from everyone else.",
+      "The prep items most candidates skip — company context, blind spots, specific questions, and a real 'why here' answer. A checklist for what actually matters.",
     keywords: [
       "interview preparation checklist",
       "interview prep checklist",
@@ -225,7 +221,7 @@ Most candidates don't have this kind of structured prep because building it from
     title: "Why Most Interview Prep Advice Is Wrong (And What Actually Works)",
     metaTitle: "Why Most Interview Prep Advice Is Wrong | PrepFile",
     metaDescription:
-      "The standard interview prep advice — practice questions, use STAR format, do mock interviews — isn't wrong. It just optimizes for the wrong constraint.",
+      "Practice questions, STAR format, mock interviews — none of it is wrong. But it optimizes for the wrong constraint. Context beats polish.",
     keywords: [
       "how to actually prepare for interviews",
       "interview prep advice",
@@ -259,7 +255,7 @@ This is why candidates with strong credentials and polished answers don't always
 
 ## The company-context gap in standard prep
 
-Here's what most interview prep doesn't help you build: a working model of how this specific company operates.
+Most interview prep doesn't help you build a working model of how this specific company operates.
 
 What does this company optimize for? Speed or reliability? Individual ownership or team consensus? Is it still in "build fast and iterate" mode, or managing a mature product at scale? What trade-offs has the team made recently, and do they stand behind them?
 
@@ -333,127 +329,83 @@ This checklist breaks down everything you need to do before an interview into a 
 
 ## Before You Start: Build Your Prep Brief
 
-The single most important thing you can do before you open a browser tab or write a single note is to generate a PrepFile brief. Input the company name, job title, job description, and answer four quick questions about your situation.
+Before you open a browser tab or write a single note, generate a PrepFile brief. Input the company name, job title, job description, and answer four quick questions about your situation.
 
-What you get back is a structured prep plan: company snapshot, role intelligence, what this round is likely to evaluate, questions to ask your interviewer, and the blind spots specific to your background and this role. This brief is your organizing document. Every item on this checklist becomes faster and more targeted when you start from it.
+You get back a structured prep plan: company snapshot, role intelligence, what this round is likely to evaluate, questions to ask your interviewer, and the blind spots specific to your background and this role. This brief is your organizing document. Every item on this checklist becomes faster and more targeted when you start from it.
 
 Without it, you're doing research from scratch and hoping you cover the right things. With it, you know what to prioritize before you spend a minute on anything else.
 
 ## Week Before: Company Research
 
-**Understand what the company cares about right now.**
+Understand what the company cares about right now — not historically. Go beyond the About page. Companies shift priorities constantly. A company in hyper-growth mode twelve months ago may be in a cost-optimization phase today.
 
-Go beyond the About page. Companies shift priorities constantly — a company that was in hyper-growth mode twelve months ago may be in a cost-optimization phase today. Your goal is to understand what they're optimizing for at this moment, not historically.
+Read their most recent blog posts and engineering articles, any press coverage from the past three to six months, and for public companies, recent earnings call transcripts or investor letters. What are they shipping? What are they cutting? What is the stated priority for the next year?
 
-Read: their most recent blog posts and engineering articles, any press coverage from the past three to six months, and for public companies, recent earnings call transcripts or investor letters. Look for: what are they shipping, what are they cutting, what is their stated priority for the next year?
-
-**Find specific, recent work from the team you'd be joining.**
-
-Search LinkedIn for people on the team. Look at their company's engineering or product blog. Search GitHub for open-source repositories. Look for conference talks on YouTube. Most teams leave a public trail — and candidates who reference specific work make a completely different impression than ones who cite the company's Wikipedia entry.
+Find specific, recent work from the team you'd be joining. Search LinkedIn for people on the team. Look at the company's engineering or product blog. Search GitHub for open-source repositories. Look for conference talks on YouTube. Most teams leave a public trail — and candidates who reference specific work make a completely different impression than ones who cite the company's Wikipedia entry.
 
 If you're applying to a large company with many teams, this matters even more. "I admire Amazon's culture of customer obsession" lands flat. "I read the team's post on how they redesigned the data pipeline for X product" does not.
 
-**Map the company's competitive position.**
-
-Who are their main competitors? Where are they differentiated? This context shapes how you should talk about your own experience and which of your skills to emphasize. A company competing primarily on reliability wants different things from an engineer than one competing on speed of iteration.
+Map the company's competitive position. Who are their main competitors? Where are they differentiated? This context shapes how you should talk about your own experience and which of your skills to emphasize. A company competing primarily on reliability wants different things from an engineer than one competing on speed of iteration.
 
 ## Week Before: Role Alignment
 
-**Go line by line through the job description.**
+Go line by line through the job description. Make a two-column list: requirements on the left, your honest self-assessment on the right. Strong, solid, developing, or gap. Don't skip the gap column. You need it.
 
-Make a two-column list: requirements on the left, your honest self-assessment on the right. Strong, solid, developing, or gap. Don't skip the gap column. You need it.
+For each gap, prepare an honest answer. Candidates who hide gaps don't fool interviewers — they just give less credible answers. Acknowledge the gap specifically, describe how you're actively addressing it, and point to a related experience that shows you can close gaps quickly.
 
-**For each gap, prepare an honest answer.**
+"I haven't worked directly with Kubernetes at scale, but I've managed containerized deployments on ECS and spent the last month working through Kelsey Hightower's guide. Here's how I approached a similar ramp-up when I moved from monolithic to service-oriented architectures..." — that lands far better than deflecting the question.
 
-Candidates who hide gaps don't fool interviewers — they just give less credible answers. The correct approach: acknowledge the gap specifically, describe how you're actively addressing it, and point to a related experience that demonstrates your ability to close gaps quickly.
+For each strong area, prepare one specific story. Not "I'm good at cross-functional collaboration." A specific project, a specific challenge, a specific decision you made, and a measurable outcome. The difference between a generic answer and a compelling one is almost always specificity.
 
-"I haven't worked directly with Kubernetes at scale, but I've managed containerized deployments on ECS and spent the last month working through Kelsey Hightower's guide. Here's how I approached a similar ramp-up when I moved from monolithic to service-oriented architectures..." — that lands significantly better than deflecting the question.
-
-**For each strong area, prepare one specific story.**
-
-Not "I'm good at cross-functional collaboration." A specific project, with a specific challenge, a specific decision you made, and a specific measurable outcome. The difference between a generic answer and a compelling one is almost always specificity.
-
-**Understand what round you're in and what it evaluates.**
-
-A recruiter phone screen, a hiring manager first-round, a technical deep-dive, and a final panel all require different preparation even if they're all called "interviews." Ask your recruiter directly what to expect. Most will tell you, and it completely changes how you allocate your remaining prep time.
+Understand what round you're in and what it evaluates. A recruiter phone screen, a hiring manager first-round, a technical deep-dive, and a final panel all require different preparation even if they're all called "interviews." Ask your recruiter directly what to expect. Most will tell you, and it completely changes how you allocate your remaining prep time.
 
 ## Three to Five Days Before: Story Preparation
 
-**Prepare 7–10 core stories.**
+Prepare 7 to 10 core stories. Not 30. You want strong, specific stories you know well enough to tell in any order and adapt to different questions. Each story should have: context (brief, one sentence), the challenge or decision point, your specific action or reasoning, and the outcome.
 
-Not 30 — 7 to 10 strong, specific stories that you know well enough to tell in any order and adapt to different questions. Each story should have: context (brief, one sentence), the challenge or decision point, your specific action or reasoning, and the outcome.
+The best stories are ones where the decision was genuinely hard. Interviewers aren't looking for stories where everything went smoothly. They want evidence of how you think when things don't.
 
-The best stories are ones where the decision was genuinely hard. Interviewers aren't looking for stories where everything went smoothly. They're looking for evidence of how you think when things don't go smoothly.
+Map each story to multiple question types. A good story about navigating ambiguity can also answer questions about leadership, decision-making under uncertainty, and stakeholder management. Know which of your stories maps to which question types so you can quickly retrieve the most relevant one.
 
-**Map each story to multiple question types.**
-
-A good story about navigating ambiguity can also answer questions about leadership, decision-making under uncertainty, and stakeholder management. Know which of your stories maps to which question types so you can quickly retrieve the most relevant one.
-
-**Practice saying your stories out loud — not in your head.**
-
-There is a significant difference between knowing a story and being able to tell it clearly in three to four minutes under mild social pressure. Record yourself, practice with a friend, or just say it to the wall. The goal is to know the key beats well enough that you're not reconstructing the story in real time during the interview.
+Practice saying your stories out loud — not in your head. There is a real difference between knowing a story and being able to tell it clearly in three to four minutes under mild social pressure. Record yourself, practice with a friend, or just say it to the wall. The goal is to know the key beats well enough that you're not reconstructing the story in real time during the interview.
 
 ## Two Days Before: Logistics and Questions
 
-**Prepare three to five specific questions for your interviewer.**
+Prepare three to five specific questions for your interviewer. The bar: could you have asked this without doing any research? If yes, it's not specific enough.
 
-The bar for a good question is: could you have asked this without doing any research? If yes, it's not specific enough.
+Good questions reference the company's current priorities, the team's recent work, or something concrete in the JD you want to understand better. "I saw you recently shipped X — what's the next challenge that creates for the team?" "The JD mentions ownership of Y — what would strong execution look like in the first six months?" Questions like these do double duty: they make a strong impression and surface information that helps you give better answers later.
 
-Questions that work reference the company's current priorities, the team's recent work, or something concrete in the JD you want to understand better. "I saw you recently shipped X — what's the next challenge that creates for the team?" "The JD mentions ownership of Y — what would strong execution look like in the first six months?" "How does the team think about Z?" Questions like these serve dual purpose: they make a strong impression and they surface information that helps you give better answers later in the conversation.
+Generic questions don't just fail to impress — they signal you didn't do the work.
 
-Generic questions don't just fail to impress — they actively signal that you didn't do the work.
+Confirm all logistics. Where is the interview (in-person address or video link)? Who are you meeting with? What time zone? Do you need to install software for a virtual interview? Anything to bring (government ID, portfolio, work samples)?
 
-**Confirm all logistics.**
+Logistics failures are entirely preventable and disproportionately costly. Showing up to the wrong building or logging into the wrong Zoom link starts the interview in a hole you'll spend the rest of the conversation climbing out of.
 
-Where is the interview (in-person address or video link)? Who are you meeting with? What time zone is the time in? Do you need to install any software for a virtual interview? Is there anything you need to bring (government ID, portfolio, samples of work)?
-
-Logistics failures are entirely preventable and they're disproportionately costly — showing up to the wrong building or logging into the wrong Zoom link starts the interview in a hole you'll spend the rest of the conversation climbing out of.
-
-**Prepare your setup (for virtual interviews).**
-
-Test your audio and video the day before, not the morning of. Close everything except the tabs you need. Put your phone on silent. Have a glass of water in reach. Know where to look — at the camera, not at the screen. These details don't add points, but their absence subtracts them.
+Prepare your setup for virtual interviews. Test audio and video the day before, not the morning of. Close everything except the tabs you need. Put your phone on silent. Have water in reach. Know where to look — at the camera, not at the screen. These details don't add points, but their absence subtracts them.
 
 ## Day Before: Final Review
 
-**Review your brief's blind spots section.**
+Review your brief's blind spots section. This is what most candidates skip. The blind spots are specific to your background and this role — things you're likely to be asked about that you're not fully prepared for. Read each one. Think through how you'd handle it. You don't need a perfect answer; you need to not be caught flat-footed.
 
-This is the section most candidates skip. The blind spots are specific to your background and this role — things you're likely to be asked about that you're not fully prepared for. Read each one. Think through how you'd handle it. You don't need to rehearse a perfect answer; you need to not be caught completely flat-footed.
+Re-read your strongest two or three stories. Not all of them — just the ones you'll most likely lead with. You want them fresh without overdoing the review.
 
-**Re-read your strongest two or three stories.**
+Set two alarms if the interview is in the morning. Not because you'll sleep through it, but because knowing you have a backup removes one small source of anxiety you don't need.
 
-Not all of them — just the ones you'll most likely lead with. You want them fresh in your mind without overdoing the review.
-
-**Set two alarms if the interview is in the morning.**
-
-Not because you'll sleep through it, but because knowing you have a backup removes one small source of anxiety that you don't need.
-
-**Stop prepping by 9 PM.**
-
-The marginal value of additional prep at this point is low. The value of being rested and clear-headed is high. Close the tabs.
+Stop prepping by 9 PM. The marginal value of additional prep at this point is low. The value of being rested and clear-headed is high. Close the tabs.
 
 ## Day Of: The Interview
 
-**Review your brief one more time, briefly.**
+Review your brief one more time. Ten minutes in the morning. Remind yourself of the key company context, your top stories, and your questions. That's all.
 
-Ten minutes in the morning. Remind yourself of the key company context, your top stories, and your questions. That's all.
+Arrive early or log in early. Five to ten minutes for in-person. Two to three minutes for virtual. Not fifteen minutes — that creates awkwardness. Five is intentional and professional.
 
-**Arrive early or log in early.**
+In the interview: listen before you answer. Make sure you understand the question before you start. A brief pause to organize your thoughts is not a weakness — it signals you're being deliberate. Interviewers appreciate it.
 
-Five to ten minutes early for in-person. Two to three minutes for virtual. Not fifteen minutes early — that creates awkwardness. Five minutes is intentional and professional.
+Take notes if it helps you. A pad and pen on the table for an in-person interview is completely normal. Notes during a virtual interview are standard. Jot down key points you want to come back to or context from earlier in the conversation.
 
-**In the interview: listen before you answer.**
+Send a follow-up note within 24 hours. One email to each interviewer, specific to your conversation with them. Not a template — something that references what you actually discussed. "I appreciated your point about [specific thing] — it reinforced why this role is interesting to me" is a different email than "Thank you for your time today." The former is memorable. The latter is background noise.
 
-Make sure you understand the question before you start answering it. A brief pause to organize your thoughts before responding is not a weakness — it's a signal that you're being deliberate. Interviewers appreciate it.
-
-**Take notes if it helps you.**
-
-A pad and pen on the table for an in-person interview is completely normal. Notes during a virtual interview are standard. Use them to jot down key points you want to come back to or context from earlier in the conversation that you want to reference.
-
-**Send a follow-up note within 24 hours.**
-
-One email to each interviewer, specific to your conversation with them. Not a template — something that references what you actually discussed. "I appreciated your point about [specific thing] — it reinforced why this role is interesting to me" is a different email than "Thank you for your time today." The former is memorable. The latter is background noise.
-
-## One More Thing
+## Putting It Together
 
 Most candidates complete about half of this checklist. They do the visible preparation — resume review, a few practice questions, a skim of the company website — and walk in hoping that's enough.
 
@@ -477,7 +429,7 @@ The brief is how you start. The rest is how you finish.`,
     title: "Top 30 Behavioral Interview Questions (And How to Answer Each One)",
     metaTitle: "Top 30 Behavioral Interview Questions | PrepFile",
     metaDescription:
-      "The 30 behavioral interview questions that come up most often — what interviewers are actually asking, and how to structure your answer using the STAR method.",
+      "The 30 behavioral questions that come up most often, what interviewers are really asking with each one, and how to structure your answer.",
     keywords: [
       "behavioral interview questions",
       "common behavioral interview questions",
@@ -723,7 +675,7 @@ PrepFile generates a brief that tells you what a given company values, what this
     title: "The STAR Method: How to Answer Any Behavioral Interview Question",
     metaTitle: "The STAR Method for Interview Answers | PrepFile",
     metaDescription:
-      "The STAR method — Situation, Task, Action, Result — is the standard framework for behavioral interviews. Here's how to use it correctly, and why most candidates get it wrong.",
+      "STAR — Situation, Task, Action, Result — is the standard framework for behavioral interviews. How to actually use it well, and where most candidates go wrong.",
     keywords: [
       "STAR method interview",
       "STAR interview technique",
@@ -798,15 +750,15 @@ Use real stories. If you don't have a story that fits a question perfectly, find
 
 A well-executed STAR answer runs three to four minutes for most questions, longer if the question is complex or if the interviewer is probing.
 
-Here's the rough structure:
+Rough structure:
 
-**Situation (30 seconds):** Company, team, time, context. Enough for the interviewer to visualize the setting. No more.
+Situation (30 seconds) — Company, team, time, context. Enough for the interviewer to visualize the setting. No more.
 
-**Task (30 seconds):** Your specific responsibility. What you were trying to accomplish. Why it mattered.
+Task (30 seconds) — Your specific responsibility. What you were trying to accomplish. Why it mattered.
 
-**Action (2–2.5 minutes):** What you actually did. Walk through the key decisions and actions in sequence. Include what was hard, what you had to figure out, and what you chose to do rather than the alternatives. This is where the interview is won or lost.
+Action (2 to 2.5 minutes) — What you actually did. Walk through the key decisions and actions in sequence. Include what was hard, what you had to figure out, and what you chose to do over the alternatives. This is where the interview is won or lost.
 
-**Result (30–45 seconds):** What happened. Quantified if possible. Impact on the team, project, company, or customer. What you learned if it went differently than expected.
+Result (30 to 45 seconds) — What happened. Quantified if possible. Impact on the team, project, company, or customer. What you learned if it went differently than expected.
 
 If you're giving a 90-second answer to a behavioral question, you're either in the Situation for too long or your Action is undersupported. Most strong answers are three to four minutes.
 
@@ -830,13 +782,13 @@ You don't need 30 stories. You need 7 to 10 strong ones that you know well enoug
 
 The best stories share certain properties: they involve a genuinely difficult situation where the outcome wasn't obvious, your individual contribution is clear and substantial, there's a specific and verifiable outcome, and they've actually happened — you lived them, you can answer follow-up questions about them fluently.
 
-**Map your stories before you practice them.** For each story, write down: what question types it answers, what competency it demonstrates most strongly, and what the specific quantifiable or qualitative result was. Then practice telling each one out loud until the key beats are natural.
+Map your stories before you practice them. For each story, write down what question types it answers, what competency it demonstrates most strongly, and the specific quantifiable or qualitative result. Then practice telling each one out loud until the key beats are natural.
 
-**Collect details you might forget.** Specific numbers, timelines, names of systems or tools, outcomes with data. You don't need to cite all of these in every answer, but having them available makes your answers more concrete and credible under follow-up questions.
+Collect details you might forget. Specific numbers, timelines, names of systems or tools, outcomes with data. You don't need to cite all of these in every answer, but having them available makes your answers more concrete and credible under follow-up questions.
 
-**Practice the Action section most.** Situation and Task are setup. Result is a sentence or two. Action is where candidates both win and lose interviews. Know your key decisions and why you made them well enough to articulate them under mild pressure.
+Practice the Action section most. Situation and Task are setup. Result is a sentence or two. Action is where candidates win and lose interviews. Know your key decisions and why you made them well enough to articulate them under mild pressure.
 
-## One More Thing: STAR Is a Framework, Not a Script
+## STAR Is a Framework, Not a Script
 
 The goal isn't to make your answers obviously structured. "First, the situation. Next, the task. Here is my action. Finally, the result." — that's too mechanical.
 

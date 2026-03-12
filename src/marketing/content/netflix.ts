@@ -4,7 +4,7 @@ export const content = {
   tagline: "How to Prepare for a Netflix Interview",
   metaTitle: "How to Prepare for a Netflix Interview | PrepFile",
   metaDescription:
-    "Netflix's hiring bar is uniquely high — and uniquely different. Culture alignment, autonomous decision-making, and system design depth matter more than LeetCode grinding. Here's what actually gets you hired.",
+    "Netflix's hiring bar is uniquely high and uniquely different. Culture alignment, autonomous decision-making, and system design depth matter more than LeetCode grinding.",
   intro:
     "Netflix runs one of the most distinct hiring processes in tech. The culture deck isn't a talking point — it's operationally enforced, and every interviewer is trained to assess it. Before you prep a single coding problem, understand that Netflix is evaluating whether you'd pass the keeper test from day one.",
   culture: {

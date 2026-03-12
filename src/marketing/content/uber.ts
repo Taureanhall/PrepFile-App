@@ -4,7 +4,7 @@ export const content = {
   tagline: "How to Prepare for an Uber Interview",
   metaTitle: "How to Prepare for an Uber Interview | PrepFile",
   metaDescription:
-    "Uber's system design rounds are domain-specific: ride matching, surge pricing, real-time geo at scale. Here's the full loop, what interviewers score, and how to prep for each round.",
+    "Uber's system design rounds are domain-specific: ride matching, surge pricing, real-time geo at scale. The full loop, what interviewers score, and how to prep for each round.",
   intro:
     "Uber operates at a scale that shapes its hiring bar in specific ways — the engineering and product problems they ask about aren't hypothetical, they're drawn from real infrastructure that processes millions of trips daily. Understanding the actual technical constraints of a ride-hailing platform at global scale isn't optional context for Uber interviews: it's the content of the interview.",
   culture: {

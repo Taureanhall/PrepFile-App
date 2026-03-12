@@ -4,7 +4,7 @@ export const content = {
   tagline: "How to Prepare for a Microsoft Interview",
   metaTitle: "How to Prepare for a Microsoft Interview | PrepFile",
   metaDescription:
-    "Microsoft's loop ends with an As-Appropriate interview most candidates don't understand. Here's how the full process works, what growth mindset actually means in practice, and how the AA round can change your offer.",
+    "Microsoft's loop ends with an As-Appropriate interview most candidates don't understand. The full process, what growth mindset means in practice, and how the AA round can change your offer.",
   intro:
     "Microsoft's interview process is more behavioral-heavy than most candidates expect — and it ends with a round that can override everything that came before it.",
   culture: {

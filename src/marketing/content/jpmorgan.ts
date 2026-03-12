@@ -4,7 +4,7 @@ export const content = {
   tagline: "How to Prepare for a JPMorgan Interview",
   metaTitle: "How to Prepare for a JPMorgan Interview | PrepFile",
   metaDescription:
-    "JPMorgan's interview process starts with Pymetrics before any human sees your resume. Division matters — IB, S&T, AWM, and Tech each have distinct formats. Here's how to prep for each.",
+    "JPMorgan's interview process starts with Pymetrics before any human sees your resume. Division matters — IB, S&T, AWM, and Tech each have distinct formats and require different prep.",
   intro:
     "JPMorgan eliminates 60-80% of applicants through a Pymetrics assessment before a recruiter ever reads a resume. Most candidates miss this entirely. The process is also deeply division-specific — what gets you hired in Investment Banking, Sales & Trading, Asset Management, or Technology are meaningfully different skillsets.",
   culture: {
