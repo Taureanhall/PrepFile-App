@@ -113,6 +113,7 @@ export default function Page() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [showAuthPanel, setShowAuthPanel] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [needsSignIn, setNeedsSignIn] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<"free_limit" | "pack_exhausted" | "pro_required" | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -386,8 +387,20 @@ Preferred Qualifications:
   }, [output, companyName, jobTitle]);
 
   // Show landing page for unauthenticated users who haven't started sign-in
-  if (!authLoading && !user && !showAuthPanel && !isEditor) {
-    return <LandingPage onGetStarted={() => setShowAuthPanel(true)} />;
+  if (!authLoading && !user && !showAuthPanel && !showForm && !isEditor) {
+    return (
+      <LandingPage
+        onGetStarted={(company, title) => {
+          if (company || title) {
+            if (company) setCompanyName(company);
+            if (title) setJobTitle(title);
+            setShowForm(true);
+          } else {
+            setShowAuthPanel(true);
+          }
+        }}
+      />
+    );
   }
 
   if (!hasKey) {

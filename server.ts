@@ -30,6 +30,7 @@ import {
   getOrCreateUserByEmail,
   createOtpCode,
   verifyOtpCode,
+  getTotalBriefCount,
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
@@ -203,6 +204,12 @@ async function startServer() {
   // API routes FIRST
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // Public stats — no auth required
+  app.get("/api/stats", (_req, res) => {
+    const totalBriefs = getTotalBriefCount();
+    res.json({ totalBriefs });
   });
 
   // Auth: get current user

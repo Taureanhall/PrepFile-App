@@ -257,6 +257,11 @@ export function getBriefCountForUser(userId: string): number {
   return row?.cnt ?? 0;
 }
 
+export function getTotalBriefCount(): number {
+  const row = db.prepare("SELECT COUNT(*) as cnt FROM briefs").get() as any;
+  return row?.cnt ?? 0;
+}
+
 export function markOnboardingEmailSent(userId: string): void {
   db.prepare("UPDATE users SET onboarding_email_sent = 1 WHERE id = ?").run(userId);
 }

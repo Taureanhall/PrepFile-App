@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { landingBaseline, landingVariants, type LandingVariant } from "../marketing/content/landing-variants";
 import { trackAbVariant } from "../lib/analytics";
 import { Nav } from "./Nav";
@@ -21,13 +21,21 @@ function pickVariant(): LandingVariant {
   }
 }
 
+function formatCount(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k+`;
+  return `${n}+`;
+}
+
 interface LandingPageProps {
-  onGetStarted: () => void;
+  onGetStarted: (company?: string, title?: string) => void;
 }
 
 
 export function LandingPage({ onGetStarted }: LandingPageProps) {
   const [variant, setVariant] = useState<LandingVariant>(landingBaseline);
+  const [company, setCompany] = useState("");
+  const [title, setTitle] = useState("");
+  const [briefCount, setBriefCount] = useState<number | null>(null);
 
   useEffect(() => {
     const v = pickVariant();
@@ -35,14 +43,30 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
     trackAbVariant(v.id);
   }, []);
 
+  useEffect(() => {
+    fetch("/api/stats")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.totalBriefs > 0) setBriefCount(d.totalBriefs); })
+      .catch(() => {});
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onGetStarted(company.trim() || undefined, title.trim() || undefined);
+  };
+
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans" data-ab-variant={variant.id}>
-      <Nav cta={{ label: "Sign in", onClick: onGetStarted }} />
+      <Nav cta={{ label: "Sign in", onClick: () => onGetStarted() }} />
 
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-6 pt-16 pb-20 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 rounded-full text-xs text-zinc-600 mb-8">
-          {variant.badge}
+          {briefCount !== null ? (
+            <span>{formatCount(briefCount)} briefs generated</span>
+          ) : (
+            variant.badge
+          )}
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 mb-6 leading-tight">
           {variant.headline}
@@ -50,13 +74,31 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         <p className="text-xl text-zinc-500 mb-10 max-w-2xl mx-auto leading-relaxed">
           {variant.subheadline}
         </p>
-        <button
-          onClick={onGetStarted}
-          className="inline-flex items-center gap-2 px-8 py-4 bg-zinc-900 text-white font-medium text-base rounded-xl hover:bg-zinc-800 transition-colors shadow-sm"
-        >
-          {variant.cta}
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-        </button>
+
+        {/* Inline mini-form */}
+        <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-3 text-left">
+          <input
+            type="text"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            placeholder="Company name (e.g. Google)"
+            className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent text-sm"
+          />
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Job title (e.g. Product Manager)"
+            className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent text-sm"
+          />
+          <button
+            type="submit"
+            className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-zinc-900 text-white font-medium text-base rounded-xl hover:bg-zinc-800 transition-colors shadow-sm"
+          >
+            {variant.cta}
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+        </form>
         <p className="mt-4 text-sm text-zinc-400">Free to try — no credit card required</p>
       </section>
 
