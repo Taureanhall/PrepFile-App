@@ -29,6 +29,7 @@ const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Interview Guides", href: "/interview-prep" },
   { label: "Prep by Role", href: "/interview-prep/roles/pm" },
+  { label: "Pricing", href: "/pricing" },
   { label: "Blog", href: "/blog" },
   { label: "FAQ", href: "/faq" },
 ];
@@ -139,6 +140,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
           <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm mb-6">
             <a href="/interview-prep" className="hover:text-white transition-colors">Interview Guides</a>
             <a href="/interview-prep/roles/pm" className="hover:text-white transition-colors">Prep by Role</a>
+            <a href="/pricing" className="hover:text-white transition-colors">Pricing</a>
             <a href="/blog" className="hover:text-white transition-colors">Blog</a>
             <a href="/faq" className="hover:text-white transition-colors">FAQ</a>
             <a href="mailto:support@prepfile.app" className="hover:text-white transition-colors">Help</a>

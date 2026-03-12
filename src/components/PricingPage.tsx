@@ -1,6 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function PricingPage() {
+  useEffect(() => {
+    const title = "Pricing | PrepFile";
+    const description = "Simple, honest pricing for PrepFile interview prep briefs. Start free, upgrade when you need more.";
+    const canonicalUrl = "https://prepfile.app/pricing";
+    document.title = title;
+    const setMeta = (attr: string, val: string, isName = false) => {
+      const sel = isName ? `meta[name="${attr}"]` : `meta[property="${attr}"]`;
+      let el = document.head.querySelector(sel) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.setAttribute(isName ? "name" : "property", attr); document.head.appendChild(el); }
+      el.setAttribute("content", val);
+    };
+    setMeta("description", description, true);
+    setMeta("og:title", title);
+    setMeta("og:description", description);
+    setMeta("og:url", canonicalUrl);
+    setMeta("twitter:title", title, true);
+    setMeta("twitter:description", description, true);
+    let canonical = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) { canonical = document.createElement("link"); canonical.setAttribute("rel", "canonical"); document.head.appendChild(canonical); }
+    canonical.setAttribute("href", canonicalUrl);
+    return () => { document.title = "PrepFile — AI Interview Prep Briefs"; document.head.querySelector('link[rel="canonical"]')?.remove(); };
+  }, []);
   const [loading, setLoading] = useState<"pro" | "pack" | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
@@ -24,19 +46,22 @@ export function PricingPage() {
 
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans">
-      {/* Nav */}
-      <header className="max-w-3xl mx-auto px-6 py-8">
-        <a href="/" className="text-2xl font-bold tracking-tight text-zinc-900 hover:opacity-70 transition-opacity">
-          PrepFile
-        </a>
-      </header>
+      <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center border-b border-zinc-100">
+        <a href="/" className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">PrepFile</a>
+        <a href="/" className="text-sm px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors">Get your prep brief</a>
+      </nav>
 
-      <main className="max-w-3xl mx-auto px-6 pb-20">
-        {/* Hero */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-3">Simple, honest pricing</h1>
-          <p className="text-zinc-500 text-lg">Start free. Upgrade when you need more.</p>
-        </div>
+      <div className="max-w-5xl mx-auto px-6 pt-6 text-sm text-zinc-400">
+        <a href="/" className="hover:text-zinc-600 transition-colors">Home</a>
+        <span className="mx-2">/</span>
+        <span className="text-zinc-600">Pricing</span>
+      </div>
+
+      <main className="max-w-5xl mx-auto px-6 pb-20">
+        <header className="pt-10 pb-8 text-center">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 mb-4">Simple, honest pricing</h1>
+          <p className="text-lg text-zinc-500 leading-relaxed">Start free. Upgrade when you need more.</p>
+        </header>
 
         {/* Pricing cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -186,15 +211,14 @@ export function PricingPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="max-w-3xl mx-auto px-6 py-8 mt-8 border-t border-zinc-200 flex justify-between items-center text-sm text-zinc-400">
-        <span>&copy; {new Date().getFullYear()} PrepFile</span>
-        <nav className="flex gap-5">
-          <a href="/interview-prep" className="hover:text-zinc-600 transition-colors">Interview Guides</a>
-          <a href="/blog" className="hover:text-zinc-600 transition-colors">Blog</a>
-          <a href="/faq" className="hover:text-zinc-600 transition-colors">FAQ</a>
-        </nav>
-      </footer>
+        <div className="pt-8 mt-8 border-t border-zinc-200 flex justify-between items-center text-sm text-zinc-400">
+          <a href="/" className="hover:text-zinc-600 transition-colors">&larr; Back to PrepFile</a>
+          <nav className="flex gap-4">
+            <a href="/interview-prep" className="hover:text-zinc-600 transition-colors">Interview Guides</a>
+            <a href="/blog" className="hover:text-zinc-600 transition-colors">Blog</a>
+            <a href="/faq" className="hover:text-zinc-600 transition-colors">FAQ</a>
+          </nav>
+        </div>
     </div>
   );
 }
