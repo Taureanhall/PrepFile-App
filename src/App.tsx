@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AnimatePresence } from "motion/react";
 import { PrepBrief } from "./components/PrepBrief";
 import { AuthPanel } from "./components/AuthPanel";
 import { SignInGate } from "./components/SignInGate";
 import { MyBriefs } from "./components/MyBriefs";
 import { UpgradePrompt } from "./components/UpgradePrompt";
-import { GeneratingState } from "./components/GeneratingState";
 import { LandingPage } from "./components/LandingPage";
 import { PublicBrief } from "./components/PublicBrief";
 import { InterviewPrepPage } from "./components/InterviewPrepPage";
@@ -16,6 +14,7 @@ import { BlogPage } from "./components/BlogPage";
 import { FaqPage } from "./components/FaqPage";
 import { SegmentPage } from "./components/SegmentPage";
 import { UpgradeCTA } from "./components/UpgradeCTA";
+import { PricingPage } from "./components/PricingPage";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted } from "./lib/analytics";
 
@@ -96,6 +95,11 @@ export default function Page() {
   // Route: /faq — FAQ page
   if (window.location.pathname === "/faq") {
     return <FaqPage />;
+  }
+
+  // Route: /pricing — pricing page
+  if (window.location.pathname === "/pricing") {
+    return <PricingPage />;
   }
 
   // Route: /for/:slug — segment landing pages
@@ -372,34 +376,36 @@ export default function Page() {
 
         {/* Header */}
         <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <a href="/" className="block">
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2 hover:opacity-70 transition-opacity">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2">
               PrepFile
             </h1>
             <p className="text-zinc-600 text-lg">
               Prep briefs that show what the company actually needs.
             </p>
-          </a>
+          </div>
           <div className="flex items-center gap-3">
             {!authLoading && user && (
               <div className="flex items-center gap-3">
-                <span className="hidden sm:inline text-sm text-zinc-500">{user.email}</span>
-                {subscription && subscription.plan !== "pro" && (
-                  <button
-                    onClick={() => setUpgradeReason("pro_required")}
-                    className="text-sm px-3 py-2.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 transition-colors"
-                  >
-                    Upgrade to Pro
-                  </button>
-                )}
-                {subscription?.plan === "pack" && (
-                  <span className="text-xs text-zinc-400">
-                    {subscription.pack_briefs_remaining} briefs left
-                  </span>
-                )}
-                {subscription?.plan === "pro" && (
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-zinc-900 text-white">Pro</span>
-                )}
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-sm text-zinc-500">{user.email}</span>
+                  {subscription && (
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      subscription.plan === "pro"
+                        ? "bg-zinc-900 text-white"
+                        : subscription.plan === "pack"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-zinc-100 text-zinc-500"
+                    }`}>
+                      {subscription.plan === "pro" ? "Pro" : subscription.plan === "pack" ? "Pack" : "Free"}
+                    </span>
+                  )}
+                  {subscription?.plan === "pack" && (
+                    <span className="text-xs text-zinc-400">
+                      {subscription.pack_briefs_remaining} briefs left
+                    </span>
+                  )}
+                </div>
                 {subscription?.plan === "pro" && subscription.has_stripe_customer && (
                   <button
                     onClick={handleManageSubscription}
@@ -434,23 +440,14 @@ export default function Page() {
           </div>
         </header>
 
-        {/* Global upgrade prompt — works from any view when triggered by header button */}
-        <AnimatePresence>
-          {upgradeReason === "pro_required" && (
-            <UpgradePrompt reason="pro_required" onDismiss={() => setUpgradeReason(null)} />
-          )}
-        </AnimatePresence>
-
         {showHistory ? (
           <MyBriefs onBack={() => setShowHistory(false)} />
         ) : !output ? (
           <div className="space-y-0">
             {/* Auth Panel — shown to unauthenticated users who haven't dismissed */}
-            <AnimatePresence>
-              {!authLoading && !user && showAuthPanel && !needsSignIn && (
-                <AuthPanel onDismiss={() => setShowAuthPanel(false)} />
-              )}
-            </AnimatePresence>
+            {!authLoading && !user && showAuthPanel && !needsSignIn && (
+              <AuthPanel onDismiss={() => setShowAuthPanel(false)} />
+            )}
 
             {/* Payment success banner */}
             {paymentSuccess && (
@@ -470,13 +467,11 @@ export default function Page() {
               </div>
             )}
 
-            {/* Upgrade prompt — shown when plan limit hit or user clicks Upgrade to Pro */}
-            {upgradeReason ? (
+            {/* Upgrade prompt — shown when plan limit hit (not pro_required, which overlays the brief) */}
+            {upgradeReason && upgradeReason !== "pro_required" ? (
               <UpgradePrompt reason={upgradeReason} onDismiss={() => setUpgradeReason(null)} />
             ) : needsSignIn ? (
               <SignInGate />
-            ) : isGenerating ? (
-              <GeneratingState companyName={companyName || "your company"} />
             ) : (
               <div className="space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-zinc-200/60">
 
@@ -619,7 +614,7 @@ export default function Page() {
                     </div>
 
                     {/* Submit Button */}
-                    <div className="pt-4 space-y-2">
+                    <div className="pt-4 space-y-3">
                       <button
                         onClick={handleGenerate}
                         disabled={!isFormValid || isGenerating}
@@ -631,15 +626,12 @@ export default function Page() {
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Building your brief...
+                            Researching company + building your brief (30–60 sec)...
                           </>
                         ) : (
                           "Generate My Prep Brief"
                         )}
                       </button>
-                      {isGenerating && (
-                        <p className="text-xs text-zinc-400 text-center">This usually takes 30–60 seconds</p>
-                      )}
                     </div>
                   </div>
                 )}
@@ -684,6 +676,7 @@ export default function Page() {
       <footer className="max-w-3xl mx-auto px-6 py-8 mt-8 border-t border-zinc-200 flex justify-between items-center text-sm text-zinc-400 print:hidden">
         <span>&copy; {new Date().getFullYear()} PrepFile</span>
         <nav className="flex gap-5">
+          <a href="/pricing" className="hover:text-zinc-600 transition-colors">Pricing</a>
           <a href="/interview-prep" className="hover:text-zinc-600 transition-colors">Interview Guides</a>
           <a href="/blog" className="hover:text-zinc-600 transition-colors">Blog</a>
           <a href="/faq" className="hover:text-zinc-600 transition-colors">FAQ</a>

@@ -65,7 +65,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         </div>
       </nav>
 
-      {/* Mobile slide-out menu */}
+      {/* Slide-out menu */}
       <AnimatePresence>
         {menuOpen && (
           <>
