@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { AnimatePresence } from "motion/react";
 import { PrepBrief } from "./components/PrepBrief";
 import { AuthPanel } from "./components/AuthPanel";
 import { SignInGate } from "./components/SignInGate";
 import { MyBriefs } from "./components/MyBriefs";
 import { UpgradePrompt } from "./components/UpgradePrompt";
+import { GeneratingState } from "./components/GeneratingState";
 import { LandingPage } from "./components/LandingPage";
 import { PublicBrief } from "./components/PublicBrief";
 import { InterviewPrepPage } from "./components/InterviewPrepPage";
@@ -433,18 +435,22 @@ export default function Page() {
         </header>
 
         {/* Global upgrade prompt — works from any view when triggered by header button */}
-        {upgradeReason === "pro_required" && (
-          <UpgradePrompt reason="pro_required" onDismiss={() => setUpgradeReason(null)} />
-        )}
+        <AnimatePresence>
+          {upgradeReason === "pro_required" && (
+            <UpgradePrompt reason="pro_required" onDismiss={() => setUpgradeReason(null)} />
+          )}
+        </AnimatePresence>
 
         {showHistory ? (
           <MyBriefs onBack={() => setShowHistory(false)} />
         ) : !output ? (
           <div className="space-y-0">
             {/* Auth Panel — shown to unauthenticated users who haven't dismissed */}
-            {!authLoading && !user && showAuthPanel && !needsSignIn && (
-              <AuthPanel onDismiss={() => setShowAuthPanel(false)} />
-            )}
+            <AnimatePresence>
+              {!authLoading && !user && showAuthPanel && !needsSignIn && (
+                <AuthPanel onDismiss={() => setShowAuthPanel(false)} />
+              )}
+            </AnimatePresence>
 
             {/* Payment success banner */}
             {paymentSuccess && (
@@ -469,6 +475,8 @@ export default function Page() {
               <UpgradePrompt reason={upgradeReason} onDismiss={() => setUpgradeReason(null)} />
             ) : needsSignIn ? (
               <SignInGate />
+            ) : isGenerating ? (
+              <GeneratingState companyName={companyName || "your company"} />
             ) : (
               <div className="space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-zinc-200/60">
 
@@ -611,7 +619,7 @@ export default function Page() {
                     </div>
 
                     {/* Submit Button */}
-                    <div className="pt-4 space-y-3">
+                    <div className="pt-4 space-y-2">
                       <button
                         onClick={handleGenerate}
                         disabled={!isFormValid || isGenerating}
@@ -623,12 +631,15 @@ export default function Page() {
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Researching company + building your brief (30–60 sec)...
+                            Building your brief...
                           </>
                         ) : (
                           "Generate My Prep Brief"
                         )}
                       </button>
+                      {isGenerating && (
+                        <p className="text-xs text-zinc-400 text-center">This usually takes 30–60 seconds</p>
+                      )}
                     </div>
                   </div>
                 )}

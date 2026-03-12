@@ -1,8 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { COMPANIES } from "./InterviewPrepPage";
 
 export function InterviewPrepIndex() {
-  const companies = Object.values(COMPANIES);
+  const allCompanies = Object.values(COMPANIES);
+  const [search, setSearch] = useState("");
+
+  const companies = useMemo(() => {
+    if (!search.trim()) return allCompanies;
+    const q = search.toLowerCase();
+    return allCompanies.filter(
+      (co) =>
+        co.tagline.toLowerCase().includes(q) ||
+        co.slug.toLowerCase().includes(q) ||
+        co.metaDescription.toLowerCase().includes(q)
+    );
+  }, [search]);
 
   useEffect(() => {
     const title = "Company Interview Prep Guides | PrepFile";
@@ -103,6 +115,28 @@ export function InterviewPrepIndex() {
 
       {/* Company list */}
       <main className="max-w-3xl mx-auto px-6 pb-16">
+        {/* Search */}
+        <div className="mb-6">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search companies..."
+            className="w-full px-4 py-2.5 bg-white border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-colors text-sm"
+          />
+          {search.trim() && (
+            <p className="text-xs text-zinc-400 mt-2">
+              {companies.length} {companies.length === 1 ? "result" : "results"}
+            </p>
+          )}
+        </div>
+
+        {companies.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-zinc-500">No companies match "{search}"</p>
+            <p className="text-sm text-zinc-400 mt-1">Try a different search term, or generate a custom brief for any company.</p>
+          </div>
+        ) : (
         <ul className="divide-y divide-zinc-100">
           {companies.map((co) => (
             <li key={co.slug}>
@@ -125,6 +159,7 @@ export function InterviewPrepIndex() {
             </li>
           ))}
         </ul>
+        )}
 
         {/* CTA */}
         <div className="mt-10 bg-zinc-900 rounded-2xl px-8 py-10 text-center">

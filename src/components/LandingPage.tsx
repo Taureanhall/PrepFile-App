@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "motion/react";
 import { landingBaseline, landingVariants, type LandingVariant } from "../marketing/content/landing-variants";
 import { trackAbVariant, trackUpgradeClicked } from "../lib/analytics";
 
@@ -84,7 +85,13 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       </section>
 
       {/* How it works */}
-      <section className="bg-white border-y border-zinc-100 py-20">
+      <motion.section
+        className="bg-white border-y border-zinc-100 py-20"
+        initial={{ opacity: 0, y: 32 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="text-2xl font-bold text-center text-zinc-900 mb-3">How it works</h2>
           <p className="text-center text-zinc-500 mb-14">Three steps. One brief. Walk in confident.</p>
@@ -116,10 +123,16 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Pricing */}
-      <section className="max-w-4xl mx-auto px-6 py-20">
+      <motion.section
+        className="max-w-4xl mx-auto px-6 py-20"
+        initial={{ opacity: 0, y: 32 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.5 }}
+      >
         <h2 className="text-2xl font-bold text-center text-zinc-900 mb-3">Pricing</h2>
         <p className="text-center text-zinc-500 mb-14">Free briefs to get started. Pro when an interview is on the line.</p>
         <div className="grid sm:grid-cols-3 gap-6">
@@ -167,7 +180,10 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
           </div>
 
           {/* Pro */}
-          <div className="bg-zinc-900 rounded-2xl border border-zinc-900 p-6 flex flex-col gap-4">
+          <div className="relative bg-zinc-900 rounded-2xl border border-zinc-900 p-6 flex flex-col gap-4">
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 bg-white text-zinc-900 text-xs font-semibold rounded-full border border-zinc-200 shadow-sm whitespace-nowrap">
+              Most popular
+            </div>
             <div>
               <div className="text-sm font-medium text-zinc-400 mb-1">Pro</div>
               <div className="text-3xl font-bold text-white">$9.99</div>
@@ -188,10 +204,16 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             </button>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Company Interview Prep Guides */}
-      <section className="max-w-4xl mx-auto px-6 py-16">
+      <motion.section
+        className="max-w-4xl mx-auto px-6 py-16"
+        initial={{ opacity: 0, y: 32 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.5 }}
+      >
         <h2 className="text-2xl font-bold text-center text-zinc-900 mb-3">Company Interview Prep Guides</h2>
         <p className="text-center text-zinc-500 mb-10">Free, detailed breakdowns of how top companies hire.</p>
         <div className="grid sm:grid-cols-5 gap-3 mb-6">
@@ -216,7 +238,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             See all company guides →
           </a>
         </div>
-      </section>
+      </motion.section>
 
       {/* Prep by Role */}
       <section className="max-w-4xl mx-auto px-6 py-16">

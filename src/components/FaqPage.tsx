@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { AnimatePresence, motion } from "motion/react";
 
 const FAQ_ITEMS = [
   {
@@ -45,6 +46,8 @@ const FAQ_ITEMS = [
 
 function FaqItem({ q, a }: { q: string; a: string; key?: string }) {
   const [open, setOpen] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
   return (
     <div className="border-b border-zinc-200">
       <button
@@ -53,8 +56,8 @@ function FaqItem({ q, a }: { q: string; a: string; key?: string }) {
         aria-expanded={open}
       >
         <span className="text-base font-medium text-zinc-900">{q}</span>
-        <svg
-          className={`shrink-0 h-5 w-5 text-zinc-500 transition-transform ${open ? "rotate-180" : ""}`}
+        <motion.svg
+          className="shrink-0 h-5 w-5 text-zinc-500"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="none"
@@ -62,13 +65,27 @@ function FaqItem({ q, a }: { q: string; a: string; key?: string }) {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
         >
           <path d="m6 9 6 6 6-6" />
-        </svg>
+        </motion.svg>
       </button>
-      {open && (
-        <div className="pb-5 text-sm text-zinc-600 leading-relaxed">{a}</div>
-      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div ref={contentRef} className="pb-5 text-sm text-zinc-600 leading-relaxed">
+              {a}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

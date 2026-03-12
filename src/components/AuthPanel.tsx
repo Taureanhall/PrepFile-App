@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { motion } from "motion/react";
+
 interface AuthPanelProps {
   onDismiss: () => void;
 }
@@ -12,13 +15,27 @@ const GoogleIcon = () => (
 );
 
 export function AuthPanel({ onDismiss }: AuthPanelProps) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onDismiss(); }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
     >
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 space-y-6">
+      <motion.div
+        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 space-y-6"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.15 }}
+      >
         {/* Close */}
         <button
           onClick={onDismiss}
@@ -54,7 +71,7 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
             Skip for now
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

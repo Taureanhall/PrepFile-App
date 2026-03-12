@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion } from "motion/react";
 import { trackUpgradeClicked } from "../lib/analytics";
 
 interface Props {
@@ -103,13 +104,34 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
     </div>
   );
 
+  useEffect(() => {
+    if (reason === "pro_required") {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [reason]);
+
   // pro_required renders as a centered modal overlay; other reasons render inline
   if (reason === "pro_required") {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm -z-0" onClick={onDismiss} />
-        <div className="relative z-50 w-full max-w-lg">{content}</div>
-      </div>
+      <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
+      >
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm -z-0" onClick={onDismiss} />
+        <motion.div
+          className="relative z-50 w-full max-w-lg"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.15 }}
+        >
+          {content}
+        </motion.div>
+      </motion.div>
     );
   }
 

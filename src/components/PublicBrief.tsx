@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import type { PrepBriefData } from "../types";
 
 interface PublicBriefProps {
@@ -32,11 +33,35 @@ export function PublicBrief({ briefId }: PublicBriefProps) {
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-zinc-50 flex items-center justify-center">
-        <svg className="animate-spin h-8 w-8 text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+      <div className="min-h-[100dvh] bg-zinc-50">
+        <div className="max-w-3xl mx-auto px-6 py-12 md:py-20 space-y-8">
+          {/* Header skeleton */}
+          <div>
+            <div className="h-5 w-32 bg-zinc-200 rounded-full animate-pulse mb-4" />
+            <div className="h-8 w-64 bg-zinc-200 rounded-lg animate-pulse mb-2" />
+            <div className="h-6 w-48 bg-zinc-200 rounded-lg animate-pulse" />
+          </div>
+          {/* Content skeleton */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-zinc-200/60 space-y-8">
+            <div className="space-y-3">
+              <div className="h-4 w-40 bg-zinc-100 rounded animate-pulse" />
+              <div className="h-4 w-full bg-zinc-100 rounded animate-pulse" />
+              <div className="h-4 w-full bg-zinc-100 rounded animate-pulse" />
+              <div className="h-4 w-3/4 bg-zinc-100 rounded animate-pulse" />
+            </div>
+            <div className="space-y-3">
+              <div className="h-4 w-36 bg-zinc-100 rounded animate-pulse" />
+              <div className="h-4 w-full bg-zinc-100 rounded animate-pulse" />
+              <div className="h-4 w-5/6 bg-zinc-100 rounded animate-pulse" />
+            </div>
+            <div className="space-y-3">
+              <div className="h-4 w-44 bg-zinc-100 rounded animate-pulse" />
+              <div className="h-4 w-full bg-zinc-100 rounded animate-pulse" />
+              <div className="h-4 w-full bg-zinc-100 rounded animate-pulse" />
+              <div className="h-4 w-2/3 bg-zinc-100 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -60,8 +85,10 @@ export function PublicBrief({ briefId }: PublicBriefProps) {
 
   const data = brief.brief_data;
 
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+
   return (
-    <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans pb-32">
+    <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans pb-40">
       <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
 
         {/* Header */}
@@ -326,21 +353,41 @@ export function PublicBrief({ briefId }: PublicBriefProps) {
       </main>
 
       {/* Sticky CTA Banner */}
-      <div className="fixed bottom-0 inset-x-0 z-50 bg-zinc-900 text-white shadow-2xl border-t border-zinc-700">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div>
-            <p className="font-semibold text-sm">Preparing for YOUR interview?</p>
-            <p className="text-zinc-400 text-sm">Generate a personalized brief for your exact role and company — in 60 seconds.</p>
-          </div>
-          <a
-            href="/"
-            className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-white text-zinc-900 text-sm font-semibold rounded-lg hover:bg-zinc-100 transition-colors whitespace-nowrap"
+      <AnimatePresence>
+        {!bannerDismissed && (
+          <motion.div
+            className="fixed bottom-0 inset-x-0 z-50 bg-zinc-900 text-white shadow-2xl border-t border-zinc-700"
+            initial={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ duration: 0.2 }}
           >
-            Generate my own brief
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </a>
-        </div>
-      </div>
+            <div className="max-w-3xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex-1">
+                <p className="font-semibold text-sm">Preparing for YOUR interview?</p>
+                <p className="text-zinc-400 text-sm">Generate a personalized brief for your exact role and company — in 60 seconds.</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href="/"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-zinc-900 text-sm font-semibold rounded-lg hover:bg-zinc-100 transition-colors whitespace-nowrap"
+                >
+                  Generate my own brief
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </a>
+                <button
+                  onClick={() => setBannerDismissed(true)}
+                  className="p-2 text-zinc-400 hover:text-white transition-colors"
+                  aria-label="Dismiss"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
