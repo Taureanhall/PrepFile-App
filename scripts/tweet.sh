@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # tweet.sh — Post a tweet via Twitter/X v2 API using OAuth 1.0a
-# Usage: ./scripts/tweet.sh "Your tweet text here"
+# Usage: ./scripts/tweet.sh "Your tweet text here" [--reply-to <tweet_id>]
 # Requires: python3
 #
 # Env vars needed:
@@ -10,11 +10,15 @@
 set -euo pipefail
 
 if [[ $# -lt 1 || -z "${1:-}" ]]; then
-  echo "Usage: $0 \"Tweet text\"" >&2
+  echo "Usage: $0 \"Tweet text\" [--reply-to <tweet_id>]" >&2
   exit 1
 fi
 
 TWEET_TEXT="$1"
+REPLY_TO_TWEET_ID=""
+if [[ "${2:-}" == "--reply-to" && -n "${3:-}" ]]; then
+  REPLY_TO_TWEET_ID="$3"
+fi
 
 # --- Load from TOOLS.md if env vars not set ---
 TOOLS_FILE="${TWITTER_TOOLS_FILE:-/Users/taureanhall/Developer/Prepflow-Company/agents/marketing/TOOLS.md}"
@@ -37,7 +41,7 @@ if [[ ${#MISSING[@]} -gt 0 ]]; then
 fi
 
 # --- Post tweet using OAuth 1.0a via python3 ---
-RESULT=$(python3 - "$TWEET_TEXT" "$TWITTER_API_KEY" "$TWITTER_API_KEY_SECRET" "$TWITTER_ACCESS_TOKEN" "$TWITTER_ACCESS_TOKEN_SECRET" << 'PYEOF'
+RESULT=$(python3 - "$TWEET_TEXT" "$TWITTER_API_KEY" "$TWITTER_API_KEY_SECRET" "$TWITTER_ACCESS_TOKEN" "$TWITTER_ACCESS_TOKEN_SECRET" "$REPLY_TO_TWEET_ID" << 'PYEOF'
 import sys, json, time, hashlib, hmac, urllib.parse, secrets, http.client
 
 tweet_text = sys.argv[1]
@@ -75,7 +79,11 @@ auth_header = "OAuth " + ", ".join(
     for k, v in sorted(oauth_params.items())
 )
 
-body = json.dumps({"text": tweet_text})
+payload = {"text": tweet_text}
+reply_to = sys.argv[6] if len(sys.argv) > 6 and sys.argv[6] else ""
+if reply_to:
+    payload["reply"] = {"in_reply_to_tweet_id": reply_to}
+body = json.dumps(payload)
 
 conn = http.client.HTTPSConnection("api.twitter.com")
 conn.request(method, "/2/tweets", body=body, headers={

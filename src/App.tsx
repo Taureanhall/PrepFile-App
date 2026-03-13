@@ -452,6 +452,11 @@ Preferred Qualifications:
     }
   }, [output, companyName, jobTitle]);
 
+  // While checking auth, show nothing to prevent form flash
+  if (authLoading && !showAuthPanel && !showForm && !isEditor) {
+    return null;
+  }
+
   // Show landing page for unauthenticated users who haven't started sign-in
   if (!authLoading && !user && !showAuthPanel && !showForm && !isEditor) {
     return (
