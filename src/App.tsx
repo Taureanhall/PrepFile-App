@@ -180,6 +180,15 @@ export default function Page() {
   useEffect(() => {
     trackPageView();
     const params = new URLSearchParams(window.location.search);
+
+    // Capture referral source from ?ref= param into sessionStorage
+    const ref = params.get("ref");
+    if (ref) {
+      sessionStorage.setItem("prepfile_ref", ref);
+    } else if (!sessionStorage.getItem("prepfile_ref")) {
+      sessionStorage.setItem("prepfile_ref", "direct");
+    }
+
     const authMethod = params.get("auth_method");
     if (authMethod) {
       trackSignupCompleted(authMethod);
@@ -297,10 +306,11 @@ export default function Page() {
 
     try {
       const bypassKey = localStorage.getItem("bypass_key") || "";
+      const referralSource = sessionStorage.getItem("prepfile_ref") || "direct";
       const res = await fetch('/api/generate-brief', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(bypassKey && { 'x-bypass-key': bypassKey }) },
-        body: JSON.stringify({ companyName, jobTitle, jobDescription, round, familiarity, timeToPrep, biggestGap }),
+        body: JSON.stringify({ companyName, jobTitle, jobDescription, round, familiarity, timeToPrep, biggestGap, referralSource }),
       });
 
       if (res.status === 401) {

@@ -453,7 +453,7 @@ async function startServer() {
       const sessionToken = upsertGoogleUser(payload.sub, payload.email, referralSource);
       const signedInUser = getUserBySession(sessionToken);
       if (signedInUser) {
-        getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id, method: "google" } });
+        getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id, method: "google", referral_source: referralSource || "direct" } });
         // Fire welcome-1 for new users (idempotent — skips if already sent)
         sendWelcomeEmailImmediate(signedInUser.id, signedInUser.email, APP_URL, FROM_EMAIL).catch(() => {});
       }
@@ -592,7 +592,7 @@ async function startServer() {
         }
       }
 
-      const { companyName, jobTitle, jobDescription, round, familiarity, timeToPrep, biggestGap } = req.body;
+      const { companyName, jobTitle, jobDescription, round, familiarity, timeToPrep, biggestGap, referralSource } = req.body;
 
       const VALID_ROUNDS = ["First screen", "Hiring manager", "Panel", "Final", "Not sure"];
       const VALID_FAMILIARITY = ["Never heard of them", "Know of them", "Know them well", "Used their product"];
@@ -626,6 +626,7 @@ async function startServer() {
 
       const data = await generateBrief(req.body, briefTier);
 
+      const refSource = (typeof referralSource === "string" && referralSource.trim()) ? referralSource.trim() : "direct";
       getPostHogClient()?.capture({
         distinctId: user ? user.id : `anon:${req.ip || "unknown"}`,
         event: "brief_generated",
@@ -634,6 +635,7 @@ async function startServer() {
           job_title: req.body.jobTitle || "",
           round: req.body.round || "",
           authenticated: !!user,
+          referral_source: refSource,
         },
       });
 
