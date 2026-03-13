@@ -84,7 +84,7 @@ export function InterviewPrepIndex() {
     const title = "Company Interview Prep Guides | PrepFile";
     const description =
       "Browse interview prep guides for Google, Amazon, Meta, Microsoft, Apple, and more. Detailed breakdowns of culture, rounds, and what interviewers actually evaluate.";
-    const canonicalUrl = "https://prepfile.app/interview-prep";
+    const canonicalUrl = "https://prepfile.work/interview-prep";
 
     document.title = title;
 
@@ -129,7 +129,7 @@ export function InterviewPrepIndex() {
         "@type": "ListItem",
         position: i + 1,
         name: co.tagline,
-        url: `https://prepfile.app/interview-prep/${co.slug}`,
+        url: `https://prepfile.work/interview-prep/${co.slug}`,
         description: co.metaDescription,
       })),
     });

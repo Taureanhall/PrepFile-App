@@ -7,7 +7,7 @@ export function PricingPage() {
   useEffect(() => {
     const title = "Pricing | PrepFile";
     const description = "Simple, honest pricing for PrepFile interview prep briefs. Start free, upgrade when you need more.";
-    const canonicalUrl = "https://prepfile.app/pricing";
+    const canonicalUrl = "https://prepfile.work/pricing";
     document.title = title;
     const setMeta = (attr: string, val: string, isName = false) => {
       const sel = isName ? `meta[name="${attr}"]` : `meta[property="${attr}"]`;

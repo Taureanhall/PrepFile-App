@@ -179,7 +179,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             <a href="/pricing" className="hover:text-white transition-colors">Pricing</a>
             <a href="/blog" className="hover:text-white transition-colors">Blog</a>
             <a href="/faq" className="hover:text-white transition-colors">FAQ</a>
-            <a href="mailto:support@prepfile.app" className="hover:text-white transition-colors">Help</a>
+            <a href="mailto:support@prepfile.work" className="hover:text-white transition-colors">Help</a>
           </div>
           <div className="text-sm">&copy; {new Date().getFullYear()} PrepFile</div>
         </div>

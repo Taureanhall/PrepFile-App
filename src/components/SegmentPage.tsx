@@ -79,7 +79,7 @@ export function SegmentPage({ slug }: SegmentPageProps) {
   useEffect(() => {
     if (!segment) return;
 
-    const url = `https://prepfile.app/for/${segment.slug}`;
+    const url = `https://prepfile.work/for/${segment.slug}`;
     document.title = segment.metaTitle;
 
     const setMeta = (attr: string, val: string, isName = false) => {
