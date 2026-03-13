@@ -17,6 +17,8 @@ import { UpgradeCTA } from "./components/UpgradeCTA";
 import { PricingPage } from "./components/PricingPage";
 import { Nav } from "./components/Nav";
 import { GeneratingState } from "./components/GeneratingState";
+import { ToastContainer } from "./components/Toast";
+import type { Toast } from "./components/Toast";
 import type { PrepBriefData } from "./types";
 import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted, trackExampleBriefClicked } from "./lib/analytics";
 
@@ -123,6 +125,14 @@ export default function Page() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const dismissToast = (id: string) => setToasts((prev) => prev.filter((t) => t.id !== id));
+  const showToast = (message: string, type: "error" | "info" = "error") => {
+    const id = Math.random().toString(36).slice(2);
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => dismissToast(id), 5000);
+  };
 
   // Core Inputs — pre-fill company from ?company= param (SEO page CTA)
   const prefilledCompany = new URLSearchParams(window.location.search).get("company") ?? "";
@@ -253,7 +263,7 @@ export default function Page() {
       const { url } = await res.json();
       window.location.href = url;
     } catch {
-      alert("Unable to open subscription portal. Please try again.");
+      showToast("Unable to open subscription portal. Please try again.");
     } finally {
       setPortalLoading(false);
     }
@@ -311,9 +321,9 @@ export default function Page() {
     } catch (error: any) {
       console.error("Error generating brief:", error);
       if (error.message?.includes("Rate limit exceeded")) {
-        alert("You've used your 3 free briefs this week. Upgrade to Pro for unlimited briefs, or your limit resets next week.");
+        showToast("You've used your 3 free briefs this week. Upgrade to Pro for unlimited briefs, or your limit resets next week.");
       } else {
-        alert(error.message || "Something went wrong. Please try again.");
+        showToast(error.message || "Something went wrong. Please try again.");
       }
     } finally {
       setIsGenerating(false);
@@ -431,6 +441,7 @@ Preferred Qualifications:
 
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans selection:bg-zinc-200">
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       <Nav cta={
         !authLoading && user
           ? { label: "Sign out", onClick: handleLogout }
@@ -487,7 +498,7 @@ Preferred Qualifications:
       <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
 
         {showHistory ? (
-          <MyBriefs onBack={() => setShowHistory(false)} />
+          <MyBriefs onBack={() => setShowHistory(false)} showToast={showToast} />
         ) : !output ? (
           <div className="space-y-0">
             {/* Auth Panel — shown to unauthenticated users who haven't dismissed */}

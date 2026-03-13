@@ -11,9 +11,10 @@ interface BriefSummary {
 
 interface MyBriefsProps {
   onBack: () => void;
+  showToast?: (message: string, type?: "error" | "info") => void;
 }
 
-export function MyBriefs({ onBack }: MyBriefsProps) {
+export function MyBriefs({ onBack, showToast }: MyBriefsProps) {
   const [briefs, setBriefs] = useState<BriefSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBrief, setSelectedBrief] = useState<PrepBriefData | null>(null);
@@ -36,7 +37,7 @@ export function MyBriefs({ onBack }: MyBriefsProps) {
       setSelectedBrief(data.brief_data);
       setSelectedMeta(summary);
     } catch {
-      alert("Failed to load brief.");
+      showToast?.("Failed to load brief.", "error");
     } finally {
       setLoadingBrief(false);
     }
