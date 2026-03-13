@@ -60,46 +60,92 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       <Nav cta={{ label: "Sign in", onClick: () => onGetStarted() }} />
 
       {/* Hero */}
-      <section className="max-w-3xl mx-auto px-6 pt-16 pb-20 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 rounded-full text-xs text-zinc-600 mb-8">
+      <section className="max-w-3xl mx-auto px-6 pt-10 sm:pt-16 pb-16 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent-50 border border-accent-200 rounded-full text-xs font-medium text-accent-600 mb-7">
           {briefCount !== null ? (
-            <span>{formatCount(briefCount)} briefs generated</span>
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-400 inline-block" />
+              <span>{formatCount(briefCount)} briefs generated</span>
+            </>
           ) : (
-            variant.badge
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-400 inline-block" />
+              <span>{variant.badge}</span>
+            </>
           )}
         </div>
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 mb-6 leading-tight">
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 mb-5 leading-tight">
           {variant.headline}
         </h1>
-        <p className="text-xl text-zinc-500 mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg sm:text-xl text-zinc-500 mb-8 max-w-xl mx-auto leading-relaxed">
           {variant.subheadline}
         </p>
 
         {/* Inline mini-form */}
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-3 text-left">
-          <input
-            type="text"
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
-            placeholder="Company name (e.g. Google)"
-            className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent text-sm"
-          />
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Job title (e.g. Product Manager)"
-            className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent text-sm"
-          />
-          <button
-            type="submit"
-            className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-brand-600 text-white font-medium text-base rounded-xl hover:bg-brand-700 transition-colors shadow-sm"
-          >
-            {variant.cta}
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-          </button>
-        </form>
-        <p className="mt-4 text-sm"><span className="text-accent-400 font-medium">Free to try</span><span className="text-zinc-400"> — no credit card required</span></p>
+        <div className="max-w-md mx-auto">
+          <p className="text-sm font-medium text-zinc-600 mb-3 text-left">Enter your interview details to get started</p>
+          <form onSubmit={handleSubmit} className="space-y-3 text-left">
+            <input
+              type="text"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="Company name (e.g. Google)"
+              className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent text-sm"
+            />
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Job title (e.g. Product Manager)"
+              className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent text-sm"
+            />
+            <button
+              type="submit"
+              className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-brand-600 text-white font-semibold text-base rounded-xl hover:bg-brand-500 transition-colors shadow-md"
+            >
+              {variant.cta}
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+            </button>
+          </form>
+          <p className="mt-3 text-sm text-center">
+            <span className="text-accent-500 font-semibold">Free to try</span>
+            <span className="text-zinc-400"> — no credit card required · takes 60 seconds</span>
+          </p>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="bg-white border-t border-zinc-100 py-14">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-brand-400 mb-10">How it works</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {[
+              {
+                step: "1",
+                title: "Enter your role",
+                body: "Type the company name and job title you're interviewing for — no job description paste needed to get started.",
+              },
+              {
+                step: "2",
+                title: "AI researches the role",
+                body: "PrepFile analyzes the company's competitive position, the role's priorities, and what interviewers actually evaluate.",
+              },
+              {
+                step: "3",
+                title: "Walk in prepared",
+                body: "Get a personalized brief with key talking points and smart questions — ready in under 60 seconds.",
+              },
+            ].map(({ step, title, body }) => (
+              <div key={step} className="flex flex-col items-center text-center sm:items-start sm:text-left">
+                <div className="w-9 h-9 rounded-full bg-brand-600 text-white text-sm font-bold flex items-center justify-center mb-4 shrink-0">
+                  {step}
+                </div>
+                <h3 className="text-base font-semibold text-zinc-900 mb-1">{title}</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Footer Nav */}
