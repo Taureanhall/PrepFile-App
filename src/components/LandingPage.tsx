@@ -99,11 +99,11 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
           </button>
         </form>
-        <p className="mt-4 text-sm text-zinc-400">Free to try — no credit card required</p>
+        <p className="mt-4 text-sm"><span className="text-accent-400 font-medium">Free to try</span><span className="text-zinc-400"> — no credit card required</span></p>
       </section>
 
       {/* Footer Nav */}
-      <footer className="border-t border-zinc-800 bg-zinc-900 text-zinc-400 py-10">
+      <footer className="border-t border-brand-800 bg-brand-900 text-zinc-400 py-10">
         <div className="max-w-4xl mx-auto px-6">
           <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm mb-6">
             <a href="/interview-prep" className="hover:text-white transition-colors">Interview Guides</a>
