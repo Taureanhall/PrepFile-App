@@ -128,6 +128,7 @@ export default function Page() {
   const [portalLoading, setPortalLoading] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [briefCount, setBriefCount] = useState<number | null>(null);
 
   const dismissToast = (id: string) => setToasts((prev) => prev.filter((t) => t.id !== id));
   const showToast = (message: string, type: "error" | "info" = "error") => {
@@ -176,9 +177,17 @@ export default function Page() {
     checkKey();
   }, []);
 
+  const fetchBriefCount = () => {
+    fetch("/api/stats")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.totalBriefs >= 10) setBriefCount(d.totalBriefs); })
+      .catch(() => {});
+  };
+
   // Track page view on mount; handle Stripe return params and auth completion
   useEffect(() => {
     trackPageView();
+    fetchBriefCount();
     const params = new URLSearchParams(window.location.search);
 
     // Capture referral source from ?ref= param into sessionStorage
@@ -330,6 +339,7 @@ export default function Page() {
       trackBriefGenerated(companyName, jobTitle, subscription?.plan ?? "free", !!user);
       setOutput(briefData as PrepBriefData);
       setBriefId(newBriefId ?? null);
+      fetchBriefCount();
     } catch (error: any) {
       console.error("Error generating brief:", error);
       if (error.message?.includes("Rate limit exceeded")) {
@@ -381,6 +391,7 @@ export default function Page() {
       trackBriefGenerated(qCompany, qTitle, subscription?.plan ?? "free", !!user);
       setOutput(briefData as PrepBriefData);
       setBriefId(newBriefId ?? null);
+      fetchBriefCount();
     } catch (error: any) {
       console.error("Error generating quick brief:", error);
       showToast(error.message || "Something went wrong. Please try again.");
@@ -466,6 +477,7 @@ Preferred Qualifications:
   if (!authLoading && !user && !showAuthPanel && !showForm && !isEditor) {
     return (
       <LandingPage
+        briefCount={briefCount}
         onGetStarted={(company, title) => {
           if (company && title) {
             // Both fields filled — generate a quick brief immediately

@@ -30,26 +30,19 @@ function formatCount(n: number): string {
 
 interface LandingPageProps {
   onGetStarted: (company?: string, title?: string) => void;
+  briefCount?: number | null;
 }
 
 
-export function LandingPage({ onGetStarted }: LandingPageProps) {
+export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProps) {
   const [variant, setVariant] = useState<LandingVariant>(landingBaseline);
   const [company, setCompany] = useState("");
   const [title, setTitle] = useState("");
-  const [briefCount, setBriefCount] = useState<number | null>(null);
 
   useEffect(() => {
     const v = pickVariant();
     setVariant(v);
     trackAbVariant(v.id);
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/stats")
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d?.totalBriefs >= 10) setBriefCount(d.totalBriefs); })
-      .catch(() => {});
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
