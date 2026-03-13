@@ -35,6 +35,7 @@ import {
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
 import { runNurtureEmailBatch } from "./src/lib/nurture.js";
+import { runWelcomeDripBatch } from "./src/lib/welcome-drip.js";
 import {
   sendWelcomeEmailImmediate,
   runWelcomeSequenceBatch,
@@ -832,6 +833,7 @@ async function startServer() {
     if (provided !== cronSecret) return res.status(401).json({ error: "Unauthorized" });
 
     try {
+      await runWelcomeDripBatch(APP_URL, FROM_EMAIL);
       await runWelcomeSequenceBatch(APP_URL, FROM_EMAIL);
       await runReengagementBatch(APP_URL, FROM_EMAIL);
       await runNurtureEmailBatch(APP_URL, FROM_EMAIL);
@@ -1521,6 +1523,11 @@ async function startServer() {
   const runReengagement = () => runReengagementBatch(APP_URL, FROM_EMAIL);
   setTimeout(runReengagement, 90_000);
   setInterval(runReengagement, 4 * 60 * 60 * 1000);
+
+  // Welcome drip (day 0, 1, 3 — pre-brief activation) — every 4 hours
+  const runWelcomeDrip = () => runWelcomeDripBatch(APP_URL, FROM_EMAIL);
+  setTimeout(runWelcomeDrip, 120_000);
+  setInterval(runWelcomeDrip, 4 * 60 * 60 * 1000);
 }
 
 startServer();
