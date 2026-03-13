@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { landingBaseline, landingVariants, type LandingVariant } from "../marketing/content/landing-variants";
 import { trackAbVariant } from "../lib/analytics";
 import { Nav } from "./Nav";
+import { SuggestionInput } from "./SuggestionInput";
+import { POPULAR_COMPANIES, getTitleSuggestions } from "../lib/suggestions";
 
 const AB_STORAGE_KEY = "prepfile_ab_landing_v1";
 const ALL_VARIANTS: LandingVariant[] = [landingBaseline, ...landingVariants];
@@ -85,18 +87,20 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         <div className="max-w-md mx-auto">
           <p className="text-sm font-medium text-zinc-600 mb-3 text-left">Enter your interview details to get started</p>
           <form onSubmit={handleSubmit} className="space-y-3 text-left">
-            <input
-              type="text"
+            <SuggestionInput
               value={company}
-              onChange={(e) => setCompany(e.target.value)}
+              onChange={setCompany}
+              suggestions={POPULAR_COMPANIES}
               placeholder="Company name (e.g. Google)"
+              label="Popular companies"
               className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent text-sm"
             />
-            <input
-              type="text"
+            <SuggestionInput
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={setTitle}
+              suggestions={getTitleSuggestions(company)}
               placeholder="Job title (e.g. Product Manager)"
+              label={company.trim() ? `Roles at ${company}` : "Popular titles"}
               className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent text-sm"
             />
             <button

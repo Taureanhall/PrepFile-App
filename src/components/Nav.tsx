@@ -49,10 +49,9 @@ export function Nav({ cta, children }: NavProps) {
           </div>
           {children}
           {ctaElement}
-          {/* Mobile hamburger only */}
           <button
             onClick={() => setMenuOpen(true)}
-            className="md:hidden p-2.5 border border-zinc-200 rounded-lg hover:bg-zinc-100 transition-colors"
+            className="p-2.5 border border-zinc-200 rounded-lg hover:bg-zinc-100 transition-colors"
             aria-label="Menu"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>

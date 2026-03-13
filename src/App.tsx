@@ -16,6 +16,8 @@ import { SegmentPage } from "./components/SegmentPage";
 import { UpgradeCTA } from "./components/UpgradeCTA";
 import { PricingPage } from "./components/PricingPage";
 import { Nav } from "./components/Nav";
+import { SuggestionInput } from "./components/SuggestionInput";
+import { POPULAR_COMPANIES, getTitleSuggestions } from "./lib/suggestions";
 import { GeneratingState } from "./components/GeneratingState";
 import { ToastContainer } from "./components/Toast";
 import type { Toast } from "./components/Toast";
@@ -321,10 +323,57 @@ export default function Page() {
     } catch (error: any) {
       console.error("Error generating brief:", error);
       if (error.message?.includes("Rate limit exceeded")) {
-        showToast("You've used your 3 free briefs this week. Upgrade to Pro for unlimited briefs, or your limit resets next week.");
+        showToast("You've used your free briefs this week. Upgrade to Pro for unlimited briefs, or your limit resets next week.");
       } else {
         showToast(error.message || "Something went wrong. Please try again.");
       }
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleQuickBrief = async (company?: string, title?: string) => {
+    const qCompany = company || companyName;
+    const qTitle = title || jobTitle;
+    if (!qCompany.trim() || !qTitle.trim()) return;
+
+    if (company) setCompanyName(company);
+    if (title) setJobTitle(title);
+    setShowForm(true);
+    setIsGenerating(true);
+
+    try {
+      const bypassKey = localStorage.getItem("bypass_key") || "";
+      const res = await fetch('/api/generate-quick-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(bypassKey && { 'x-bypass-key': bypassKey }) },
+        body: JSON.stringify({ companyName: qCompany.trim(), jobTitle: qTitle.trim() }),
+      });
+
+      if (res.status === 401) {
+        setNeedsSignIn(true);
+        return;
+      }
+
+      if (res.status === 402) {
+        const d = await res.json();
+        if (d.error === "quick_limit_exceeded") {
+          setUpgradeReason("free_limit");
+        } else {
+          setUpgradeReason(d.error === "pack_exhausted" ? "pack_exhausted" : "free_limit");
+        }
+        return;
+      }
+
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      const { briefId: newBriefId, ...briefData } = data;
+      trackBriefGenerated(qCompany, qTitle, subscription?.plan ?? "free", !!user);
+      setOutput(briefData as PrepBriefData);
+      setBriefId(newBriefId ?? null);
+    } catch (error: any) {
+      console.error("Error generating quick brief:", error);
+      showToast(error.message || "Something went wrong. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -408,7 +457,10 @@ Preferred Qualifications:
     return (
       <LandingPage
         onGetStarted={(company, title) => {
-          if (company || title) {
+          if (company && title) {
+            // Both fields filled — generate a quick brief immediately
+            handleQuickBrief(company, title);
+          } else if (company || title) {
             if (company) setCompanyName(company);
             if (title) setJobTitle(title);
             setShowForm(true);
@@ -562,11 +614,12 @@ Preferred Qualifications:
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">
                       Company name
                     </label>
-                    <input
-                      type="text"
+                    <SuggestionInput
                       value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
+                      onChange={setCompanyName}
+                      suggestions={POPULAR_COMPANIES}
                       placeholder={`e.g. ${placeholders.company}`}
+                      label="Popular companies"
                       className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
                     />
                   </div>
@@ -575,11 +628,12 @@ Preferred Qualifications:
                     <label className="block text-sm font-medium text-zinc-700 mb-1.5">
                       Job title
                     </label>
-                    <input
-                      type="text"
+                    <SuggestionInput
                       value={jobTitle}
-                      onChange={(e) => setJobTitle(e.target.value)}
+                      onChange={setJobTitle}
+                      suggestions={getTitleSuggestions(companyName)}
                       placeholder={`e.g. ${placeholders.title}`}
+                      label={companyName.trim() ? `Roles at ${companyName}` : "Popular titles"}
                       className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
                     />
                   </div>

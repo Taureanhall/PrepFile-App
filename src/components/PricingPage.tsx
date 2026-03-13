@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { AnimatePresence } from "motion/react";
 import { Nav } from "./Nav";
+import { AuthPanel } from "./AuthPanel";
 
 export function PricingPage() {
   useEffect(() => {
@@ -26,6 +28,7 @@ export function PricingPage() {
   }, []);
   const [loading, setLoading] = useState<"pro" | "pack" | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
 
   async function startCheckout(product: "pro" | "pack") {
     setLoading(product);
@@ -74,15 +77,15 @@ export function PricingPage() {
             <ul className="text-sm text-zinc-600 space-y-2 flex-1">
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 text-zinc-400">✓</span>
-                <span>3 briefs per week</span>
+                <span>3 quick briefs per week (company + title)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-zinc-400">✓</span>
+                <span>1 full brief per week (with job description)</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 text-zinc-400">✓</span>
                 <span>Company snapshot &amp; role intelligence</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 text-zinc-400">✓</span>
-                <span>Questions to ask &amp; blind spots</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 text-zinc-300">–</span>
@@ -93,12 +96,12 @@ export function PricingPage() {
                 <span className="text-zinc-400">No round expectations</span>
               </li>
             </ul>
-            <a
-              href="/"
+            <button
+              onClick={() => setShowAuth(true)}
               className="w-full py-2.5 text-center border border-zinc-200 text-zinc-600 text-sm font-medium rounded-lg hover:bg-zinc-50 transition-colors"
             >
               Get started free
-            </a>
+            </button>
           </div>
 
           {/* Pro */}
@@ -190,8 +193,8 @@ export function PricingPage() {
           <h2 className="text-lg font-semibold text-zinc-900 text-center">Common questions</h2>
           <div className="space-y-4 text-sm">
             <div>
-              <p className="font-medium text-zinc-800">What's in a "full" brief?</p>
-              <p className="text-zinc-500 mt-1">Pro and Pack briefs include everything: company snapshot, role intelligence, round expectations, questions to ask, blind spots, and resume match if you upload your CV.</p>
+              <p className="font-medium text-zinc-800">What's the difference between quick and full briefs?</p>
+              <p className="text-zinc-500 mt-1">Quick briefs use just the company name and job title to generate a concise prep snapshot — great for early research. Full briefs also use the job description for deeper analysis including behavioral questions, process questions, and (on Pro/Pack) round expectations and resume match.</p>
             </div>
             <div>
               <p className="font-medium text-zinc-800">Can I cancel anytime?</p>
@@ -217,6 +220,10 @@ export function PricingPage() {
             <a href="/faq" className="hover:text-zinc-600 transition-colors">FAQ</a>
           </nav>
         </div>
+
+      <AnimatePresence>
+        {showAuth && <AuthPanel onDismiss={() => setShowAuth(false)} />}
+      </AnimatePresence>
     </div>
   );
 }

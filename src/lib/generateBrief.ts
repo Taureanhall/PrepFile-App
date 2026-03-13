@@ -271,6 +271,131 @@ export async function generateBrief(inputs: {
   return stripCitations(parsed);
 }
 
+/**
+ * Quick brief — concise output using only company name and job title (no JD required).
+ * Available to free-tier users as their primary brief type.
+ */
+export async function generateQuickBrief(inputs: {
+  companyName: string;
+  jobTitle: string;
+}) {
+  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+  const ai = new GoogleGenAI({ apiKey });
+
+  const prompt = `
+    You are an elite executive recruiter. Generate a concise, actionable interview prep snapshot for:
+
+    Company: ${inputs.companyName}
+    Role: ${inputs.jobTitle}
+
+    No job description is available — use your knowledge and Google Search to research the company's current situation.
+
+    Return a focused prep snapshot with:
+
+    COMPANY SNAPSHOT:
+    - overview: 2-3 sentences on what this company is actually optimizing for right now. Strategic, not Wikipedia.
+    - recentSignals: Exactly 2 recent developments that reveal strategic direction (hiring patterns, product launches, leadership changes, earnings).
+
+    ROLE INTELLIGENCE:
+    - coreMandate: What this role is really for at this company — the unstated strategic mandate. 2-3 sentences.
+    - success90Days: 2-3 concrete things that would make this hire look great in 90 days.
+
+    INTERVIEW THEMES:
+    2 likely interview themes specific to ${inputs.companyName}'s situation:
+    - theme: Named theme tied to real company pressures
+    - whyItMatters: Why this is live right now — 1-2 sentences
+    - questions: 2-3 interview questions a ${inputs.companyName} interviewer would ask
+
+    QUESTIONS TO ASK: 3 sharp questions for the candidate to ask the interviewer.
+
+    BLIND SPOTS: 1-2 honest flags about where the analysis may be thin.
+
+    Keep it concise and direct. Every sentence load-bearing. No filler. No academic jargon.
+    Do not use inline citations or reference markers.
+  `;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3.1-pro-preview",
+    contents: prompt,
+    config: {
+      tools: [{ googleSearch: {} }],
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          companySnapshot: {
+            type: Type.OBJECT,
+            properties: {
+              overview: { type: Type.STRING },
+              recentSignals: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+            required: ["overview", "recentSignals"],
+          },
+          roleIntelligence: {
+            type: Type.OBJECT,
+            properties: {
+              coreMandate: { type: Type.STRING },
+              success90Days: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+            required: ["coreMandate", "success90Days"],
+          },
+          interviewThemes: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                theme: { type: Type.STRING },
+                whyItMatters: { type: Type.STRING },
+                questions: { type: Type.ARRAY, items: { type: Type.STRING } },
+              },
+              required: ["theme", "whyItMatters", "questions"],
+            },
+          },
+          questionsToAsk: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+          },
+          blindSpots: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+          },
+        },
+        required: ["companySnapshot", "roleIntelligence", "interviewThemes", "questionsToAsk", "blindSpots"],
+      },
+    },
+  });
+
+  let parsed: any;
+  try {
+    parsed = JSON.parse(response.text || "{}");
+  } catch {
+    throw new Error("Gemini returned malformed JSON: " + (response.text?.slice(0, 200) ?? ""));
+  }
+
+  for (const key of ["companySnapshot", "roleIntelligence", "interviewThemes", "questionsToAsk"]) {
+    if (!parsed[key]) throw new Error("Gemini response missing required field: " + key);
+  }
+
+  // Enforce limits
+  if (Array.isArray(parsed.companySnapshot?.recentSignals) && parsed.companySnapshot.recentSignals.length > 2) {
+    parsed.companySnapshot.recentSignals = parsed.companySnapshot.recentSignals.slice(0, 2);
+  }
+  if (Array.isArray(parsed.roleIntelligence?.success90Days) && parsed.roleIntelligence.success90Days.length > 3) {
+    parsed.roleIntelligence.success90Days = parsed.roleIntelligence.success90Days.slice(0, 3);
+  }
+  if (Array.isArray(parsed.interviewThemes) && parsed.interviewThemes.length > 2) {
+    parsed.interviewThemes = parsed.interviewThemes.slice(0, 2);
+  }
+  if (Array.isArray(parsed.questionsToAsk) && parsed.questionsToAsk.length > 3) {
+    parsed.questionsToAsk = parsed.questionsToAsk.slice(0, 3);
+  }
+
+  // Mark as quick brief for the UI
+  parsed._briefType = "quick";
+
+  return stripCitations(parsed);
+}
+
 export async function generateBridgingAnalysis(
   brief: PrepBriefData,
   resumeText: string

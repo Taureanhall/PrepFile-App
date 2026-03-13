@@ -127,18 +127,18 @@ export const activationNudgeEmail: Email = {
   id: "activation-nudge",
   delayDays: 1,
   trigger: "user.signup + 24h, no brief created",
-  subjectA: "Haven't tried PrepFile yet?",
-  subjectB: "What you get in 60 seconds",
-  previewText: "Paste a job description. That's the whole input.",
+  subjectA: "What a PrepFile brief actually shows you",
+  subjectB: "You're one job description away from a prep brief",
+  previewText: "Company snapshot, round expectations, blind spots — 60 seconds.",
   body: `You signed up yesterday but haven't generated a brief yet.
 
-Here's what PrepFile produces: a structured summary of what the company looks for in your specific role, what your interview rounds will likely include, questions to ask your interviewer that show strategic thinking, and where your background may have gaps relative to the job description.
+Here's what PrepFile produces when you paste a job description: a company snapshot covering the competitive position and what drives decisions there, round-by-round expectations for how your interview is likely structured, specific questions to ask your interviewer that signal strategic thinking, and a blind spots section that flags where your background may not match what the role requires.
 
-You need a job description and a company name. That's it. Takes 60 seconds.
+Not generic interview tips. Specific to the company and role you enter.
 
-If you have an interview scheduled, now is a good time.`,
-  ctaText: "Generate a Brief",
-  ctaUrl: "https://prepfile.work",
+Not sure where to start? Use our pre-filled example — one click and you'll see exactly what a brief looks like.`,
+  ctaText: "Try with example",
+  ctaUrl: "https://prepfile.work/?example=true",
 };
 
 // ─── 4. Upgrade nudge ────────────────────────────────────────────────────────

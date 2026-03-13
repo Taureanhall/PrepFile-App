@@ -6,7 +6,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import multer from "multer";
 import { createServer as createViteServer } from "vite";
-import { generateBrief, generateBridgingAnalysis } from "./src/lib/generateBrief.js";
+import { generateBrief, generateQuickBrief, generateBridgingAnalysis } from "./src/lib/generateBrief.js";
 import {
   createMagicLink,
   verifyMagicLink,
@@ -40,12 +40,16 @@ import {
   runWelcomeSequenceBatch,
   runReengagementBatch,
   parseUnsubscribeToken,
+  makeUnsubscribeToken,
 } from "./src/lib/email-sequences.js";
+import { subjectA as postBriefSubject, buildPostBriefUpgradeHtml } from "./src/lib/emails/post-brief-upgrade.js";
 import { setEmailUnsubscribed, getUserIdByEmail } from "./src/lib/db.js";
 import { OAuth2Client } from "google-auth-library";
 
 const RATE_LIMIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
-const RATE_LIMIT_MAX = 3; // 3 briefs per week for free tier
+const RATE_LIMIT_MAX = 3; // 3 briefs per week for free tier (legacy, used for quick briefs)
+const QUICK_BRIEF_LIMIT = 3; // 3 quick briefs per week for free tier
+const FULL_BRIEF_LIMIT = 1; // 1 full brief per week for free tier
 
 function getSessionUser(req: express.Request) {
   const token = req.cookies?.session;
@@ -563,9 +567,9 @@ async function startServer() {
               return res.status(402).json({ error: "pack_exhausted", message: "Your Interview Pack is used up. Upgrade to Pro for unlimited briefs." });
             }
           } else {
-            // Free tier
-            if (!checkAndIncrementRateLimit(`user:${user.id}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
-              return res.status(402).json({ error: "rate_limit_exceeded", message: "Free tier allows 3 briefs per week. Upgrade for more." });
+            // Free tier — 1 full brief per week
+            if (!checkAndIncrementRateLimit(`user:${user.id}:full`, FULL_BRIEF_LIMIT, RATE_LIMIT_WINDOW_MS)) {
+              return res.status(402).json({ error: "rate_limit_exceeded", message: "Free tier allows 1 full brief per week. Use quick briefs for faster prep, or upgrade for unlimited." });
             }
           }
         }
@@ -623,46 +627,27 @@ async function startServer() {
           const briefId = saveBrief(user.id, req.body.companyName || "", req.body.jobTitle || "", data);
           savedBriefId = briefId;
 
-          // Send onboarding email after first brief
+          // Send post-brief upgrade email after first brief (free users only)
           const briefCount = getBriefCountForUser(user.id);
           if (briefCount === 1 && !hasReceivedOnboardingEmail(user.id)) {
             try {
-              const { Resend } = await import("resend");
-              const resend = new Resend(process.env.RESEND_API_KEY);
               const sub = getUserSubscription(user.id);
-              const isFreeTier = sub.plan === "free";
-              const appUrl = APP_URL;
+              if (sub.plan === "free") {
+                const { Resend } = await import("resend");
+                const resend = new Resend(process.env.RESEND_API_KEY);
+                const unsubToken = makeUnsubscribeToken(user.id);
+                const unsubscribeUrl = `${APP_URL}/api/unsubscribe?token=${unsubToken}`;
 
-              await resend.emails.send({
-                from: FROM_EMAIL,
-                to: user.email,
-                subject: "Your first PrepFile brief is ready",
-                html: `
-                  <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px">
-                    <h2 style="font-size:20px;font-weight:700;color:#18181b;margin-bottom:8px">Welcome to PrepFile</h2>
-                    <p style="color:#52525b;margin-bottom:16px">
-                      You just generated your first prep brief for <strong>${req.body.companyName || "your target company"}</strong>.
-                      PrepFile uses Porter's Five Forces and Deming analysis to give you the company context, role intelligence,
-                      and round-specific expectations that most candidates miss.
-                    </p>
-                    <a href="${appUrl}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;margin-bottom:24px">View your brief →</a>
-                    ${isFreeTier ? `
-                    <div style="background:#f4f4f5;border-radius:8px;padding:16px;margin-top:8px">
-                      <p style="color:#3f3f46;font-size:14px;margin:0 0 8px">
-                        <strong>On the free plan?</strong> You get 3 briefs per week. Upgrade to Pro for unlimited briefs at $9.99/month,
-                        or grab an Interview Pack (5 briefs) for $4.99.
-                      </p>
-                      <a href="${appUrl}" style="color:#18181b;font-size:14px;font-weight:500">See upgrade options →</a>
-                    </div>
-                    ` : ""}
-                    <p style="color:#a1a1aa;font-size:12px;margin-top:24px">PrepFile — AI-powered interview prep</p>
-                  </div>
-                `,
-              });
+                await resend.emails.send({
+                  from: FROM_EMAIL,
+                  to: user.email,
+                  subject: postBriefSubject,
+                  html: buildPostBriefUpgradeHtml(APP_URL, unsubscribeUrl),
+                });
+              }
               markOnboardingEmailSent(user.id);
             } catch (emailErr) {
-              console.error("Failed to send onboarding email:", emailErr);
-              // Non-fatal — do not crash the generate endpoint
+              console.error("Failed to send post-brief upgrade email:", emailErr);
             }
           }
         } catch (err) {
@@ -683,6 +668,70 @@ async function startServer() {
       res.json({ ...data, briefId: savedBriefId });
     } catch (err: any) {
       res.status(500).json({ error: err.message || "Failed to generate brief" });
+    }
+  });
+
+  // Quick brief — concise output from company name + job title only (no JD)
+  app.post("/api/generate-quick-brief", async (req, res) => {
+    try {
+      const bypassKey = process.env.BYPASS_KEY;
+      const clientKey = req.headers["x-bypass-key"];
+      const isBypassed = bypassKey && clientKey === bypassKey;
+
+      const user = getSessionUser(req);
+
+      if (!isBypassed) {
+        if (!user) {
+          if (req.cookies?.free_brief_used) {
+            return res.status(401).json({ error: "free_brief_used", message: "Sign in to generate more briefs." });
+          }
+        } else {
+          const sub = getUserSubscription(user.id);
+          if (sub.plan === "pro") {
+            // Unlimited
+          } else if (sub.plan === "pack") {
+            // Pack users get quick briefs for free (doesn't consume pack briefs)
+          } else {
+            // Free tier — 3 quick briefs per week
+            if (!checkAndIncrementRateLimit(`user:${user.id}:quick`, QUICK_BRIEF_LIMIT, RATE_LIMIT_WINDOW_MS)) {
+              return res.status(402).json({ error: "quick_limit_exceeded", message: "You've used your 3 quick briefs this week. Use your full brief with a job description, or upgrade for unlimited." });
+            }
+          }
+        }
+      }
+
+      const { companyName, jobTitle } = req.body;
+      if (!companyName || typeof companyName !== "string" || companyName.trim().length === 0) {
+        return res.status(400).json({ error: "companyName is required" });
+      }
+      if (!jobTitle || typeof jobTitle !== "string" || jobTitle.trim().length === 0) {
+        return res.status(400).json({ error: "jobTitle is required" });
+      }
+
+      const data = await generateQuickBrief({ companyName: companyName.trim(), jobTitle: jobTitle.trim() });
+
+      let savedBriefId: string | undefined;
+      if (user) {
+        try {
+          const briefId = saveBrief(user.id, companyName.trim(), jobTitle.trim(), data);
+          savedBriefId = briefId;
+        } catch (err) {
+          console.error("Failed to save quick brief:", err);
+        }
+      }
+
+      if (!user && !isBypassed) {
+        res.cookie("free_brief_used", "1", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+      }
+
+      res.json({ ...data, briefId: savedBriefId });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || "Failed to generate quick brief" });
     }
   });
 
@@ -785,6 +834,7 @@ async function startServer() {
     try {
       await runWelcomeSequenceBatch(APP_URL, FROM_EMAIL);
       await runReengagementBatch(APP_URL, FROM_EMAIL);
+      await runNurtureEmailBatch(APP_URL, FROM_EMAIL);
       res.json({ ok: true });
     } catch (err) {
       console.error("[/api/cron/emails] error:", err);
