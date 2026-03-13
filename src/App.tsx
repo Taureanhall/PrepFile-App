@@ -122,6 +122,7 @@ export default function Page() {
   const [paymentPlan, setPaymentPlan] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   // Core Inputs — pre-fill company from ?company= param (SEO page CTA)
   const prefilledCompany = new URLSearchParams(window.location.search).get("company") ?? "";
@@ -170,6 +171,11 @@ export default function Page() {
     const authMethod = params.get("auth_method");
     if (authMethod) {
       trackSignupCompleted(authMethod);
+    }
+    if (params.get("welcome") === "1") {
+      setShowWelcome(true);
+    }
+    if (authMethod || params.get("welcome") === "1") {
       window.history.replaceState({}, "", window.location.pathname);
     }
     if (params.get("payment") === "success") {
@@ -504,6 +510,14 @@ Preferred Qualifications:
               <div className="mb-6 p-4 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-700 text-sm flex justify-between items-center">
                 <span>No charge was made. You can upgrade anytime.</span>
                 <button onClick={() => setPaymentCancel(false)} className="text-zinc-500 hover:text-zinc-700 ml-4">✕</button>
+              </div>
+            )}
+
+            {/* Welcome banner for new users arriving from OAuth */}
+            {showWelcome && (
+              <div className="mb-6 p-4 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 text-sm flex justify-between items-center">
+                <span className="font-medium">Welcome to PrepFile — generate your first interview prep brief below.</span>
+                <button onClick={() => setShowWelcome(false)} className="text-brand-600 hover:text-brand-800 ml-4">✕</button>
               </div>
             )}
 

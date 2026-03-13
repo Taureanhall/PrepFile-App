@@ -444,7 +444,8 @@ async function startServer() {
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
       res.clearCookie("free_brief_used");
-      res.redirect("/?auth_method=google");
+      const isNewUser = signedInUser ? getBriefCountForUser(signedInUser.id) === 0 : false;
+      res.redirect(isNewUser ? "/?welcome=1&auth_method=google" : "/?auth_method=google");
     } catch (err: any) {
       console.error("Google OAuth error:", err);
       res.status(500).send("Google sign-in failed. Please try again.");
