@@ -40,8 +40,10 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
     return () => clearTimeout(t);
   }, [resendCooldown]);
 
+  const isValidEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+
   const handleSendCode = async () => {
-    if (!email.includes("@")) {
+    if (!isValidEmail(email)) {
       setError("Please enter a valid email address.");
       return;
     }
@@ -193,7 +195,7 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
               {/* Continue button */}
               <button
                 onClick={handleSendCode}
-                disabled={loading || !email.includes("@")}
+                disabled={loading || !isValidEmail(email)}
                 className="w-full flex items-center justify-center gap-2 py-4 bg-brand-600 text-white font-semibold text-base rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[56px]"
               >
                 {loading ? "Sending..." : "Continue"}
