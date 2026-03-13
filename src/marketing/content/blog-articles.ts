@@ -65,6 +65,8 @@ The wrong move is to try to learn everything. Most candidates in this situation 
 
 The right move is to prepare just enough context to have a real conversation — and then sleep.
 
+{{chart:prep-time-vs-success}}
+
 ## Hour 0–1: Build Your Prep Brief
 
 Before you do anything else, generate a PrepFile brief for the role. Input the company name, the job title, the full job description, and answer the four questions honestly — which round you're in, how familiar you are with the company, how much prep time you have, and your biggest skill gap for this role.
@@ -94,6 +96,8 @@ For the weak areas: don't hide them. Prepare a version of "here's what I know, h
 For the strong areas: prepare one specific story per requirement. Not a generic "I've done X" — a specific project, outcome, and decision that demonstrates the competency they're looking for.
 
 The brief's round expectations section tells you what format to expect: whether this is a behavioral round, a technical screen, a system design, or a case interview. Align your story prep to the format, not to every possible question.
+
+{{chart:method-effectiveness}}
 
 ## Hours 5–7: Questions and Final Prep
 
@@ -146,6 +150,8 @@ Your brief will still be there tomorrow morning. Give it a 10-minute re-read bef
 
 These aren't obscure tactics. They're the items that separate candidates who feel ready from candidates who actually perform well when it counts.
 
+{{chart:skipped-prep-steps}}
+
 ## 1. What the company cares about right now
 
 Most candidates research what a company has always cared about. Fewer look at what it cares about today.
@@ -175,6 +181,8 @@ Generic questions don't help you. "What does success look like in the first 90 d
 Prepare two or three questions that could only come from someone who actually researched the role and company. The standard is simple: if you could have asked this question without doing any preparation, it's not specific enough.
 
 Good questions come from the company's current priorities, the team's recent work, or something specific in the JD you want to understand better. They signal that you're treating this as a real decision, not just an application.
+
+{{chart:hiring-manager-priorities}}
 
 ## 5. A "why this company" answer that isn't generic
 
@@ -243,6 +251,8 @@ And then you walk into the interview and discover that the other finalists have 
 
 The question interviewers are asking is never just "can this person answer interview questions?" It's "does this person understand what we're trying to do, and can I picture them doing it here?" Standard prep doesn't address that question. It gets you to the baseline — it doesn't help you clear it.
 
+{{chart:interview-stage-breakdown}}
+
 ## What interviewers are actually evaluating
 
 Every interview question — behavioral, technical, case, system design — has a stated component and an unstated one.
@@ -272,6 +282,8 @@ When you spend your prep time on question practice, you're training yourself to 
 But you're not training yourself to produce good answers for this company, in this context. The interview equivalent of a generic essay prompt gets generic answers. If you've practiced 10 behavioral stories and you're going to use the most applicable one regardless of company, your answers will be polished — and they'll sound like every other candidate who ran the same drill.
 
 The differentiating factor isn't answer quality. It's context specificity. The candidate who gives an 80% answer that directly maps to the company's current situation will often beat the candidate who gives a 95% answer that could have been prepared for anyone.
+
+{{chart:salary-negotiation-impact}}
 
 ## The research-first approach
 
@@ -326,6 +338,8 @@ The research-first approach is not a new idea. It's what the best candidates hav
     body: `Preparing for a job interview isn't one task — it's a sequence of distinct tasks, each dependent on the one before it. The problem with most interview prep is that candidates treat it as a monolith: "I'll prep this weekend." That approach inevitably means doing some things well and forgetting others entirely.
 
 This checklist breaks down everything you need to do before an interview into a structured sequence. Work through it in order. Don't skip items because they feel obvious — the obvious ones are usually the ones candidates forget.
+
+{{chart:checklist-completion}}
 
 ## Before You Start: Build Your Prep Brief
 
@@ -382,6 +396,8 @@ Confirm all logistics. Where is the interview (in-person address or video link)?
 Logistics failures are entirely preventable and disproportionately costly. Showing up to the wrong building or logging into the wrong Zoom link starts the interview in a hole you'll spend the rest of the conversation climbing out of.
 
 Prepare your setup for virtual interviews. Test audio and video the day before, not the morning of. Close everything except the tabs you need. Put your phone on silent. Have water in reach. Know where to look — at the camera, not at the screen. These details don't add points, but their absence subtracts them.
+
+{{chart:role-demand-trend}}
 
 ## Day Before: Final Review
 
@@ -442,6 +458,8 @@ The brief is how you start. The rest is how you finish.`,
 The problem isn't knowing what the questions are. Most candidates can guess them. The problem is that generic preparation produces generic answers, and interviewers can tell the difference between a story that happened and a story that was assembled from parts of other stories to fit a question.
 
 This guide covers the 30 behavioral questions that appear most frequently — what the interviewer is actually trying to learn, and how to structure an answer that gives them what they need.
+
+{{chart:behavioral-question-frequency}}
 
 ## How Behavioral Answers Work: The STAR Framework
 
@@ -705,6 +723,8 @@ The STAR method is a four-part structure for answering behavioral interview ques
 The framework exists because interviewers want concrete evidence of past behavior, not claims about what kind of person you are. "I'm great at stakeholder management" is not an answer. "I identified that the two senior stakeholders had conflicting expectations for the project and set up separate one-on-ones to understand each of their actual concerns, then proposed a framework that addressed both — and we shipped the project two weeks later" is.
 
 STAR gives you a way to tell that story with structure. The interviewer follows along. The evidence lands. The evaluation happens.
+
+{{chart:star-scoring-radar}}
 
 ## Where Candidates Go Wrong: Common STAR Mistakes
 

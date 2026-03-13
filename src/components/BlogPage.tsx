@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { blogArticles, type BlogArticle } from "../marketing/content/blog-articles";
+import { getChart } from "../data/charts/chart-registry";
 import { Nav } from "./Nav";
 
 function formatDate(iso: string): string {
@@ -32,6 +33,10 @@ function renderMarkdown(body: string, inlineCta: BlogArticle["inlineCta"]) {
           </div>
         );
       }
+    } else if (block.startsWith("{{chart:") && block.endsWith("}}")) {
+      const chartId = block.slice(8, -2);
+      const chart = getChart(chartId);
+      if (chart) result.push(<div key={`chart-${i}`}>{chart}</div>);
     } else {
       result.push(<p key={i} className="text-zinc-600 leading-relaxed mb-4">{renderInline(block)}</p>);
     }

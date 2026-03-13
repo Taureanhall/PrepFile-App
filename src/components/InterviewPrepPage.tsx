@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { trackSeoPageViewed } from "../lib/analytics";
+import { getChart } from "../data/charts/chart-registry";
 import { Nav } from "./Nav";
 import { content as googleContent } from "../marketing/content/google";
 import { content as amazonContent } from "../marketing/content/amazon";
@@ -41,15 +42,16 @@ interface CompanyData {
   hiring: { heading: string; body: string };
   lookFor: { heading: string; body: string };
   tips: string[];
+  charts?: string[];
   ctaCompany: string;
 }
 
 const COMPANIES: Record<string, CompanyData> = {
-  google: googleContent,
-  amazon: amazonContent,
-  meta: metaContent,
-  microsoft: microsoftContent,
-  apple: appleContent,
+  google: { ...googleContent, charts: ["big-tech-salary-ranges", "big-tech-culture-radar"] },
+  amazon: { ...amazonContent, charts: ["big-tech-salary-ranges", "big-tech-interview-rounds"] },
+  meta: { ...metaContent, charts: ["big-tech-salary-ranges", "big-tech-culture-radar"] },
+  microsoft: { ...microsoftContent, charts: ["big-tech-salary-ranges", "big-tech-interview-rounds"] },
+  apple: { ...appleContent, charts: ["big-tech-salary-ranges"] },
   mckinsey: {
     name: "McKinsey",
     slug: "mckinsey",
@@ -80,6 +82,7 @@ const COMPANIES: Record<string, CompanyData> = {
       "PEI stories should demonstrate your personal decision-making, not team success",
       "For the Imbellus game, practice sustained attention and pattern recognition under time pressure",
     ],
+    charts: ["finance-selectivity", "case-interview-types"],
     ctaCompany: "McKinsey",
   },
   "goldman-sachs": {
@@ -112,6 +115,7 @@ const COMPANIES: Record<string, CompanyData> = {
       "For markets: track a specific sector, a recent macro event, and have a trade idea ready",
       "Super Day stamina matters — practice five back-to-back mock interviews in a single session",
     ],
+    charts: ["finance-selectivity", "ib-process-breakdown"],
     ctaCompany: "Goldman Sachs",
   },
   netflix: {
@@ -145,6 +149,7 @@ const COMPANIES: Record<string, CompanyData> = {
       "Compensation is almost entirely base salary — no annual bonus, options instead of RSUs. Know this going into the negotiation",
       "One weak round can kill an offer due to the unanimity rule — treat every interview as if the outcome depends on it",
     ],
+    charts: ["big-tech-salary-ranges", "big-tech-culture-radar"],
     ctaCompany: "Netflix",
   },
   jpmorgan: {
@@ -178,6 +183,7 @@ const COMPANIES: Record<string, CompanyData> = {
       "Record your HireVue answers and watch them back — AI scores pacing and energy, and most people sound flatter on video than they feel",
       "Have a specific 'Why JPMorgan?' ready: reference a deal, a group's recent mandate, or a product area they lead in",
     ],
+    charts: ["finance-selectivity", "ib-process-breakdown"],
     ctaCompany: "JPMorgan",
   },
   bcg: {
@@ -210,6 +216,7 @@ const COMPANIES: Record<string, CompanyData> = {
       "PEI stories must be personal, specific, and show real stakes — generic leadership stories where the team succeeded are rejection signals",
       "If applying to US offices, prepare for the written case: practice synthesizing multi-document sets into a 3-slide recommendation under time pressure",
     ],
+    charts: ["finance-selectivity", "case-interview-types"],
     ctaCompany: "BCG",
   },
   uber: {
@@ -242,6 +249,7 @@ const COMPANIES: Record<string, CompanyData> = {
       "Behavioral stories should show you as the decision-maker, not a participant — 'the team decided' is a weak signal at Uber",
       "Prepare a specific 'Why Uber?' answer grounded in a product or market problem you find compelling — ambiguity about why Uber over other big tech reads poorly",
     ],
+    charts: ["growth-tech-salary", "growth-tech-culture-radar"],
     ctaCompany: "Uber",
   },
   deloitte: {
@@ -275,26 +283,27 @@ const COMPANIES: Record<string, CompanyData> = {
       "Prepare for the immersive assessment with mixed-mode practice, not standard SHL banks — the format shifts cognitive modes frequently",
       "Have a specific 'Why Deloitte?' answer that references a practice area or recent client work — 'great culture and training' gets you cut at the partner round",
     ],
+    charts: ["finance-selectivity", "case-interview-types"],
     ctaCompany: "Deloitte",
   },
-  airbnb: airbnbContent,
-  spotify: spotifyContent,
-  linkedin: linkedinContent,
+  airbnb: { ...airbnbContent, charts: ["growth-tech-salary", "growth-tech-culture-radar"] },
+  spotify: { ...spotifyContent, charts: ["growth-tech-salary", "growth-tech-culture-radar"] },
+  linkedin: { ...linkedinContent, charts: ["big-tech-salary-ranges"] },
   adobe: adobeContent,
-  stripe: stripeContent,
+  stripe: { ...stripeContent, charts: ["growth-tech-salary", "growth-tech-culture-radar"] },
   tesla: teslaContent,
   salesforce: salesforceContent,
   ibm: ibmContent,
-  "data-scientist": dataSciContent,
+  "data-scientist": { ...dataSciContent, charts: ["role-demand-trends", "avg-interview-rounds"] },
   "marketing-manager": marketingMgrContent,
-  "product-manager": productMgrContent,
-  "software-engineer": softwareEngContent,
-  "ux-designer": uxDesignerContent,
-  "data-engineer": dataEngContent,
-  "business-analyst": bizAnalystContent,
-  "management-consultant": mgmtConsultContent,
-  "investment-banking-analyst": ibAnalystContent,
-  "devops-sre-engineer": devopsContent,
+  "product-manager": { ...productMgrContent, charts: ["role-demand-trends", "avg-interview-rounds"] },
+  "software-engineer": { ...softwareEngContent, charts: ["role-demand-trends", "avg-interview-rounds"] },
+  "ux-designer": { ...uxDesignerContent, charts: ["role-demand-trends", "avg-interview-rounds"] },
+  "data-engineer": { ...dataEngContent, charts: ["role-demand-trends", "avg-interview-rounds"] },
+  "business-analyst": { ...bizAnalystContent, charts: ["avg-interview-rounds"] },
+  "management-consultant": { ...mgmtConsultContent, charts: ["finance-selectivity", "case-interview-types"] },
+  "investment-banking-analyst": { ...ibAnalystContent, charts: ["finance-selectivity", "ib-process-breakdown"] },
+  "devops-sre-engineer": { ...devopsContent, charts: ["role-demand-trends", "avg-interview-rounds"] },
   "prepfile-vs-chatgpt": chatgptComparison,
   "prepfile-vs-interviewing-io": interviewingIoComparison,
   "prepfile-vs-pramp": prampComparison,
@@ -443,6 +452,18 @@ export function InterviewPrepPage({ slug }: InterviewPrepPageProps) {
             ))}
           </ul>
         </section>
+
+        {/* Data Snapshot */}
+        {data.charts && data.charts.length > 0 && (
+          <section>
+            <h2 className="text-xl font-semibold text-zinc-900 mb-3">Data Snapshot</h2>
+            <p className="text-zinc-500 text-sm mb-4">Key data points for your {data.name} interview prep.</p>
+            {data.charts.map((chartId) => {
+              const chart = getChart(chartId);
+              return chart ? <div key={chartId}>{chart}</div> : null;
+            })}
+          </section>
+        )}
 
         {/* CTA */}
         <section className="bg-zinc-900 rounded-2xl px-8 py-10 text-center">
