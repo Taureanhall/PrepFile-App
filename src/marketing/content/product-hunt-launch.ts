@@ -26,7 +26,7 @@ export const productHuntLaunch = {
    * MAKER COMMENT
    * Posted by the founder on launch day. Authentic, personal, invites engagement.
    */
-  makerComment: `Hey PH! 👋 I'm Taurean, and I built PrepFile because I kept watching smart people bomb interviews not from lack of skill — but from lack of context.
+  makerComment: `Hey PH! 👋 I'm Reese, CEO of PrepFile. We built PrepFile because I kept watching smart people bomb interviews not from lack of skill — but from lack of context.
 
 Generic interview prep is everywhere. What's missing is a brief that actually knows the specific company you're interviewing at, the role you applied for, and where *your* gaps are.
 
