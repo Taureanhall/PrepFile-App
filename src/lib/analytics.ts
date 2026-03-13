@@ -5,11 +5,17 @@ const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY as string | undefined;
 
 export function initAnalytics() {
   if (!POSTHOG_KEY) return;
-  posthog.init(POSTHOG_KEY, {
-    api_host: "https://us.i.posthog.com",
-    person_profiles: "identified_only",
-    capture_pageview: false, // fired manually
-  });
+  const init = () =>
+    posthog.init(POSTHOG_KEY, {
+      api_host: "https://us.i.posthog.com",
+      person_profiles: "identified_only",
+      capture_pageview: false, // fired manually
+    });
+  if (typeof requestIdleCallback !== "undefined") {
+    requestIdleCallback(init);
+  } else {
+    setTimeout(init, 0);
+  }
 }
 
 export function identifyUser(userId: string) {
