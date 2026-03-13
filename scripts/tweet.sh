@@ -1,19 +1,14 @@
 #!/usr/bin/env bash
-# tweet.sh — Post a tweet via Twitter/X v2 API using OAuth 2.0 with PKCE
+# tweet.sh — Post a tweet via Twitter/X v2 API using OAuth 1.0a
 # Usage: ./scripts/tweet.sh "Your tweet text here"
-# Requires: curl, python3
+# Requires: python3
 #
 # Env vars needed:
-#   TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET — OAuth 2.0 app credentials
-#   TWITTER_REFRESH_TOKEN — optional if .twitter-refresh-token file exists; auto-rotated on each use
-#   TWITTER_TOKEN_FILE — optional override for token file path (default: prepfile-app/.twitter-refresh-token)
-#
-# The script refreshes the access token on every call (tokens expire after 2h).
-# After each refresh, the new refresh token is persisted to the token file automatically.
+#   TWITTER_API_KEY, TWITTER_API_KEY_SECRET — Consumer Keys
+#   TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET — Access Token (permanent, never expires)
 
 set -euo pipefail
 
-# --- Validate input ---
 if [[ $# -lt 1 || -z "${1:-}" ]]; then
   echo "Usage: $0 \"Tweet text\"" >&2
   exit 1
@@ -21,74 +16,83 @@ fi
 
 TWEET_TEXT="$1"
 
-# --- Resolve token file path ---
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEFAULT_TOKEN_FILE="${SCRIPT_DIR}/../.twitter-refresh-token"
-TOKEN_FILE="${TWITTER_TOKEN_FILE:-$DEFAULT_TOKEN_FILE}"
-
-# --- Load refresh token from file if env var not set ---
-if [[ -z "${TWITTER_REFRESH_TOKEN:-}" && -f "$TOKEN_FILE" ]]; then
-  TWITTER_REFRESH_TOKEN="$(cat "$TOKEN_FILE")"
-  echo "Loaded refresh token from $TOKEN_FILE" >&2
+# --- Load from TOOLS.md if env vars not set ---
+TOOLS_FILE="${TWITTER_TOOLS_FILE:-/Users/taureanhall/Developer/Prepflow-Company/agents/marketing/TOOLS.md}"
+if [[ -f "$TOOLS_FILE" ]]; then
+  [[ -z "${TWITTER_API_KEY:-}" ]] && TWITTER_API_KEY=$(grep '^TWITTER_API_KEY=' "$TOOLS_FILE" | head -1 | cut -d= -f2-)
+  [[ -z "${TWITTER_API_KEY_SECRET:-}" ]] && TWITTER_API_KEY_SECRET=$(grep '^TWITTER_API_KEY_SECRET=' "$TOOLS_FILE" | head -1 | cut -d= -f2-)
+  [[ -z "${TWITTER_ACCESS_TOKEN:-}" ]] && TWITTER_ACCESS_TOKEN=$(grep '^TWITTER_ACCESS_TOKEN=' "$TOOLS_FILE" | head -1 | cut -d= -f2-)
+  [[ -z "${TWITTER_ACCESS_TOKEN_SECRET:-}" ]] && TWITTER_ACCESS_TOKEN_SECRET=$(grep '^TWITTER_ACCESS_TOKEN_SECRET=' "$TOOLS_FILE" | head -1 | cut -d= -f2-)
 fi
 
-# --- Validate env vars ---
 MISSING=()
-[[ -z "${TWITTER_CLIENT_ID:-}" ]]       && MISSING+=("TWITTER_CLIENT_ID")
-[[ -z "${TWITTER_CLIENT_SECRET:-}" ]]   && MISSING+=("TWITTER_CLIENT_SECRET")
-[[ -z "${TWITTER_REFRESH_TOKEN:-}" ]]   && MISSING+=("TWITTER_REFRESH_TOKEN")
+[[ -z "${TWITTER_API_KEY:-}" ]] && MISSING+=("TWITTER_API_KEY")
+[[ -z "${TWITTER_API_KEY_SECRET:-}" ]] && MISSING+=("TWITTER_API_KEY_SECRET")
+[[ -z "${TWITTER_ACCESS_TOKEN:-}" ]] && MISSING+=("TWITTER_ACCESS_TOKEN")
+[[ -z "${TWITTER_ACCESS_TOKEN_SECRET:-}" ]] && MISSING+=("TWITTER_ACCESS_TOKEN_SECRET")
 
 if [[ ${#MISSING[@]} -gt 0 ]]; then
   echo "Error: missing required env vars: ${MISSING[*]}" >&2
   exit 1
 fi
 
-# --- Refresh the access token ---
-CREDENTIALS=$(printf '%s:%s' "$TWITTER_CLIENT_ID" "$TWITTER_CLIENT_SECRET" | base64)
+# --- Post tweet using OAuth 1.0a via python3 ---
+RESULT=$(python3 - "$TWEET_TEXT" "$TWITTER_API_KEY" "$TWITTER_API_KEY_SECRET" "$TWITTER_ACCESS_TOKEN" "$TWITTER_ACCESS_TOKEN_SECRET" << 'PYEOF'
+import sys, json, time, hashlib, hmac, urllib.parse, secrets, http.client
 
-REFRESH_RESPONSE=$(curl -s -X POST "https://api.twitter.com/2/oauth2/token" \
-  -H "Authorization: Basic ${CREDENTIALS}" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=refresh_token&refresh_token=${TWITTER_REFRESH_TOKEN}")
+tweet_text = sys.argv[1]
+api_key = sys.argv[2]
+api_key_secret = sys.argv[3]
+access_token = sys.argv[4]
+access_token_secret = sys.argv[5]
 
-ACCESS_TOKEN=$(echo "$REFRESH_RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('access_token',''))" 2>/dev/null || true)
-NEW_REFRESH_TOKEN=$(echo "$REFRESH_RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('refresh_token',''))" 2>/dev/null || true)
+method = "POST"
+url = "https://api.twitter.com/2/tweets"
+parsed = urllib.parse.urlparse(url)
 
-if [[ -z "$ACCESS_TOKEN" ]]; then
-  echo "Error: Failed to refresh access token" >&2
-  echo "$REFRESH_RESPONSE" >&2
-  exit 1
-fi
+# OAuth 1.0a signature
+oauth_params = {
+    "oauth_consumer_key": api_key,
+    "oauth_nonce": secrets.token_hex(16),
+    "oauth_signature_method": "HMAC-SHA1",
+    "oauth_timestamp": str(int(time.time())),
+    "oauth_token": access_token,
+    "oauth_version": "1.0",
+}
 
-# --- Persist new refresh token everywhere ---
-if [[ -n "$NEW_REFRESH_TOKEN" ]]; then
-  # 1. Token file (for future runs that don't set env var)
-  echo "$NEW_REFRESH_TOKEN" > "$TOKEN_FILE"
-  echo "Refresh token rotated → $TOKEN_FILE" >&2
+# Build signature base string (no body params for JSON content type)
+param_string = "&".join(f"{urllib.parse.quote(k, safe='')}={urllib.parse.quote(v, safe='')}"
+                        for k, v in sorted(oauth_params.items()))
+base_string = f"{method}&{urllib.parse.quote(url, safe='')}&{urllib.parse.quote(param_string, safe='')}"
+signing_key = f"{urllib.parse.quote(api_key_secret, safe='')}&{urllib.parse.quote(access_token_secret, safe='')}"
 
-  # 2. Auto-update TOOLS.md so agents always have the latest token
-  TOOLS_FILE="${TWITTER_TOOLS_FILE:-/Users/taureanhall/Developer/Prepflow-Company/agents/marketing/TOOLS.md}"
-  if [[ -f "$TOOLS_FILE" ]]; then
-    sed -i '' "s|^TWITTER_REFRESH_TOKEN=.*|TWITTER_REFRESH_TOKEN=${NEW_REFRESH_TOKEN}|" "$TOOLS_FILE"
-    echo "TOOLS.md updated with new refresh token" >&2
-  fi
-fi
+signature = hmac.new(signing_key.encode(), base_string.encode(), hashlib.sha1).digest()
+import base64
+oauth_params["oauth_signature"] = base64.b64encode(signature).decode()
 
-echo "TWITTER_NEW_REFRESH_TOKEN=${NEW_REFRESH_TOKEN}" >&2
-export TWITTER_NEW_REFRESH_TOKEN="$NEW_REFRESH_TOKEN"
+auth_header = "OAuth " + ", ".join(
+    f'{urllib.parse.quote(k, safe="")}="{urllib.parse.quote(v, safe="")}"'
+    for k, v in sorted(oauth_params.items())
+)
 
-# --- Post the tweet ---
-TWEET_JSON=$(printf '%s' "$TWEET_TEXT" | python3 -c 'import json,sys; print(json.dumps({"text": sys.stdin.read()}))')
+body = json.dumps({"text": tweet_text})
 
-BODY_FILE=$(mktemp)
-HTTP_STATUS=$(curl -s -o "$BODY_FILE" -w "%{http_code}" \
-  -X POST "https://api.twitter.com/2/tweets" \
-  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d "$TWEET_JSON")
+conn = http.client.HTTPSConnection("api.twitter.com")
+conn.request(method, "/2/tweets", body=body, headers={
+    "Authorization": auth_header,
+    "Content-Type": "application/json",
+})
+resp = conn.getresponse()
+data = resp.read().decode()
+conn.close()
 
-HTTP_BODY=$(cat "$BODY_FILE")
-rm -f "$BODY_FILE"
+result = {"status": resp.status, "body": json.loads(data) if data else {}}
+print(json.dumps(result))
+PYEOF
+)
+
+HTTP_STATUS=$(echo "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin)['status'])")
+HTTP_BODY=$(echo "$RESULT" | python3 -c "import json,sys; print(json.dumps(json.load(sys.stdin)['body'], indent=2))")
 
 echo "$HTTP_BODY"
 
@@ -97,7 +101,6 @@ if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
   exit 1
 fi
 
-# Extract and display tweet URL if available
 TWEET_ID=$(echo "$HTTP_BODY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('data',{}).get('id',''))" 2>/dev/null || true)
 if [[ -n "$TWEET_ID" ]]; then
   echo "Tweet URL: https://twitter.com/i/web/status/$TWEET_ID" >&2
