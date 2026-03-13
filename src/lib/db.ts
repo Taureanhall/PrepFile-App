@@ -226,6 +226,7 @@ export function usePackBrief(userId: string): boolean {
 // Migrations — safe to run on every boot
 try { db.exec("ALTER TABLE users ADD COLUMN onboarding_email_sent INTEGER NOT NULL DEFAULT 0"); } catch {}
 try { db.exec("ALTER TABLE users ADD COLUMN google_id TEXT"); } catch {}
+try { db.exec("ALTER TABLE users ADD COLUMN referral_source TEXT"); } catch {}
 try { db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL"); } catch {}
 try { db.exec("ALTER TABLE briefs ADD COLUMN is_public INTEGER NOT NULL DEFAULT 0"); } catch {}
 try { db.exec("ALTER TABLE users ADD COLUMN email_unsubscribed INTEGER NOT NULL DEFAULT 0"); } catch {}
@@ -272,7 +273,7 @@ export function hasReceivedOnboardingEmail(userId: string): boolean {
 }
 
 /** Upsert a user by Google ID. Returns a session token. */
-export function upsertGoogleUser(googleId: string, email: string): string {
+export function upsertGoogleUser(googleId: string, email: string, referralSource?: string): string {
   let user = db.prepare("SELECT * FROM users WHERE google_id = ?").get(googleId) as any;
 
   if (!user) {
@@ -282,7 +283,7 @@ export function upsertGoogleUser(googleId: string, email: string): string {
       db.prepare("UPDATE users SET google_id = ?, last_login_at = datetime('now') WHERE id = ?").run(googleId, user.id);
     } else {
       const userId = crypto.randomUUID();
-      db.prepare("INSERT INTO users (id, email, google_id, last_login_at) VALUES (?, ?, ?, datetime('now'))").run(userId, email.toLowerCase(), googleId);
+      db.prepare("INSERT INTO users (id, email, google_id, last_login_at, referral_source) VALUES (?, ?, ?, datetime('now'), ?)").run(userId, email.toLowerCase(), googleId, referralSource ?? null);
       user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId) as any;
     }
   } else {
@@ -326,7 +327,7 @@ export interface AdminMetrics {
   payingUsers: number;
   freeUsers: number;
   briefsPerUserDistribution: Array<{ brief_count: number; user_count: number }>;
-  recentSignups: Array<{ email: string; plan: string; created_at: string; brief_count: number }>;
+  recentSignups: Array<{ email: string; plan: string; created_at: string; brief_count: number; referral_source: string | null }>;
 }
 
 export function getAdminMetrics(): AdminMetrics {
@@ -345,14 +346,14 @@ export function getAdminMetrics(): AdminMetrics {
   `).all() as Array<{ brief_count: number; user_count: number }>;
 
   const recentSignups = db.prepare(`
-    SELECT u.email, COALESCE(s.plan, 'free') as plan, u.created_at, COUNT(b.id) as brief_count
+    SELECT u.email, COALESCE(s.plan, 'free') as plan, u.created_at, COUNT(b.id) as brief_count, u.referral_source
     FROM users u
     LEFT JOIN subscriptions s ON s.user_id = u.id
     LEFT JOIN briefs b ON b.user_id = u.id
     GROUP BY u.id
     ORDER BY u.created_at DESC
     LIMIT 25
-  `).all() as Array<{ email: string; plan: string; created_at: string; brief_count: number }>;
+  `).all() as Array<{ email: string; plan: string; created_at: string; brief_count: number; referral_source: string | null }>;
 
   return { totalUsers, usersToday, totalBriefs, briefsToday, briefs7d, payingUsers, freeUsers, briefsPerUserDistribution, recentSignups };
 }
@@ -411,11 +412,11 @@ export function getUserIdByEmail(email: string): string | null {
 }
 
 /** Find user by email or create a new account. Returns user id. */
-export function getOrCreateUserByEmail(email: string): string {
+export function getOrCreateUserByEmail(email: string, referralSource?: string): string {
   const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email.toLowerCase()) as any;
   if (existing) return existing.id;
   const userId = crypto.randomUUID();
-  db.prepare("INSERT INTO users (id, email, last_login_at) VALUES (?, ?, datetime('now'))").run(userId, email.toLowerCase());
+  db.prepare("INSERT INTO users (id, email, last_login_at, referral_source) VALUES (?, ?, datetime('now'), ?)").run(userId, email.toLowerCase(), referralSource ?? null);
   return userId;
 }
 
@@ -494,7 +495,7 @@ export function createOtpCode(email: string): string {
 }
 
 /** Verify an OTP code. Returns session token on success, null on failure. */
-export function verifyOtpCode(email: string, code: string): { sessionToken: string | null; error?: string } {
+export function verifyOtpCode(email: string, code: string, referralSource?: string): { sessionToken: string | null; error?: string } {
   const row = db.prepare(
     "SELECT * FROM otp_codes WHERE email = ? AND verified = 0 AND expires_at > datetime('now') ORDER BY created_at DESC LIMIT 1"
   ).get(email) as any;
@@ -519,8 +520,8 @@ export function verifyOtpCode(email: string, code: string): { sessionToken: stri
   if (!user) {
     const userId = crypto.randomUUID();
     db.prepare(
-      "INSERT INTO users (id, email, last_login_at) VALUES (?, ?, datetime('now'))"
-    ).run(userId, email);
+      "INSERT INTO users (id, email, last_login_at, referral_source) VALUES (?, ?, datetime('now'), ?)"
+    ).run(userId, email, referralSource ?? null);
     user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId) as any;
   } else {
     db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);

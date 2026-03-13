@@ -206,6 +206,20 @@ async function startServer() {
   app.use(express.json());
   app.use(cookieParser());
 
+  // Referral source tracking — set prepfile_ref cookie from ?ref= or ?utm_source=
+  app.use((req, res, next) => {
+    const ref = (req.query.ref || req.query.utm_source) as string | undefined;
+    if (ref && typeof ref === "string" && !req.cookies?.prepfile_ref) {
+      res.cookie("prepfile_ref", ref.slice(0, 64), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
+    }
+    next();
+  });
+
   // API routes FIRST
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok" });
@@ -317,7 +331,8 @@ async function startServer() {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    const result = verifyOtpCode(normalizedEmail, code.trim());
+    const referralSource = req.cookies?.prepfile_ref as string | undefined;
+    const result = verifyOtpCode(normalizedEmail, code.trim(), referralSource);
 
     if (!result.sessionToken) {
       return res.status(400).json({ error: result.error });
@@ -434,7 +449,8 @@ async function startServer() {
       const payload = ticket.getPayload();
       if (!payload?.sub || !payload?.email) return res.status(400).send("Invalid Google account");
 
-      const sessionToken = upsertGoogleUser(payload.sub, payload.email);
+      const referralSource = req.cookies?.prepfile_ref as string | undefined;
+      const sessionToken = upsertGoogleUser(payload.sub, payload.email, referralSource);
       const signedInUser = getUserBySession(sessionToken);
       if (signedInUser) {
         getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id, method: "google" } });
@@ -873,8 +889,11 @@ async function startServer() {
         : r.plan === "pack"
         ? `<span style="background:#2563eb;color:#fff;padding:2px 8px;border-radius:9999px;font-size:11px">pack</span>`
         : `<span style="background:#e4e4e7;color:#52525b;padding:2px 8px;border-radius:9999px;font-size:11px">free</span>`;
-      return `<tr><td>${esc(r.email)}</td><td>${planBadge}</td><td>${esc(r.created_at)}</td><td>${esc(String(r.brief_count))}</td></tr>`;
-    }).join("") || "<tr><td colspan='4'>No signups yet</td></tr>";
+      const refBadge = r.referral_source
+        ? `<span style="background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:9999px;font-size:11px">${esc(r.referral_source)}</span>`
+        : `<span style="color:#a1a1aa;font-size:11px">—</span>`;
+      return `<tr><td>${esc(r.email)}</td><td>${planBadge}</td><td>${esc(r.created_at)}</td><td>${esc(String(r.brief_count))}</td><td>${refBadge}</td></tr>`;
+    }).join("") || "<tr><td colspan='5'>No signups yet</td></tr>";
 
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -922,7 +941,7 @@ async function startServer() {
 <section>
   <h2>Recent Signups (last 25)</h2>
   <table>
-    <thead><tr><th>Email</th><th>Plan</th><th>Signed Up</th><th>Briefs</th></tr></thead>
+    <thead><tr><th>Email</th><th>Plan</th><th>Signed Up</th><th>Briefs</th><th>Source</th></tr></thead>
     <tbody>${signupRows}</tbody>
   </table>
 </section>
