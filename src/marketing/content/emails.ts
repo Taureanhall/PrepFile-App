@@ -65,12 +65,10 @@ export const welcome3Email: Email = {
   id: "welcome-3",
   delayDays: 5,
   trigger: "user.signup + 5d",
-  subjectA: "What candidates say after using PrepFile",
-  subjectB: "The brief that changed how they prepped",
-  previewText: "\"I found something I hadn't thought about.\"",
-  body: `The most common thing people say after running a PrepFile brief: "I found something I hadn't thought about."
-
-Usually it's the interviewer questions — specific, strategic ones tied to the company's actual competitive position. Or the blind spots section, which flags where their background doesn't match what the role requires.
+  subjectA: "The part of your brief you might have missed",
+  subjectB: "What PrepFile Pro adds to your prep",
+  previewText: "Blind spots, round expectations, and resume match.",
+  body: `Most candidates focus on the company snapshot and interview themes in their brief. But two sections deserve more attention: the blind spots analysis (which flags where your background may not match what the role requires) and the questions to ask (which signal you've done real research).
 
 If you're prepping for multiple roles, Pro gives you unlimited briefs, full round-by-round breakdowns, and resume match against each job description. No weekly limits.
 

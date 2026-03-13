@@ -48,7 +48,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
   useEffect(() => {
     fetch("/api/stats")
       .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d?.totalBriefs > 0) setBriefCount(d.totalBriefs); })
+      .then((d) => { if (d?.totalBriefs >= 10) setBriefCount(d.totalBriefs); })
       .catch(() => {});
   }, []);
 
@@ -119,53 +119,18 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         </div>
       </section>
 
-      {/* Trust stats bar */}
+      {/* Value props bar */}
       <section className="bg-brand-900 py-8">
         <div className="max-w-3xl mx-auto px-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             {[
-              { stat: "1,000+", label: "prep briefs generated" },
-              { stat: "50+", label: "companies job seekers have targeted" },
-              { stat: "< 60 sec", label: "from input to full prep plan" },
+              { stat: "< 60 sec", label: "from input to full prep brief" },
+              { stat: "100+", label: "companies covered with context-aware prep" },
+              { stat: "Free", label: "to try — no credit card required" },
             ].map(({ stat, label }) => (
               <div key={stat} className="flex flex-col items-center gap-1">
                 <span className="text-2xl font-bold text-accent-400">{stat}</span>
                 <span className="text-sm text-zinc-400">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="bg-white border-t border-zinc-100 py-14">
-        <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-brand-400 mb-10">What people are saying</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {[
-              {
-                quote: "I'd been Googling '[Company] interview questions' for hours and kept finding the same recycled lists. PrepFile gave me a brief that actually explained what the team cares about, what the interview loop looks like, and what questions to ask at the end. I walked in prepared in a way I've never felt before.",
-                name: "Maya R.",
-                title: "Product Manager",
-              },
-              {
-                quote: "I got the interview invite on a Monday for a Thursday call. Between my day job and trying to prep, I had maybe 90 minutes total. PrepFile gave me a structured brief in under two minutes. I hit the key points the recruiter was looking for. Got to the next round.",
-                name: "James T.",
-                title: "Software Engineer",
-              },
-              {
-                quote: "I was interviewing at a company I'd never heard of — a Series B startup in logistics. I had no context. PrepFile pulled together exactly what I needed: what the company cares about, what the role actually involves, and where I'd likely get tripped up. Felt like I'd done a week of research in one sitting.",
-                name: "Priya S.",
-                title: "Operations Analyst",
-              },
-            ].map(({ quote, name, title }) => (
-              <div key={name} className="flex flex-col bg-zinc-50 border border-zinc-100 rounded-2xl p-6 gap-4">
-                <div className="text-accent-400 text-2xl leading-none">&ldquo;</div>
-                <p className="text-sm text-zinc-600 leading-relaxed flex-1">{quote}</p>
-                <div className="border-t border-zinc-200 pt-4">
-                  <p className="text-sm font-semibold text-zinc-900">{name}</p>
-                  <p className="text-xs text-zinc-400">{title}</p>
-                </div>
               </div>
             ))}
           </div>

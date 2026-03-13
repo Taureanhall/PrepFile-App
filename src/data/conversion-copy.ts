@@ -190,34 +190,9 @@ export const upgradeNudges = [
 ] as const;
 
 // ─── Social Proof Blocks ──────────────────────────────────────────────────────
-// Aspirational / templated. Replace with real quotes when available.
+// Populate with real user quotes when available. Do not use fabricated testimonials.
 
-export const socialProof = [
-  {
-    id: "sp-1",
-    quote:
-      "I used PrepFile the night before a final-round interview at a Series B startup. The blind spot section flagged exactly what came up — and I had an answer ready.",
-    name: "Marcus T.",
-    role: "Product Manager",
-    companyType: "Series B startup",
-  },
-  {
-    id: "sp-2",
-    quote:
-      "I was interviewing at three companies simultaneously. Brief history let me revisit each one the morning of. Kept me from mixing up who cared about what.",
-    name: "Priya S.",
-    role: "Software Engineer",
-    companyType: "FAANG",
-  },
-  {
-    id: "sp-3",
-    quote:
-      "Resume match told me my ops background wasn't a liability for the strategy role — it was a differentiator. I led with that angle and got the offer.",
-    name: "Jordan K.",
-    role: "Strategy Analyst",
-    companyType: "Fortune 500",
-  },
-] as const;
+export const socialProof = [] as const;
 
 // ─── Post-Brief CTA ───────────────────────────────────────────────────────────
 // Shown after a user reads their free brief. Bridges from value received → full version.

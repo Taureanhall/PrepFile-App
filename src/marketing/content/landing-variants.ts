@@ -67,14 +67,14 @@ export const landingVariants: LandingVariant[] = [
       "The core differentiator from interview prep content sites is specificity — this variant makes that contrast explicit, which is most effective for users who have already tried generic prep and found it lacking.",
   },
   {
-    id: "social-proof",
-    angle: "Social proof",
-    badge: "Trusted by job seekers at top companies",
-    headline: "Join thousands who prepped smarter, not harder.",
+    id: "simplicity",
+    angle: "Simplicity",
+    badge: "Company name + job title = prep brief",
+    headline: "Prep smarter, not harder.",
     subheadline: "PrepFile turns your job description into a personalized interview brief — company strategy, role signals, and questions that impress interviewers.",
     cta: "Start Prepping Free",
     rationale:
-      "Social proof reduces perceived risk for first-time visitors; pairing it with the free entry point ('Start Prepping Free') lowers the conversion barrier for skeptical users who need external validation before trying a new tool.",
+      "Simplicity-focused copy reduces cognitive load for first-time visitors; leading with the easy input model and pairing with the free entry point lowers the conversion barrier.",
   },
 ];
 
