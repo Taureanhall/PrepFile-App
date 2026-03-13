@@ -42,11 +42,17 @@ export function Nav({ cta, children }: NavProps) {
           <span className="text-2xl font-bold tracking-tight">PrepFile</span>
         </a>
         <div className="flex items-center gap-2">
+          {/* Desktop nav links */}
+          <div className="hidden md:flex items-center gap-1 mr-2">
+            <a href="/interview-prep" className="text-sm font-medium text-zinc-700 px-3 py-2 rounded-lg hover:bg-zinc-100 transition-colors">Interview Guides</a>
+            <a href="/pricing" className="text-sm font-medium text-zinc-700 px-3 py-2 rounded-lg hover:bg-zinc-100 transition-colors">Pricing</a>
+          </div>
           {children}
           {ctaElement}
+          {/* Mobile hamburger only */}
           <button
             onClick={() => setMenuOpen(true)}
-            className="p-2.5 border border-zinc-200 rounded-lg hover:bg-zinc-100 transition-colors"
+            className="md:hidden p-2.5 border border-zinc-200 rounded-lg hover:bg-zinc-100 transition-colors"
             aria-label="Menu"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
