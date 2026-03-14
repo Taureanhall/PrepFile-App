@@ -1329,6 +1329,10 @@ async function startServer() {
       title: "Interview Prep for Bootcamp Students — PrepFile for Career Services",
       description: "Give every student a personalized interview prep brief before each interview. PrepFile generates company-specific briefs in 60 seconds. Bulk seats from $5/student.",
     },
+    "recruiting-agencies": {
+      title: "Interview Prep for Recruiting Agencies — PrepFile",
+      description: "Help your candidates walk into interviews prepared. PrepFile generates personalized, company-specific prep briefs in 60 seconds. Higher placement rates. $500/month unlimited.",
+    },
   };
 
   // Helper: inject SEO meta tags for /faq page
