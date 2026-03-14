@@ -93,14 +93,43 @@ export function CareerServicesPage() {
         </div>
 
         {/* Pricing */}
-        <div className="mb-14 bg-white border border-zinc-200 rounded-2xl px-7 py-7">
-          <h2 className="text-lg font-semibold text-zinc-900 mb-1">{content.pricing.headline}</h2>
-          <div className="flex items-baseline gap-2 mt-4 mb-1">
-            <span className="text-4xl font-bold text-zinc-900">{content.pricing.price}</span>
-            <span className="text-sm text-zinc-500">{content.pricing.unit}</span>
+        <div className="mb-14">
+          <h2 className="text-lg font-semibold text-zinc-900 mb-6">{content.pricing.headline}</h2>
+
+          {/* Annual license — primary */}
+          <div className="bg-white border-2 border-brand-600 rounded-2xl px-7 py-6 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-brand-600">{content.pricing.annualLicense.label}</span>
+              <span className="text-xs font-semibold text-white bg-brand-600 rounded-full px-2.5 py-0.5">Recommended</span>
+            </div>
+            <div className="flex items-baseline gap-2 mb-3">
+              <span className="text-4xl font-bold text-zinc-900">{content.pricing.annualLicense.price}</span>
+              <span className="text-sm text-zinc-500">{content.pricing.annualLicense.unit}</span>
+            </div>
+            <p className="text-sm text-zinc-600 leading-relaxed">{content.pricing.annualLicense.description}</p>
           </div>
-          <p className="text-xs text-amber-600 font-medium mb-4">{content.pricing.minimum}</p>
-          <p className="text-sm text-zinc-600 leading-relaxed">{content.pricing.body}</p>
+
+          {/* Per-cohort tiers — fallback */}
+          <div className="bg-white border border-zinc-200 rounded-2xl px-7 py-6 mb-4">
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">{content.pricing.cohortTiers.label}</span>
+            <div className="mt-3 space-y-2">
+              {content.pricing.cohortTiers.tiers.map((tier) => (
+                <div key={tier.range} className="flex items-center justify-between">
+                  <span className="text-sm text-zinc-600">{tier.range}</span>
+                  <span className="text-sm font-semibold text-zinc-900">{tier.price}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-zinc-500 leading-relaxed">{content.pricing.cohortTiers.description}</p>
+          </div>
+
+          {/* Pilot */}
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl px-7 py-5">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-amber-700">{content.pricing.pilot.label}</span>
+            </div>
+            <p className="text-sm text-amber-800 leading-relaxed">{content.pricing.pilot.description}</p>
+          </div>
         </div>
 
         {/* CTA */}

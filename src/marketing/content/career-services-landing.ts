@@ -5,7 +5,8 @@
  * Goal: Schedule a pilot call with Taurean
  *
  * This is a B2B page — voice is outcome-oriented, not feature-oriented.
- * Pricing: $5/student/cohort, minimum 20 seats.
+ * Pricing: $1,500/year annual license (primary) or per-cohort flat tiers (fallback).
+ * Updated 2026-03-14 per PRE-306 pricing research (Morgan).
  *
  * Kai: this page needs its own component (CareerServicesPage.tsx) since
  * the B2C SegmentPage format doesn't cover valueProps, how-it-works, or pricing.
@@ -22,10 +23,21 @@ export interface CareerServicesContent {
   howItWorks: { step: string; body: string }[];
   pricing: {
     headline: string;
-    price: string;
-    unit: string;
-    minimum: string;
-    body: string;
+    annualLicense: {
+      label: string;
+      price: string;
+      unit: string;
+      description: string;
+    };
+    cohortTiers: {
+      label: string;
+      tiers: { range: string; price: string }[];
+      description: string;
+    };
+    pilot: {
+      label: string;
+      description: string;
+    };
   };
   cta: {
     label: string;
@@ -40,7 +52,7 @@ export const content: CareerServicesContent = {
   metaTitle: "Interview Prep for Bootcamp Students — PrepFile for Career Services",
 
   metaDescription:
-    "Give every student a personalized interview prep brief before each interview. PrepFile generates company-specific briefs in 60 seconds. Bulk seats from $5/student.",
+    "Give every student a personalized interview prep brief before each interview. PrepFile generates company-specific briefs in 60 seconds. Annual site license from $1,500/year.",
 
   headline: "Your students are getting interviews. Are they walking in prepared?",
 
@@ -94,12 +106,28 @@ export const content: CareerServicesContent = {
   ],
 
   pricing: {
-    headline: "Simple bulk pricing. No per-seat contracts.",
-    price: "$5",
-    unit: "per student / cohort",
-    minimum: "Minimum 20 seats",
-    body:
-      "Buy a block of seats once per cohort. Students get unlimited briefs for the duration of their job search. No monthly billing, no per-brief charges. Pilot cohorts available — reach out to discuss.",
+    headline: "Transparent pricing. No per-seat accounting.",
+    annualLicense: {
+      label: "Annual site license",
+      price: "$1,500",
+      unit: "per year",
+      description:
+        "All cohorts, unlimited students. One invoice per year — no per-head reporting, no cohort windows. Includes admin dashboard and usage reports.",
+    },
+    cohortTiers: {
+      label: "Per-cohort (if you're not ready to commit annually)",
+      tiers: [
+        { range: "Up to 30 students", price: "$300 / cohort" },
+        { range: "31–80 students", price: "$450 / cohort" },
+        { range: "81+ students", price: "$650 / cohort" },
+      ],
+      description: "Flat fee per cohort regardless of exact enrollment. Invoice once, students get unlimited briefs for their full job search.",
+    },
+    pilot: {
+      label: "Free pilot",
+      description:
+        "1 cohort free, up to 30 students, no time limit. The only requirement: a 15-minute debrief call with Taurean at cohort end. Available to programs running 4+ cohorts per year with an active career services director.",
+    },
   },
 
   cta: {

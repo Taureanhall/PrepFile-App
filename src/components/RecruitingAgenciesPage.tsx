@@ -93,14 +93,42 @@ export function RecruitingAgenciesPage() {
         </div>
 
         {/* Pricing */}
-        <div className="mb-14 bg-white border border-zinc-200 rounded-2xl px-7 py-7">
-          <h2 className="text-lg font-semibold text-zinc-900 mb-1">{content.pricing.headline}</h2>
-          <div className="flex items-baseline gap-2 mt-4 mb-1">
-            <span className="text-4xl font-bold text-zinc-900">{content.pricing.price}</span>
-            <span className="text-sm text-zinc-500">{content.pricing.unit}</span>
+        <div className="mb-14">
+          <h2 className="text-lg font-semibold text-zinc-900 mb-6">{content.pricing.headline}</h2>
+
+          {/* Monthly + Annual side by side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            {/* Monthly */}
+            <div className="bg-white border border-zinc-200 rounded-2xl px-6 py-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">{content.pricing.monthly.label}</span>
+              <div className="flex items-baseline gap-2 mt-3 mb-2">
+                <span className="text-3xl font-bold text-zinc-900">{content.pricing.monthly.price}</span>
+                <span className="text-sm text-zinc-500">{content.pricing.monthly.unit}</span>
+              </div>
+              <p className="text-sm text-zinc-600 leading-relaxed">{content.pricing.monthly.description}</p>
+            </div>
+
+            {/* Annual */}
+            <div className="bg-white border-2 border-brand-600 rounded-2xl px-6 py-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-brand-600">{content.pricing.annual.label}</span>
+                <span className="text-xs font-semibold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2 py-0.5">{content.pricing.annual.savings}</span>
+              </div>
+              <div className="flex items-baseline gap-2 mt-3 mb-2">
+                <span className="text-3xl font-bold text-zinc-900">{content.pricing.annual.price}</span>
+                <span className="text-sm text-zinc-500">{content.pricing.annual.unit}</span>
+              </div>
+              <p className="text-sm text-zinc-600 leading-relaxed">{content.pricing.annual.description}</p>
+            </div>
           </div>
-          <p className="text-xs text-amber-600 font-medium mb-4">{content.pricing.minimum}</p>
-          <p className="text-sm text-zinc-600 leading-relaxed">{content.pricing.body}</p>
+
+          {/* Pilot */}
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl px-7 py-5">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-amber-700">{content.pricing.pilot.label}</span>
+            </div>
+            <p className="text-sm text-amber-800 leading-relaxed">{content.pricing.pilot.description}</p>
+          </div>
         </div>
 
         {/* CTA */}

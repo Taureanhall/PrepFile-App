@@ -2,10 +2,11 @@
  * Recruiting Agencies Landing Page — /for/recruiting-agencies
  *
  * Target audience: Recruiting agency talent managers, VP of Recruiting Operations, agency owners
- * Goal: Schedule a free pilot (5 candidates, we generate prep briefs)
+ * Goal: Schedule a free pilot (10 free briefs then sales call)
  *
  * This is a B2B page — voice is ROI-oriented. Every placement = $15-30k in fees.
- * Pricing: $500/month unlimited or $10/brief. No seat minimums.
+ * Pricing: $500/month or $4,200/year. Pilot: 10 free briefs, then sales call.
+ * Updated 2026-03-14 per PRE-306 pricing research (Morgan).
  *
  * Kai: this page follows the same interface as CareerServicesContent (career-services-landing.ts)
  * Route: /for/recruiting-agencies
@@ -21,10 +22,23 @@ export interface RecruitingAgenciesContent {
   howItWorks: { step: string; body: string }[];
   pricing: {
     headline: string;
-    price: string;
-    unit: string;
-    minimum: string;
-    body: string;
+    monthly: {
+      label: string;
+      price: string;
+      unit: string;
+      description: string;
+    };
+    annual: {
+      label: string;
+      price: string;
+      unit: string;
+      savings: string;
+      description: string;
+    };
+    pilot: {
+      label: string;
+      description: string;
+    };
   };
   cta: {
     label: string;
@@ -93,18 +107,33 @@ export const content: RecruitingAgenciesContent = {
   ],
 
   pricing: {
-    headline: "Flat monthly rate. No per-seat limits.",
-    price: "$500",
-    unit: "per month, unlimited briefs",
-    minimum: "Or $10 per brief — no subscription needed",
-    body:
-      "One flat rate covers your whole team and every candidate in your pipeline. No per-seat contracts, no cohort windows. Start with a free pilot — send us 5 candidates, we generate their briefs, you tell us if it helped your placement rate.",
+    headline: "Flat rate. No per-seat limits.",
+    monthly: {
+      label: "Monthly",
+      price: "$500",
+      unit: "per month",
+      description:
+        "Unlimited briefs. Covers your whole team and every candidate in your pipeline. No per-seat contracts, no cohort windows.",
+    },
+    annual: {
+      label: "Annual",
+      price: "$4,200",
+      unit: "per year",
+      savings: "Save 30% vs monthly",
+      description:
+        "Pay once a year. $350/month equivalent — 30% off the monthly rate. Same unlimited access, one annual invoice.",
+    },
+    pilot: {
+      label: "Free pilot",
+      description:
+        "10 free briefs, no time limit, no credit card. After 10 briefs we'll set up a quick call. If you book the call, we extend 10 more free briefs.",
+    },
   },
 
   cta: {
     label: "Start a free pilot",
     subtext:
-      "Send 5 candidates. We generate their prep briefs. You tell us if it makes a difference. Talk to Taurean directly — no sales team.",
+      "10 free briefs, no card required. See if it moves your placement rate. Talk to Taurean directly — no sales team.",
     href: "mailto:taurean@prepfile.work?subject=PrepFile%20for%20Recruiting%20Agencies%20%E2%80%94%20Pilot%20Interest",
   },
 };
