@@ -25,14 +25,38 @@ const INDUSTRIES = [
     title: "Finance & Consulting",
     emoji: "📊",
     gradient: "linear-gradient(135deg, #d97706, #b45309)",
-    slugs: ["mckinsey", "bcg", "goldman-sachs", "jpmorgan", "deloitte"],
+    slugs: ["mckinsey", "bcg", "goldman-sachs", "jpmorgan", "deloitte", "visa", "capital-one"],
+  },
+  {
+    title: "Healthcare & Pharma",
+    emoji: "🏥",
+    gradient: "linear-gradient(135deg, #0891b2, #0e7490)",
+    slugs: ["unitedhealth", "johnson-and-johnson", "pfizer"],
+  },
+  {
+    title: "Consumer & Retail",
+    emoji: "🛍️",
+    gradient: "linear-gradient(135deg, #e11d48, #be123c)",
+    slugs: ["walmart", "target", "nike", "procter-and-gamble", "coca-cola"],
+  },
+  {
+    title: "Industrial & Manufacturing",
+    emoji: "🏗️",
+    gradient: "linear-gradient(135deg, #ca8a04, #a16207)",
+    slugs: ["boeing", "general-electric", "caterpillar"],
+  },
+  {
+    title: "Media & Entertainment",
+    emoji: "🎬",
+    gradient: "linear-gradient(135deg, #9333ea, #7e22ce)",
+    slugs: ["disney", "warner-bros"],
   },
 ];
 
 // 3 featured picks from different industries
-const FEATURED_SLUGS = ["google", "stripe", "mckinsey"];
+const FEATURED_SLUGS = ["google", "nike", "mckinsey"];
 // 3 more guides from a mix
-const MORE_SLUGS = ["meta", "airbnb", "goldman-sachs"];
+const MORE_SLUGS = ["disney", "pfizer", "capital-one"];
 
 const ROLES = [
   { name: "Product Management", slug: "pm" },
@@ -68,6 +92,21 @@ const COMPANY_IMAGES: Record<string, string> = {
   tesla: "https://images.unsplash.com/photo-1641052243298-df9255d4ddc0?w=640&h=360&fit=crop",
   salesforce: "https://images.unsplash.com/photo-1596931628313-45b33295f5f9?w=640&h=360&fit=crop",
   ibm: "https://images.unsplash.com/photo-1756771996235-9805f70f43bc?w=640&h=360&fit=crop",
+  walmart: "https://images.unsplash.com/photo-1579719558505-525d0e85c173?w=640&h=360&fit=crop",
+  nike: "https://images.unsplash.com/photo-1455849318743-b2233052fcff?w=640&h=360&fit=crop",
+  disney: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=640&h=360&fit=crop",
+  caterpillar: "https://images.unsplash.com/photo-1529686342540-1b43aec0df75?w=640&h=360&fit=crop",
+  visa: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=640&h=360&fit=crop",
+  "capital-one": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=640&h=360&fit=crop",
+  target: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=640&h=360&fit=crop",
+  "coca-cola": "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=640&h=360&fit=crop",
+  boeing: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=640&h=360&fit=crop",
+  "procter-and-gamble": "https://images.unsplash.com/photo-1556742393-d75f468bfcb0?w=640&h=360&fit=crop",
+  "general-electric": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=640&h=360&fit=crop",
+  "johnson-and-johnson": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=640&h=360&fit=crop",
+  pfizer: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=640&h=360&fit=crop",
+  unitedhealth: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=640&h=360&fit=crop",
+  "warner-bros": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=640&h=360&fit=crop",
 };
 
 export function InterviewPrepIndex() {

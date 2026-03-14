@@ -25,6 +25,21 @@ import { content as bizAnalystContent } from "../marketing/content/business-anal
 import { content as mgmtConsultContent } from "../marketing/content/management-consultant";
 import { content as ibAnalystContent } from "../marketing/content/investment-banking-analyst";
 import { content as devopsContent } from "../marketing/content/devops-sre-engineer";
+import { content as jnjContent } from "../marketing/content/johnson-and-johnson";
+import { content as pfizerContent } from "../marketing/content/pfizer";
+import { content as unitedhealthContent } from "../marketing/content/unitedhealth";
+import { content as walmartContent } from "../marketing/content/walmart";
+import { content as targetContent } from "../marketing/content/target";
+import { content as nikeContent } from "../marketing/content/nike";
+import { content as pgContent } from "../marketing/content/procter-and-gamble";
+import { content as cocaColaContent } from "../marketing/content/coca-cola";
+import { content as boeingContent } from "../marketing/content/boeing";
+import { content as geContent } from "../marketing/content/general-electric";
+import { content as visaContent } from "../marketing/content/visa";
+import { content as capitalOneContent } from "../marketing/content/capital-one";
+import { content as disneyContent } from "../marketing/content/disney";
+import { content as caterpillarContent } from "../marketing/content/caterpillar";
+import { content as warnerBrosContent } from "../marketing/content/warner-bros";
 import {
   chatgptComparison,
   interviewingIoComparison,
@@ -304,6 +319,21 @@ const COMPANIES: Record<string, CompanyData> = {
   "management-consultant": { ...mgmtConsultContent, charts: ["finance-selectivity", "case-interview-types"] },
   "investment-banking-analyst": { ...ibAnalystContent, charts: ["finance-selectivity", "ib-process-breakdown"] },
   "devops-sre-engineer": { ...devopsContent, charts: ["role-demand-trends", "avg-interview-rounds"] },
+  "johnson-and-johnson": jnjContent,
+  pfizer: pfizerContent,
+  unitedhealth: unitedhealthContent,
+  walmart: walmartContent,
+  target: targetContent,
+  nike: nikeContent,
+  "procter-and-gamble": pgContent,
+  "coca-cola": cocaColaContent,
+  boeing: boeingContent,
+  "general-electric": geContent,
+  visa: visaContent,
+  "capital-one": capitalOneContent,
+  disney: disneyContent,
+  caterpillar: caterpillarContent,
+  "warner-bros": warnerBrosContent,
   "prepfile-vs-chatgpt": chatgptComparison,
   "prepfile-vs-interviewing-io": interviewingIoComparison,
   "prepfile-vs-pramp": prampComparison,
