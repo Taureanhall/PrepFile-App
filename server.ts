@@ -1689,21 +1689,34 @@ async function startServer() {
 
   // Helper: inject dynamic OG meta tags into an HTML template for /b/:id brief share pages
   function injectBriefOgTags(html: string, briefId: string, appUrl: string): string {
-    const meta = getPublicBriefMeta(briefId);
-    if (!meta) return html;
+    const brief = getPublicBrief(briefId);
+    if (!brief) return html;
 
-    const title = `Interview Prep Brief — ${meta.company_name} ${meta.job_title}`;
-    const description = `AI-generated interview prep brief for ${meta.job_title} at ${meta.company_name}. Company intel, role expectations, and round-specific strategy.`;
+    const title = `PrepFile Brief: ${brief.company_name} — ${brief.job_title}`;
+    const ogImageUrl = `${appUrl}/og-image.png`;
     const url = `${appUrl}/b/${briefId}`;
+
+    let description = "Interview prep brief powered by PrepFile";
+    try {
+      const data = JSON.parse(brief.brief_data);
+      const overview = data?.companySnapshot?.overview;
+      if (overview && typeof overview === "string") {
+        description = overview.length > 150 ? overview.slice(0, 147) + "..." : overview;
+      }
+    } catch {
+      // fall through to default description
+    }
 
     return html
       .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
       .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
       .replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
       .replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/g, `$1${url}$2`)
+      .replace(/(<meta\s+property="og:image"\s+content=")[^"]*(")/g, `$1${ogImageUrl}$2`)
       .replace(/(<meta\s+name="twitter:card"\s+content=")[^"]*(")/g, `$1summary_large_image$2`)
       .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
       .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
+      .replace(/(<meta\s+name="twitter:image"\s+content=")[^"]*(")/g, `$1${ogImageUrl}$2`)
       .replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/g, `$1${url}$2`);
   }
 
