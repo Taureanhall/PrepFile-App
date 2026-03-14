@@ -20,7 +20,7 @@ import {
   getUsersForWelcomeEmail,
   getUsersForReengagement,
 } from "./db.js";
-import { welcomeSequence, reengagementSequence, type Email } from "../marketing/content/emails.js";
+import { welcomeSequence, reengagementSequence, upgradeWelcomeEmail, dunningEmail, type Email } from "../marketing/content/emails.js";
 
 // ---------------------------------------------------------------------------
 // Unsubscribe token — HMAC-signed so userId is never exposed in plaintext
@@ -167,6 +167,60 @@ export async function runWelcomeSequenceBatch(appUrl: string, fromEmail: string)
         console.error(`[email-sequences] failed to send ${email.id} to ${user.email}:`, err);
       }
     }
+  }
+}
+
+/**
+ * Send upgrade welcome email immediately after a successful Pro or Pack checkout.
+ * Idempotent — will not resend if already sent for this user.
+ * Fire-and-forget safe.
+ */
+export async function sendUpgradeWelcomeEmail(
+  userId: string,
+  userEmail: string,
+  appUrl: string,
+  fromEmail: string
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+
+  const sent = getEmailSequenceSent(userId);
+  if (sent.has(upgradeWelcomeEmail.id)) return;
+
+  try {
+    await sendSequenceEmail(userId, userEmail, upgradeWelcomeEmail, appUrl, fromEmail);
+  } catch (err) {
+    console.error(`[email-sequences] failed to send upgrade-welcome to ${userEmail}:`, err);
+  }
+}
+
+/**
+ * Send dunning email when invoice.payment_failed fires from Stripe.
+ * Not idempotent — each payment failure should trigger a send.
+ */
+export async function sendDunningEmail(
+  userId: string,
+  userEmail: string,
+  appUrl: string,
+  fromEmail: string
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+
+  const unsubToken = makeUnsubscribeToken(userId);
+  const html = buildEmailHtml(dunningEmail, appUrl, unsubToken);
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  try {
+    await resend.emails.send({
+      from: fromEmail,
+      to: userEmail,
+      subject: dunningEmail.subjectA,
+      html,
+    });
+    console.log(`[email-sequences] sent dunning-1 to ${userEmail}`);
+  } catch (err) {
+    console.error(`[email-sequences] failed to send dunning-1 to ${userEmail}:`, err);
   }
 }
 

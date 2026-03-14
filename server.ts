@@ -575,6 +575,7 @@ async function startServer() {
       plan: sub.plan,
       pack_briefs_remaining: sub.pack_briefs_remaining,
       has_stripe_customer: !!sub.stripe_customer_id,
+      free_briefs_used: sub.plan === "free" ? getBriefCountForUser(user.id) : undefined,
     });
   });
 

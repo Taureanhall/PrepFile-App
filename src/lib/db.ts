@@ -198,21 +198,28 @@ export function upsertSubscription(
   stripeSubscriptionId: string | null,
   packBriefsRemaining?: number
 ): void {
+  const isUpgrade = plan === "pro" || plan === "pack";
   const existing = db.prepare("SELECT id FROM subscriptions WHERE user_id = ?").get(userId) as any;
   if (existing) {
     db.prepare(`
       UPDATE subscriptions
       SET plan = ?, stripe_customer_id = ?, stripe_subscription_id = ?,
           pack_briefs_remaining = COALESCE(?, pack_briefs_remaining),
+          upgrade_date = CASE WHEN ? THEN datetime('now') ELSE upgrade_date END,
           updated_at = datetime('now')
       WHERE user_id = ?
-    `).run(plan, stripeCustomerId, stripeSubscriptionId, packBriefsRemaining ?? null, userId);
+    `).run(plan, stripeCustomerId, stripeSubscriptionId, packBriefsRemaining ?? null, isUpgrade ? 1 : 0, userId);
   } else {
     db.prepare(`
-      INSERT INTO subscriptions (id, user_id, plan, stripe_customer_id, stripe_subscription_id, pack_briefs_remaining)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(crypto.randomUUID(), userId, plan, stripeCustomerId, stripeSubscriptionId, packBriefsRemaining ?? 0);
+      INSERT INTO subscriptions (id, user_id, plan, stripe_customer_id, stripe_subscription_id, pack_briefs_remaining, upgrade_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(crypto.randomUUID(), userId, plan, stripeCustomerId, stripeSubscriptionId, packBriefsRemaining ?? 0, isUpgrade ? new Date().toISOString() : null);
   }
+}
+
+export function getUserEmailById(userId: string): string | null {
+  const row = db.prepare("SELECT email FROM users WHERE id = ?").get(userId) as any;
+  return row?.email ?? null;
 }
 
 /** Decrement pack briefs. Returns false if none remaining. */
@@ -230,6 +237,7 @@ try { db.exec("ALTER TABLE users ADD COLUMN referral_source TEXT"); } catch {}
 try { db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL"); } catch {}
 try { db.exec("ALTER TABLE briefs ADD COLUMN is_public INTEGER NOT NULL DEFAULT 0"); } catch {}
 try { db.exec("ALTER TABLE users ADD COLUMN email_unsubscribed INTEGER NOT NULL DEFAULT 0"); } catch {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN upgrade_date TEXT"); } catch {}
 
 // Email nurture tracking (legacy — touch-based for free users with briefs)
 db.exec(`
@@ -252,6 +260,52 @@ db.exec(`
     UNIQUE(user_id, email_id)
   );
 `);
+
+// Email queue — scheduled outbound emails (welcome, nudge_24h, nudge_72h, upgrade_prompt)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS email_queue (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    template TEXT NOT NULL,
+    send_at TEXT NOT NULL,
+    sent_at TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+`);
+
+export type EmailTemplate = "welcome" | "nudge_24h" | "nudge_72h" | "upgrade_prompt";
+
+/** Queue an email for a user. Idempotent — skips if a pending/sent entry already exists for this (user_id, template). */
+export function queueEmail(userId: string, template: EmailTemplate, sendAt: Date): void {
+  const existing = db.prepare(
+    "SELECT id FROM email_queue WHERE user_id = ? AND template = ? AND status != 'failed'"
+  ).get(userId, template);
+  if (existing) return;
+  db.prepare(
+    "INSERT INTO email_queue (id, user_id, template, send_at) VALUES (?, ?, ?, ?)"
+  ).run(crypto.randomUUID(), userId, template, sendAt.toISOString());
+}
+
+/** Get up to `limit` pending emails whose send_at has passed. Includes user email address. */
+export function getPendingEmailQueue(limit: number): Array<{ id: string; user_id: string; template: string; email: string }> {
+  return db.prepare(`
+    SELECT q.id, q.user_id, q.template, u.email
+    FROM email_queue q
+    JOIN users u ON u.id = q.user_id
+    WHERE q.status = 'pending' AND q.send_at <= datetime('now') AND u.email_unsubscribed = 0
+    ORDER BY q.send_at ASC
+    LIMIT ?
+  `).all(limit) as any[];
+}
+
+export function markQueuedEmailSent(id: string): void {
+  db.prepare("UPDATE email_queue SET status = 'sent', sent_at = datetime('now') WHERE id = ?").run(id);
+}
+
+export function markQueuedEmailFailed(id: string): void {
+  db.prepare("UPDATE email_queue SET status = 'failed' WHERE id = ?").run(id);
+}
 
 export function getBriefCountForUser(userId: string): number {
   const row = db.prepare("SELECT COUNT(*) as cnt FROM briefs WHERE user_id = ?").get(userId) as any;
@@ -409,6 +463,12 @@ export function setEmailUnsubscribed(userId: string): void {
 export function getUserIdByEmail(email: string): string | null {
   const row = db.prepare("SELECT id FROM users WHERE email = ?").get(email.toLowerCase()) as any;
   return row?.id ?? null;
+}
+
+/** Count users who signed up via this user's referral link. */
+export function getReferralCount(userId: string): number {
+  const row = db.prepare("SELECT COUNT(*) as count FROM users WHERE referral_source = ?").get(userId) as any;
+  return row?.count ?? 0;
 }
 
 /** Find user by email or create a new account. Returns user id. */

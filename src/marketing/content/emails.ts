@@ -233,6 +233,44 @@ When you're ready, it takes under a minute.`,
   ctaUrl: "https://prepfile.work",
 };
 
+// ─── 5. Upgrade welcome ──────────────────────────────────────────────────────
+// Trigger: checkout.session.completed (pro or pack)
+
+export const upgradeWelcomeEmail: Email = {
+  id: "upgrade-welcome",
+  delayDays: 0,
+  trigger: "user.upgraded",
+  subjectA: "You're on Pro — here's what's unlocked",
+  subjectB: "Pro is active. Here's what changed.",
+  previewText: "Unlimited briefs, resume match, and full round breakdowns.",
+  body: `You're on Pro.
+
+Unlimited briefs, no weekly cap. Full round-by-round breakdowns for each interview stage. Resume match — run your resume against any job description to see exactly where your experience maps and where it doesn't.
+
+Everything is available now. Log in and generate your next brief.`,
+  ctaText: "Open PrepFile",
+  ctaUrl: "https://prepfile.work",
+};
+
+// ─── 6. Dunning ──────────────────────────────────────────────────────────────
+// Trigger: invoice.payment_failed
+
+export const dunningEmail: Email = {
+  id: "dunning-1",
+  delayDays: 0,
+  trigger: "invoice.payment_failed",
+  subjectA: "Your PrepFile payment failed",
+  subjectB: "Action needed — update your payment method",
+  previewText: "Update your card to keep Pro access.",
+  body: `Your most recent PrepFile payment didn't go through.
+
+To keep your Pro access, update your payment method in the billing portal. Stripe will retry the charge automatically, but your subscription may pause if it doesn't clear.
+
+Takes 30 seconds to update.`,
+  ctaText: "Update Payment Method",
+  ctaUrl: "https://prepfile.work",
+};
+
 // ─── Sequence arrays (consumed by email-sequences.ts) ────────────────────────
 
 export const welcomeSequence: Email[] = [welcomeEmail, welcome2Email, welcome3Email];
