@@ -64,6 +64,7 @@ interface Subscription {
   plan: "free" | "pro" | "pack";
   pack_briefs_remaining: number;
   has_stripe_customer: boolean;
+  free_briefs_used?: number;
 }
 
 export default function Page() {
@@ -204,6 +205,13 @@ export default function Page() {
       .catch(() => {});
   };
 
+  const refreshSubscription = () => {
+    fetch("/api/stripe/status")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d) setSubscription(d); })
+      .catch(() => {});
+  };
+
   // Track page view on mount; handle Stripe return params and auth completion
   useEffect(() => {
     trackPageView();
@@ -331,6 +339,9 @@ export default function Page() {
     companyName.trim() !== "" &&
     jobTitle.trim() !== "" &&
     jobDescription.trim() !== "";
+  const freeBriefsRemaining = user && subscription?.plan === "free"
+    ? Math.max(0, 3 - (subscription.free_briefs_used ?? 0))
+    : null;
 
   // Trigger MCQ slide-in when core fields are set
   useEffect(() => {
@@ -437,6 +448,7 @@ export default function Page() {
       setBriefId(newBriefId ?? null);
       setAgencyBranding(newAgencyBranding ?? undefined);
       fetchBriefCount();
+      refreshSubscription();
     } catch (error: any) {
       console.error("Error generating brief:", error);
       if (error.message?.includes("Rate limit exceeded")) {
@@ -742,7 +754,7 @@ Preferred Qualifications:
               <div className="bg-white p-6 md:p-8 rounded-2xl shadow-md border border-zinc-200/60" style={{ background: "linear-gradient(180deg, #ffffff 0%, #fafbfc 100%)" }}>
 
                 {/* Header + subtle example link */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4">
                   <div>
                     <h1 className="text-xl font-semibold text-zinc-900">Build your prep brief</h1>
                     <p className="text-sm text-zinc-500 mt-0.5">Paste a job description to get started.</p>
@@ -754,6 +766,23 @@ Preferred Qualifications:
                     Try an example <span aria-hidden="true">&rarr;</span>
                   </button>
                 </div>
+
+                {/* Briefs remaining counter — free users only */}
+                {freeBriefsRemaining !== null && (
+                  <div className={`mb-5 inline-flex items-center text-xs px-3 py-1.5 rounded-full border ${
+                    freeBriefsRemaining === 0
+                      ? "bg-red-50 text-red-700 border-red-200"
+                      : freeBriefsRemaining === 1
+                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                      : "bg-zinc-50 text-zinc-500 border-zinc-200"
+                  }`}>
+                    {freeBriefsRemaining === 0
+                      ? "All 3 free briefs used — upgrade to Pro for unlimited"
+                      : freeBriefsRemaining === 1
+                      ? "Last free brief — upgrade to Pro for unlimited"
+                      : `${freeBriefsRemaining} of 3 free briefs remaining`}
+                  </div>
+                )}
 
                 {/* Progress indicator */}
                 <div className="flex items-center gap-2 mb-6">
@@ -938,6 +967,13 @@ Preferred Qualifications:
                 {/* Step 3: Generate button */}
                 {isFormValid && (
                   <div className="pt-6 mt-2 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    {freeBriefsRemaining !== null && freeBriefsRemaining <= 1 && (
+                      <p className={`text-xs text-center ${freeBriefsRemaining === 0 ? "text-red-600" : "text-amber-600"}`}>
+                        {freeBriefsRemaining === 0
+                          ? "No free briefs remaining — upgrade to Pro to continue"
+                          : "Last free brief — upgrade to Pro for unlimited"}
+                      </p>
+                    )}
                     <button
                       onClick={handleGenerate}
                       disabled={isGenerating}
