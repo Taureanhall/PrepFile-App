@@ -14,6 +14,7 @@ import { BlogPage } from "./components/BlogPage";
 import { FaqPage } from "./components/FaqPage";
 import { SegmentPage } from "./components/SegmentPage";
 import { CareerServicesPage } from "./components/CareerServicesPage";
+import { RecruitingAgenciesPage } from "./components/RecruitingAgenciesPage";
 import { UpgradeCTA } from "./components/UpgradeCTA";
 import { PricingPage } from "./components/PricingPage";
 import TeamAdmin from "./components/TeamAdmin";
@@ -114,6 +115,11 @@ export default function Page() {
   // Route: /for/career-services — B2B career services landing page
   if (window.location.pathname === "/for/career-services") {
     return <CareerServicesPage />;
+  }
+
+  // Route: /for/recruiting-agencies — B2B recruiting agencies landing page
+  if (window.location.pathname === "/for/recruiting-agencies") {
+    return <RecruitingAgenciesPage />;
   }
 
   // Route: /for/:slug — segment landing pages
