@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { PrepBriefData } from "../types";
+import type { PrepBriefData, BrandAssets } from "../types";
 
 interface PublicBriefProps {
   briefId: string;
@@ -89,6 +89,37 @@ export function PublicBrief({ briefId }: PublicBriefProps) {
         </header>
 
         <div className="bg-white p-5 md:p-8 lg:p-12 rounded-2xl shadow-sm border border-zinc-200/60 space-y-12">
+
+          {/* Company brand header */}
+          {data.brandAssets && (data.brandAssets.logoUrl || data.brandAssets.primaryColor) && (
+            <div
+              className="flex items-center gap-4 pb-4 border-b"
+              style={{ borderColor: data.brandAssets.primaryColor ? `${data.brandAssets.primaryColor}30` : undefined }}
+            >
+              {data.brandAssets.logoUrl && (
+                <img
+                  src={data.brandAssets.logoUrl}
+                  alt={`${brief.company_name} logo`}
+                  className="h-10 w-auto object-contain"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              )}
+              {data.brandAssets.primaryColor && (
+                <div className="flex gap-1.5 ml-auto">
+                  {[data.brandAssets.primaryColor, data.brandAssets.secondaryColor, data.brandAssets.accentColor]
+                    .filter(Boolean)
+                    .map((color, i) => (
+                      <div
+                        key={i}
+                        className="w-4 h-4 rounded-full border border-zinc-200"
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Blind Spots */}
           {data.blindSpots && data.blindSpots.length > 0 && (

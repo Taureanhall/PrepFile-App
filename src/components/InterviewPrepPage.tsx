@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { trackSeoPageViewed } from "../lib/analytics";
+import type { BrandAssets } from "../types";
 import { getChart } from "../data/charts/chart-registry";
 import { Nav } from "./Nav";
 import { content as googleContent } from "../marketing/content/google";
@@ -345,6 +346,22 @@ interface InterviewPrepPageProps {
 
 export function InterviewPrepPage({ slug }: InterviewPrepPageProps) {
   const data = COMPANIES[slug];
+  const [brand, setBrand] = useState<BrandAssets | null>(null);
+
+  // Fetch brand assets for company pages (not role or comparison pages)
+  useEffect(() => {
+    if (!data) return;
+    const isCompanyPage = !slug.startsWith("prepfile-vs-") &&
+      !["data-scientist", "marketing-manager", "product-manager", "software-engineer",
+        "ux-designer", "data-engineer", "business-analyst", "management-consultant",
+        "investment-banking-analyst", "devops-sre-engineer"].includes(slug);
+    if (!isCompanyPage) return;
+
+    fetch(`/api/brand/${encodeURIComponent(data.name)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(assets => { if (assets && (assets.logoUrl || assets.primaryColor)) setBrand(assets); })
+      .catch(() => {});
+  }, [slug, data]);
 
   useEffect(() => {
     if (!data) return;
@@ -442,9 +459,25 @@ export function InterviewPrepPage({ slug }: InterviewPrepPageProps) {
 
       {/* Hero */}
       <header className="max-w-3xl mx-auto px-6 pt-10 pb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 mb-4">
-          {data.tagline}
-        </h1>
+        <div className="flex items-center gap-4 mb-4">
+          {brand?.logoUrl && (
+            <img
+              src={brand.logoUrl}
+              alt={`${data.name} logo`}
+              className="h-10 w-auto object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          )}
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900">
+            {data.tagline}
+          </h1>
+        </div>
+        {brand?.primaryColor && (
+          <div
+            className="h-1 w-16 rounded-full mb-4"
+            style={{ backgroundColor: brand.primaryColor }}
+          />
+        )}
         <p className="text-lg text-zinc-500 leading-relaxed">{data.intro}</p>
       </header>
 
@@ -496,7 +529,10 @@ export function InterviewPrepPage({ slug }: InterviewPrepPageProps) {
         )}
 
         {/* CTA */}
-        <section className="bg-zinc-900 rounded-2xl px-8 py-10 text-center">
+        <section
+          className="rounded-2xl px-8 py-10 text-center"
+          style={{ backgroundColor: brand?.primaryColor || "#18181b" }}
+        >
           <h2 className="text-2xl font-bold text-white mb-3">
             Get a personalized {data.name} interview brief in 10 minutes
           </h2>

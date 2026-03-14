@@ -636,6 +636,8 @@ Preferred Qualifications:
           setExtractedCompany(null);
           setExtractedTitle(null);
           setMcqsVisible(false);
+          setShowForm(false);
+          setShowAuthPanel(false);
         }}
       >
         {!authLoading && user && (

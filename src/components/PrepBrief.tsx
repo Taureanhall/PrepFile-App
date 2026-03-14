@@ -3,7 +3,7 @@ import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend,
   ResponsiveContainer, Tooltip,
 } from "recharts";
-import type { PrepBriefData, BridgingAnalysis } from "../types";
+import type { PrepBriefData, BridgingAnalysis, BrandAssets } from "../types";
 
 interface AgencyBranding {
   agencyName: string;
@@ -53,7 +53,8 @@ function LockedSection({ label, onUpgrade, children }: { label: string; onUpgrad
 const BRAND_600 = "#2C4A5A";
 const ACCENT_500 = "#D97706";
 
-function CompetitiveRadar({ data: chartData }: { data: { dimension: string; score: number }[] }) {
+function CompetitiveRadar({ data: chartData, brandColor }: { data: { dimension: string; score: number }[]; brandColor?: string }) {
+  const radarColor = brandColor || BRAND_600;
   return (
     <div className="bg-zinc-50 rounded-xl border border-zinc-200 p-4 print:hidden">
       <h4 className="font-semibold text-zinc-900 mb-3 text-sm">Competitive Positioning</h4>
@@ -62,7 +63,7 @@ function CompetitiveRadar({ data: chartData }: { data: { dimension: string; scor
           <PolarGrid stroke="#e4e4e7" />
           <PolarAngleAxis dataKey="dimension" tick={{ fill: "#52525b", fontSize: 11 }} />
           <PolarRadiusAxis domain={[0, 10]} tick={{ fontSize: 10 }} axisLine={false} />
-          <Radar dataKey="score" stroke={BRAND_600} fill={BRAND_600} fillOpacity={0.2} strokeWidth={2} />
+          <Radar dataKey="score" stroke={radarColor} fill={radarColor} fillOpacity={0.2} strokeWidth={2} />
           <Tooltip formatter={(v: number) => [`${v}/10`, "Score"]} />
         </RadarChart>
       </ResponsiveContainer>
@@ -278,6 +279,37 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
         </div>
       )}
 
+      {/* Company brand header — logo + accent bar from OpenBrand extraction */}
+      {data.brandAssets && (data.brandAssets.logoUrl || data.brandAssets.primaryColor) && (
+        <div
+          className="flex items-center gap-4 mb-6 pb-4 border-b"
+          style={{ borderColor: data.brandAssets.primaryColor ? `${data.brandAssets.primaryColor}30` : undefined }}
+        >
+          {data.brandAssets.logoUrl && (
+            <img
+              src={data.brandAssets.logoUrl}
+              alt="Company logo"
+              className="h-10 w-auto object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          )}
+          {data.brandAssets.primaryColor && (
+            <div className="flex gap-1.5 ml-auto">
+              {[data.brandAssets.primaryColor, data.brandAssets.secondaryColor, data.brandAssets.accentColor]
+                .filter(Boolean)
+                .map((color, i) => (
+                  <div
+                    key={i}
+                    className="w-4 h-4 rounded-full border border-zinc-200"
+                    style={{ backgroundColor: color }}
+                    title={color}
+                  />
+                ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Brief header — share button */}
       {user && briefId && (
         <div className="flex justify-end mb-4 print:hidden">
@@ -407,7 +439,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
 
             {/* Competitive Positioning Radar — pro only */}
             {data.companySnapshot?.competitivePositioning && data.companySnapshot.competitivePositioning.length > 0 ? (
-              <CompetitiveRadar data={data.companySnapshot.competitivePositioning} />
+              <CompetitiveRadar data={data.companySnapshot.competitivePositioning} brandColor={data.brandAssets?.primaryColor} />
             ) : userPlan === "free" ? (
               <LockedSection label="Unlock competitive positioning chart" onUpgrade={onUpgradeClick}>
                 <div className="blur-[8px]">

@@ -245,6 +245,17 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  // Brand asset extraction — used by SEO pages and briefs
+  app.get("/api/brand/:company", async (req, res) => {
+    try {
+      const { extractCompanyBrand } = await import("./src/lib/extractBrand.js");
+      const assets = await extractCompanyBrand(req.params.company);
+      res.json(assets);
+    } catch {
+      res.json({});
+    }
+  });
+
   // Public stats — no auth required
   app.get("/api/stats", (_req, res) => {
     const totalBriefs = getTotalBriefCount();
@@ -817,7 +828,17 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid biggestGap value" });
       }
 
-      const data = await generateBrief(req.body, briefTier);
+      // Run brief generation and brand extraction in parallel
+      const { extractCompanyBrand } = await import("./src/lib/extractBrand.js");
+      const [data, brandAssets] = await Promise.all([
+        generateBrief(req.body, briefTier),
+        extractCompanyBrand(req.body.companyName || ""),
+      ]);
+
+      // Attach brand assets to brief data if extraction returned anything
+      if (brandAssets.logoUrl || brandAssets.primaryColor) {
+        (data as any).brandAssets = brandAssets;
+      }
 
       const refSource = (typeof referralSource === "string" && referralSource.trim()) ? referralSource.trim() : "direct";
       getPostHogClient()?.capture({

@@ -44,6 +44,14 @@ export interface GapAnalysis {
   candidateTypical: number;
 }
 
+export interface BrandAssets {
+  logoUrl?: string;
+  backdropUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+}
+
 export interface PrepBriefData {
   companySnapshot: {
     overview: string;
@@ -73,4 +81,5 @@ export interface PrepBriefData {
   recommendedReading: RecommendedReading[];
   blindSpots: string[];
   gapAnalysis?: GapAnalysis[];
+  brandAssets?: BrandAssets;
 }
