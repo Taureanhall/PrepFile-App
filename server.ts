@@ -712,7 +712,7 @@ async function startServer() {
 
       const snippet = text.slice(0, 8000);
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         contents: `Extract the company name and job title from this job description. Return ONLY valid JSON: {"company": "..." , "title": "..."}\nUse null for any field you cannot confidently determine. For company, identify the hiring company (not the recruiting agency). For title, use the exact job title as stated.\n\nJob description:\n${snippet}`,
         config: { responseMimeType: "application/json" },
       });
