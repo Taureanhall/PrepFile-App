@@ -66,8 +66,11 @@ export async function generateBrief(inputs: {
     COMPANY SNAPSHOT:
     - overview: What the company is actually optimizing for right now, based on the full strategic analysis. Not a Wikipedia summary — a strategic read.
     ${tier === "free"
-      ? "- recentSignals: Exactly 2 recent developments that reveal strategic direction or pressure (hiring patterns, product launches, leadership changes, earnings signals, press). Return exactly 2 items, no more.\n    - Do NOT include keyMetrics or risksAndUnknowns."
-      : "- keyMetrics: Use Google Search to find 2-4 hard, current, quantitative metrics (revenue, AUM, funding, headcount, growth rate, market share). Exact numbers for public/large companies. Omit if unreliable.\n    - recentSignals: 2-4 recent developments that reveal strategic direction or pressure (hiring patterns, product launches, leadership changes, earnings signals, press).\n    - risksAndUnknowns: 2-4 honest risks — market threats, execution risks, cultural signals, unknowns in the JD."
+      ? "- recentSignals: Exactly 2 recent developments that reveal strategic direction or pressure (hiring patterns, product launches, leadership changes, earnings signals, press). Return exactly 2 items, no more.\n    - Do NOT include keyMetrics, risksAndUnknowns, or competitivePositioning."
+      : `- keyMetrics: Use Google Search to find 2-4 hard, current, quantitative metrics (revenue, AUM, funding, headcount, growth rate, market share). Exact numbers for public/large companies. Omit if unreliable.
+    - competitivePositioning: Rate this company on a 1-10 scale across exactly these 5 dimensions: "Growth", "Culture", "Compensation", "Prestige", "Work-Life Balance". Base on Glassdoor, compensation data, growth trajectory, brand reputation. Return as [{dimension, score}].
+    - recentSignals: 2-4 recent developments that reveal strategic direction or pressure (hiring patterns, product launches, leadership changes, earnings signals, press).
+    - risksAndUnknowns: 2-4 honest risks — market threats, execution risks, cultural signals, unknowns in the JD.`
     }
 
     ROLE INTELLIGENCE:
@@ -96,7 +99,8 @@ export async function generateBrief(inputs: {
     ${tier === "pro" ? `ROUND EXPECTATIONS:
     - overview: What this specific round (${inputs.round}) is actually evaluating at ${inputs.companyName}, and what format to expect.
     - whatTripsPeopleUp: 3 specific mistakes candidates make in this round at this type of company.
-    - howToShowUpStrong: 3 specific things that make candidates stand out in this round.` : "Do NOT include a roundExpectations section."}
+    - howToShowUpStrong: 3 specific things that make candidates stand out in this round.
+    - interviewStages: The full interview process as 3-6 stages. For each: stage (name like "Phone Screen", "Technical", "Onsite Panel"), durationMinutes (estimated length), focus (1-sentence description of what's evaluated), order (1-based sequence).` : "Do NOT include a roundExpectations section."}
 
     QUESTIONS TO ASK: 5 sharp questions for the candidate to ask the interviewer that signal they've thought deeply about ${inputs.companyName}'s real strategic situation. At least one must probe the system/process maturity of the organization. At least one must probe the coherence between stated and revealed strategy. All must be translated into the natural language of the role — no MBA jargon.
 
@@ -104,6 +108,13 @@ export async function generateBrief(inputs: {
     3-5 specific resources that would give the candidate genuine insight into ${inputs.companyName}'s current strategic situation. Use Google Search to find actual recent articles, earnings call transcripts, press releases, or industry reports. For each:
     - title: The specific resource (article title, report name, or precise description if exact title unknown)
     - why: Why this specific resource matters for this interview — what insight it gives that generic research won't. 1-2 sentences.
+
+    ${tier === "pro" ? `GAP ANALYSIS:
+    Rate 5-6 key competency dimensions for this role. For each:
+    - dimension: The competency name (e.g., "Technical Depth", "Leadership", "Domain Knowledge", "Communication", "Cross-Functional Influence", "Strategic Thinking")
+    - roleRequirement: How critical this dimension is for the role (1-10)
+    - candidateTypical: How strong a typical candidate in the pool would be (1-10)
+    Base these on the JD and company analysis. The gap between roleRequirement and candidateTypical reveals where preparation matters most.` : "Do NOT include gapAnalysis."}
 
     BLIND SPOTS: 1-3 honest flags about where data was thin, the JD was vague, or the analysis is speculative.
 
@@ -137,7 +148,20 @@ export async function generateBrief(inputs: {
             type: Type.OBJECT,
             properties: {
               overview: { type: Type.STRING },
-              ...(tier === "pro" ? { keyMetrics: { type: Type.ARRAY, items: { type: Type.STRING } } } : {}),
+              ...(tier === "pro" ? {
+                keyMetrics: { type: Type.ARRAY, items: { type: Type.STRING } },
+                competitivePositioning: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      dimension: { type: Type.STRING },
+                      score: { type: Type.NUMBER },
+                    },
+                    required: ["dimension", "score"],
+                  },
+                },
+              } : {}),
               recentSignals: { type: Type.ARRAY, items: { type: Type.STRING } },
               ...(tier === "pro" ? { risksAndUnknowns: { type: Type.ARRAY, items: { type: Type.STRING } } } : {}),
             },
@@ -190,8 +214,33 @@ export async function generateBrief(inputs: {
                 overview: { type: Type.STRING },
                 whatTripsPeopleUp: { type: Type.ARRAY, items: { type: Type.STRING } },
                 howToShowUpStrong: { type: Type.ARRAY, items: { type: Type.STRING } },
+                interviewStages: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      stage: { type: Type.STRING },
+                      durationMinutes: { type: Type.NUMBER },
+                      focus: { type: Type.STRING },
+                      order: { type: Type.NUMBER },
+                    },
+                    required: ["stage", "durationMinutes", "focus", "order"],
+                  },
+                },
               },
-              required: ["overview", "whatTripsPeopleUp", "howToShowUpStrong"],
+              required: ["overview", "whatTripsPeopleUp", "howToShowUpStrong", "interviewStages"],
+            },
+            gapAnalysis: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  dimension: { type: Type.STRING },
+                  roleRequirement: { type: Type.NUMBER },
+                  candidateTypical: { type: Type.NUMBER },
+                },
+                required: ["dimension", "roleRequirement", "candidateTypical"],
+              },
             },
           } : {}),
           questionsToAsk: {
@@ -220,7 +269,7 @@ export async function generateBrief(inputs: {
           "interviewThemes",
           "processOperationalQuestions",
           "behavioralQuestionBank",
-          ...(tier === "pro" ? ["roundExpectations"] : []),
+          ...(tier === "pro" ? ["roundExpectations", "gapAnalysis"] : []),
           "questionsToAsk",
           "recommendedReading",
           "blindSpots",
@@ -245,8 +294,10 @@ export async function generateBrief(inputs: {
   // Enforce free tier gating server-side regardless of what Gemini returned
   if (tier === "free") {
     delete parsed.roundExpectations;
+    delete parsed.gapAnalysis;
     if (parsed.companySnapshot) {
       delete parsed.companySnapshot.keyMetrics;
+      delete parsed.companySnapshot.competitivePositioning;
       delete parsed.companySnapshot.risksAndUnknowns;
       if (Array.isArray(parsed.companySnapshot.recentSignals) && parsed.companySnapshot.recentSignals.length > 2) {
         parsed.companySnapshot.recentSignals = parsed.companySnapshot.recentSignals.slice(0, 2);

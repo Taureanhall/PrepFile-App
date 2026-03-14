@@ -1,4 +1,8 @@
 import { useState, useRef, type ReactNode, type FormEvent, type ChangeEvent } from "react";
+import {
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend,
+  ResponsiveContainer, Tooltip,
+} from "recharts";
 import type { PrepBriefData, BridgingAnalysis } from "../types";
 
 interface AgencyBranding {
@@ -41,6 +45,82 @@ function LockedSection({ label, onUpgrade, children }: { label: string; onUpgrad
           <LockIcon className="w-3 h-3" />
           {label}
         </button>
+      </div>
+    </div>
+  );
+}
+
+const BRAND_600 = "#2C4A5A";
+const ACCENT_500 = "#D97706";
+
+function CompetitiveRadar({ data: chartData }: { data: { dimension: string; score: number }[] }) {
+  return (
+    <div className="bg-zinc-50 rounded-xl border border-zinc-200 p-4 print:hidden">
+      <h4 className="font-semibold text-zinc-900 mb-3 text-sm">Competitive Positioning</h4>
+      <ResponsiveContainer width="100%" height={260}>
+        <RadarChart data={chartData} cx="50%" cy="50%" outerRadius="70%">
+          <PolarGrid stroke="#e4e4e7" />
+          <PolarAngleAxis dataKey="dimension" tick={{ fill: "#52525b", fontSize: 11 }} />
+          <PolarRadiusAxis domain={[0, 10]} tick={{ fontSize: 10 }} axisLine={false} />
+          <Radar dataKey="score" stroke={BRAND_600} fill={BRAND_600} fillOpacity={0.2} strokeWidth={2} />
+          <Tooltip formatter={(v: number) => [`${v}/10`, "Score"]} />
+        </RadarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function GapRadar({ data: chartData }: { data: { dimension: string; roleRequirement: number; candidateTypical: number }[] }) {
+  return (
+    <div className="bg-zinc-50 rounded-xl border border-zinc-200 p-4 print:hidden">
+      <h4 className="font-semibold text-zinc-900 mb-3 text-sm">Skills Gap Analysis</h4>
+      <ResponsiveContainer width="100%" height={280}>
+        <RadarChart data={chartData} cx="50%" cy="50%" outerRadius="70%">
+          <PolarGrid stroke="#e4e4e7" />
+          <PolarAngleAxis dataKey="dimension" tick={{ fill: "#52525b", fontSize: 11 }} />
+          <PolarRadiusAxis domain={[0, 10]} tick={{ fontSize: 10 }} axisLine={false} />
+          <Radar dataKey="roleRequirement" name="Role Requires" stroke={BRAND_600} fill={BRAND_600} fillOpacity={0.15} strokeWidth={2} />
+          <Radar dataKey="candidateTypical" name="Typical Candidate" stroke={ACCENT_500} fill={ACCENT_500} fillOpacity={0.15} strokeWidth={2} />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
+          <Tooltip formatter={(v: number, name: string) => [`${v}/10`, name]} />
+        </RadarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function InterviewTimeline({ stages }: { stages: { stage: string; durationMinutes: number; focus: string; order: number }[] }) {
+  const sorted = [...stages].sort((a, b) => a.order - b.order);
+  return (
+    <div className="bg-zinc-50 rounded-xl border border-zinc-200 p-4 print:hidden">
+      <h4 className="font-semibold text-zinc-900 mb-4 text-sm">Interview Process</h4>
+      <div className="flex flex-col sm:flex-row items-stretch gap-0">
+        {sorted.map((s, i) => (
+          <div key={i} className="flex-1 flex flex-col sm:flex-row items-center">
+            <div className="flex flex-col items-center text-center flex-1 px-2">
+              <div className="w-10 h-10 rounded-full bg-brand-600 text-white text-sm font-bold flex items-center justify-center mb-2 shrink-0">
+                {s.order}
+              </div>
+              <p className="text-sm font-semibold text-zinc-900 leading-tight">{s.stage}</p>
+              <p className="text-xs text-zinc-500 mt-0.5">~{s.durationMinutes} min</p>
+              <p className="text-xs text-zinc-400 mt-1 leading-snug max-w-[160px]">{s.focus}</p>
+            </div>
+            {i < sorted.length - 1 && (
+              <div className="hidden sm:flex items-center px-1 self-start mt-5">
+                <svg width="20" height="12" viewBox="0 0 20 12" fill="none">
+                  <path d="M0 6h16M14 1l5 5-5 5" stroke="#a1a1aa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            )}
+            {i < sorted.length - 1 && (
+              <div className="sm:hidden flex justify-center py-1">
+                <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
+                  <path d="M6 0v16M1 14l5 5 5-5" stroke="#a1a1aa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -269,6 +349,27 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
         </div>
       </nav>
 
+      {/* Gap Analysis Radar — pro only */}
+      {data.gapAnalysis && data.gapAnalysis.length > 0 ? (
+        <div className="mb-6">
+          <GapRadar data={data.gapAnalysis} />
+        </div>
+      ) : userPlan === "free" ? (
+        <div className="mb-6">
+          <LockedSection label="Unlock gap analysis chart" onUpgrade={onUpgradeClick}>
+            <div className="blur-[8px]">
+              <GapRadar data={[
+                { dimension: "Technical Depth", roleRequirement: 9, candidateTypical: 6 },
+                { dimension: "Leadership", roleRequirement: 7, candidateTypical: 5 },
+                { dimension: "Domain Knowledge", roleRequirement: 8, candidateTypical: 4 },
+                { dimension: "Communication", roleRequirement: 7, candidateTypical: 7 },
+                { dimension: "Strategic Thinking", roleRequirement: 8, candidateTypical: 6 },
+              ]} />
+            </div>
+          </LockedSection>
+        </div>
+      ) : null}
+
       {/* Blind Spots Callout */}
       {blindSpots && blindSpots.length > 0 && (
         <div className="mb-10 p-5 bg-amber-50 border border-amber-200 rounded-xl">
@@ -303,6 +404,23 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
                 ))}
               </div>
             )}
+
+            {/* Competitive Positioning Radar — pro only */}
+            {data.companySnapshot?.competitivePositioning && data.companySnapshot.competitivePositioning.length > 0 ? (
+              <CompetitiveRadar data={data.companySnapshot.competitivePositioning} />
+            ) : userPlan === "free" ? (
+              <LockedSection label="Unlock competitive positioning chart" onUpgrade={onUpgradeClick}>
+                <div className="blur-[8px]">
+                  <CompetitiveRadar data={[
+                    { dimension: "Growth", score: 7 },
+                    { dimension: "Culture", score: 8 },
+                    { dimension: "Compensation", score: 6 },
+                    { dimension: "Prestige", score: 9 },
+                    { dimension: "Work-Life Balance", score: 5 },
+                  ]} />
+                </div>
+              </LockedSection>
+            ) : null}
 
             {/* Key Metrics — locked teaser for free users */}
             {(!data.companySnapshot?.keyMetrics || data.companySnapshot.keyMetrics.length === 0) && userPlan === "free" && (
@@ -568,6 +686,11 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
           </h2>
           <div className="space-y-4">
             <p className="text-zinc-700 leading-relaxed">{data.roundExpectations?.overview}</p>
+
+            {/* Interview Process Timeline */}
+            {data.roundExpectations?.interviewStages && data.roundExpectations.interviewStages.length > 0 && (
+              <InterviewTimeline stages={data.roundExpectations.interviewStages} />
+            )}
 
             {data.roundExpectations?.whatTripsPeopleUp?.length > 0 && (
               <div>

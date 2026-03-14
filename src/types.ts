@@ -26,10 +26,29 @@ export interface BridgingAnalysis {
   blindSpots: string[];         // replaces PrepBriefData.blindSpots
 }
 
+export interface CompetitivePositioning {
+  dimension: string;
+  score: number;
+}
+
+export interface InterviewStage {
+  stage: string;
+  durationMinutes: number;
+  focus: string;
+  order: number;
+}
+
+export interface GapAnalysis {
+  dimension: string;
+  roleRequirement: number;
+  candidateTypical: number;
+}
+
 export interface PrepBriefData {
   companySnapshot: {
     overview: string;
     keyMetrics?: string[];
+    competitivePositioning?: CompetitivePositioning[];
     recentSignals: string[];
     risksAndUnknowns: string[];
   };
@@ -48,8 +67,10 @@ export interface PrepBriefData {
     overview: string;
     whatTripsPeopleUp: string[];
     howToShowUpStrong: string[];
+    interviewStages?: InterviewStage[];
   };
   questionsToAsk: string[];
   recommendedReading: RecommendedReading[];
   blindSpots: string[];
+  gapAnalysis?: GapAnalysis[];
 }
