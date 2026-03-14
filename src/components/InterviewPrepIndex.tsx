@@ -54,7 +54,7 @@ const COMPANY_IMAGES: Record<string, string> = {
   apple: "https://images.unsplash.com/photo-1591292784843-aa35ebb7897b?w=640&h=360&fit=crop",
   microsoft: "https://images.unsplash.com/photo-1737922342275-71bab46ace83?w=640&h=360&fit=crop",
   netflix: "https://images.unsplash.com/photo-1621955964441-c173e01c135b?w=640&h=360&fit=crop",
-  stripe: "https://images.unsplash.com/photo-1742836531244-de8454b8bc06?w=640&h=360&fit=crop",
+  stripe: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=640&h=360&fit=crop",
   mckinsey: "https://images.unsplash.com/photo-1758518729463-0bb73ed899ac?w=640&h=360&fit=crop",
   "goldman-sachs": "https://images.unsplash.com/photo-1552958700-7004a2c5cb60?w=640&h=360&fit=crop",
   jpmorgan: "https://images.unsplash.com/photo-1755707212595-b1791a744775?w=640&h=360&fit=crop",
