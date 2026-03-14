@@ -1628,7 +1628,7 @@ async function startServer() {
     const meta = getPublicBriefMeta(briefId);
     if (!meta) return html;
 
-    const title = `${meta.company_name} — ${meta.job_title} Interview Prep | PrepFile`;
+    const title = `Interview Prep Brief — ${meta.company_name} ${meta.job_title}`;
     const description = `AI-generated interview prep brief for ${meta.job_title} at ${meta.company_name}. Company intel, role expectations, and round-specific strategy.`;
     const url = `${appUrl}/b/${briefId}`;
 
@@ -1637,6 +1637,7 @@ async function startServer() {
       .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
       .replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
       .replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/g, `$1${url}$2`)
+      .replace(/(<meta\s+name="twitter:card"\s+content=")[^"]*(")/g, `$1summary_large_image$2`)
       .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/g, `$1${title}$2`)
       .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/g, `$1${description}$2`)
       .replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/g, `$1${url}$2`);

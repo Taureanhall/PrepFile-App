@@ -18,6 +18,14 @@ export function PublicBrief({ briefId }: PublicBriefProps) {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   useEffect(() => {
     fetch(`/api/public/briefs/${briefId}`)
@@ -81,6 +89,22 @@ export function PublicBrief({ briefId }: PublicBriefProps) {
         <header className="mb-10">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-xs font-medium px-2 py-1 bg-zinc-100 text-zinc-500 rounded-full">Interview Prep Brief</span>
+            <button
+              onClick={handleShare}
+              className="ml-auto flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 transition-colors"
+            >
+              {copied ? (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 1.5h-5A1 1 0 0 0 1.5 2.5v7a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1Z" stroke="currentColor" strokeWidth="1.2"/><path d="M4 1.5V1a.5.5 0 0 1 .5-.5h3A.5.5 0 0 1 8 1v.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                  Share this brief
+                </>
+              )}
+            </button>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-1">
             {brief.company_name}
