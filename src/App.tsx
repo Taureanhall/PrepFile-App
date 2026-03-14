@@ -15,6 +15,7 @@ import { FaqPage } from "./components/FaqPage";
 import { SegmentPage } from "./components/SegmentPage";
 import { UpgradeCTA } from "./components/UpgradeCTA";
 import { PricingPage } from "./components/PricingPage";
+import TeamAdmin from "./components/TeamAdmin";
 import { Nav } from "./components/Nav";
 import { SuggestionInput } from "./components/SuggestionInput";
 import { POPULAR_COMPANIES, getTitleSuggestions } from "./lib/suggestions";
@@ -112,6 +113,11 @@ export default function Page() {
   const segmentSlug = window.location.pathname.match(/^\/for\/([^/]+)$/)?.[1] ?? null;
   if (segmentSlug) {
     return <SegmentPage slug={segmentSlug} />;
+  }
+
+  // Route: /team-admin — B2B team plan admin dashboard
+  if (window.location.pathname === "/team-admin") {
+    return <TeamAdmin />;
   }
 
   // Auth state

@@ -25,3 +25,7 @@ export const PRICES = {
 } as const;
 
 export const PACK_BRIEF_COUNT = 5;
+
+// Team / bulk plan — $5 per seat, minimum 20 seats
+export const TEAM_SEAT_PRICE_CENTS = 500; // $5.00
+export const TEAM_MIN_SEATS = 20;

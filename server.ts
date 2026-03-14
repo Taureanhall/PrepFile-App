@@ -31,9 +31,16 @@ import {
   createOtpCode,
   verifyOtpCode,
   getTotalBriefCount,
+  createTeam,
+  getTeamById,
+  getTeamByAdminUser,
+  activateTeam,
+  addTeamMember,
+  getTeamUsage,
+  getTeamByCheckoutSession,
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
-import { getStripe, PRICES, PACK_BRIEF_COUNT } from "./src/lib/stripe.js";
+import { getStripe, PRICES, PACK_BRIEF_COUNT, TEAM_SEAT_PRICE_CENTS, TEAM_MIN_SEATS } from "./src/lib/stripe.js";
 import { runNurtureEmailBatch } from "./src/lib/nurture.js";
 import { runWelcomeDripBatch } from "./src/lib/welcome-drip.js";
 import {
@@ -81,8 +88,18 @@ async function startServer() {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as any;
       let userId = session.metadata?.user_id;
-      const product = session.metadata?.product as "pro" | "pack";
+      const product = session.metadata?.product as "pro" | "pack" | "team";
       if (!product) return res.sendStatus(200);
+
+      // Team plan activation
+      if (product === "team") {
+        const team = getTeamByCheckoutSession(session.id);
+        if (team) {
+          activateTeam(team.id, session.customer);
+          console.log(`[STRIPE] Team ${team.id} activated (${team.seat_count} seats)`);
+        }
+        return res.sendStatus(200);
+      }
 
       // If no user_id (unauthenticated checkout), create or find user by Stripe customer email
       if (!userId) {
@@ -549,6 +566,105 @@ async function startServer() {
   };
   app.post("/api/stripe/portal", handlePortalSession);
   app.post("/api/stripe/create-portal-session", handlePortalSession);
+
+  // --- Team / Bulk Plan ---
+
+  // POST /api/teams/create — authenticated admin creates a team + starts Stripe checkout
+  app.post("/api/teams/create", async (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Authentication required" });
+
+    const { name, seatCount } = req.body as { name: string; seatCount: number };
+    if (!name?.trim()) return res.status(400).json({ error: "Team name is required" });
+    const seats = Number(seatCount);
+    if (!Number.isInteger(seats) || seats < TEAM_MIN_SEATS) {
+      return res.status(400).json({ error: `Minimum ${TEAM_MIN_SEATS} seats required` });
+    }
+
+    try {
+      const stripe = getStripe();
+      const totalCents = seats * TEAM_SEAT_PRICE_CENTS;
+
+      // Create a placeholder Stripe session ID for the team record — we get the real ID from Stripe
+      const sessionParams: any = {
+        mode: "payment",
+        payment_method_types: ["card"],
+        line_items: [{
+          price_data: {
+            currency: "usd",
+            unit_amount: TEAM_SEAT_PRICE_CENTS,
+            product_data: {
+              name: `PrepFile Team Plan — ${seats} seats`,
+              description: `Bulk interview prep access for ${seats} students ($5/seat)`,
+            },
+          },
+          quantity: seats,
+        }],
+        success_url: `${APP_URL}/team-admin?payment=success`,
+        cancel_url: `${APP_URL}/team-admin?payment=cancel`,
+        metadata: { product: "team", user_id: user.id, seat_count: String(seats) },
+        customer_email: user.email,
+      };
+
+      const stripeSession = await stripe.checkout.sessions.create(sessionParams);
+      const team = createTeam(user.id, name.trim(), seats, stripeSession.id);
+
+      res.json({ url: stripeSession.url, teamId: team.id, totalCents });
+    } catch (err: any) {
+      console.error("[TEAMS] create error:", err);
+      res.status(500).json({ error: "Failed to create team checkout" });
+    }
+  });
+
+  // GET /api/teams/mine — returns the admin's team (if any)
+  app.get("/api/teams/mine", (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Authentication required" });
+    const team = getTeamByAdminUser(user.id);
+    res.json({ team });
+  });
+
+  // GET /api/teams/:id/usage — returns team members with brief usage (admin only)
+  app.get("/api/teams/:id/usage", (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Authentication required" });
+
+    const team = getTeamById(req.params.id);
+    if (!team) return res.status(404).json({ error: "Team not found" });
+    if (team.admin_user_id !== user.id) return res.status(403).json({ error: "Forbidden" });
+
+    const members = getTeamUsage(team.id);
+    res.json({ team, members });
+  });
+
+  // POST /api/teams/:id/members — add member emails (admin only)
+  app.post("/api/teams/:id/members", (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Authentication required" });
+
+    const team = getTeamById(req.params.id);
+    if (!team) return res.status(404).json({ error: "Team not found" });
+    if (team.admin_user_id !== user.id) return res.status(403).json({ error: "Forbidden" });
+    if (team.status !== "active") return res.status(402).json({ error: "Team is not yet active. Complete payment first." });
+
+    const { emails } = req.body as { emails: string[] };
+    if (!Array.isArray(emails) || emails.length === 0) {
+      return res.status(400).json({ error: "emails array is required" });
+    }
+
+    const members = getTeamUsage(team.id);
+    if (members.length + emails.length > team.seat_count) {
+      return res.status(400).json({ error: `Would exceed seat count (${team.seat_count} seats)` });
+    }
+
+    for (const email of emails) {
+      if (typeof email === "string" && email.includes("@")) {
+        addTeamMember(team.id, email);
+      }
+    }
+
+    res.json({ added: emails.length });
+  });
 
   // Generate brief — authenticated OR 1 free brief via cookie
   app.post("/api/generate-brief", async (req, res) => {
