@@ -62,6 +62,18 @@ export function extractFromJD(text: string): ExtractResult {
     }
   }
 
+  // Pattern: "[Company] manages/provides/builds/develops/delivers/offers/specializes/creates..."
+  // e.g., "Oasis Management Company Ltd. manages private investment funds..."
+  if (!company) {
+    for (const line of lines.slice(0, 15)) {
+      const descMatch = line.match(/^([A-Z][A-Za-z0-9&'. -]{1,50}?)\s+(?:manages|provides|builds|develops|delivers|offers|specializes|creates|designs|operates|serves|helps|enables|empowers|connects|transforms|powers|focuses|produces|manufactures|distributes|supplies)\b/);
+      if (descMatch && !notCompany.test(descMatch[1].trim())) {
+        company = descMatch[1].trim();
+        break;
+      }
+    }
+  }
+
   // Pattern: "[Company]'s" possessive — look for capitalized proper noun with 's in first 10 lines
   // e.g., "member of Investure's Investment Team", "join Google's engineering team"
   if (!company) {
