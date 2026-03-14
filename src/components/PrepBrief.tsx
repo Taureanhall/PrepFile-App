@@ -1,6 +1,11 @@
 import { useState, useRef, type FormEvent, type ChangeEvent } from "react";
 import type { PrepBriefData, BridgingAnalysis } from "../types";
 
+interface AgencyBranding {
+  agencyName: string;
+  agencyLogoUrl?: string;
+}
+
 interface PrepBriefProps {
   data: PrepBriefData;
   user: { id: string; email: string } | null;
@@ -10,9 +15,10 @@ interface PrepBriefProps {
   isRegenerating?: boolean;
   onUpgradeClick?: () => void;
   totalBriefs?: number | null;
+  agencyBranding?: AgencyBranding;
 }
 
-export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegenerating, onUpgradeClick, totalBriefs }: PrepBriefProps) {
+export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegenerating, onUpgradeClick, totalBriefs, agencyBranding }: PrepBriefProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
@@ -146,6 +152,23 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
 
   return (
     <div className="bg-white p-5 md:p-8 lg:p-12 rounded-2xl shadow-sm border border-zinc-200/60 max-w-4xl mx-auto print:shadow-none print:border-none print:p-0">
+
+      {/* Agency branding header — shown when team has branding enabled */}
+      {agencyBranding && (
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-zinc-100">
+          <div className="flex items-center gap-3">
+            {agencyBranding.agencyLogoUrl && (
+              <img
+                src={agencyBranding.agencyLogoUrl}
+                alt={`${agencyBranding.agencyName} logo`}
+                className="h-8 w-auto object-contain"
+              />
+            )}
+            <span className="font-semibold text-zinc-800 text-sm">{agencyBranding.agencyName}</span>
+          </div>
+          <span className="text-xs text-zinc-400">Powered by PrepFile</span>
+        </div>
+      )}
 
       {/* Brief header — share button */}
       {user && briefId && (

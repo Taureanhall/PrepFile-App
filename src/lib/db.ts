@@ -561,6 +561,11 @@ db.exec(`
   );
 `);
 
+// Agency branding columns — added after initial table creation
+try { db.exec(`ALTER TABLE teams ADD COLUMN agency_name TEXT`); } catch {}
+try { db.exec(`ALTER TABLE teams ADD COLUMN agency_logo_url TEXT`); } catch {}
+try { db.exec(`ALTER TABLE teams ADD COLUMN branding_enabled INTEGER NOT NULL DEFAULT 0`); } catch {}
+
 export interface Team {
   id: string;
   name: string;
@@ -570,6 +575,9 @@ export interface Team {
   stripe_checkout_session_id: string | null;
   status: "pending" | "active";
   created_at: string;
+  agency_name: string | null;
+  agency_logo_url: string | null;
+  branding_enabled: 0 | 1;
 }
 
 export interface TeamMemberUsage {
@@ -626,6 +634,21 @@ export function getTeamUsage(teamId: string): TeamMemberUsage[] {
 
 export function getTeamByCheckoutSession(sessionId: string): Team | null {
   return db.prepare("SELECT * FROM teams WHERE stripe_checkout_session_id = ?").get(sessionId) as Team | null;
+}
+
+export function getTeamByMember(userId: string): Team | null {
+  return db.prepare(`
+    SELECT t.* FROM teams t
+    INNER JOIN team_members tm ON tm.team_id = t.id
+    WHERE tm.user_id = ? AND t.status = 'active'
+    LIMIT 1
+  `).get(userId) as Team | null;
+}
+
+export function updateTeamBranding(teamId: string, agencyName: string | null, agencyLogoUrl: string | null, brandingEnabled: boolean): void {
+  db.prepare(`
+    UPDATE teams SET agency_name = ?, agency_logo_url = ?, branding_enabled = ? WHERE id = ?
+  `).run(agencyName, agencyLogoUrl, brandingEnabled ? 1 : 0, teamId);
 }
 
 export default db;

@@ -38,6 +38,8 @@ import {
   addTeamMember,
   getTeamUsage,
   getTeamByCheckoutSession,
+  getTeamByMember,
+  updateTeamBranding,
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT, TEAM_SEAT_PRICE_CENTS, TEAM_MIN_SEATS } from "./src/lib/stripe.js";
@@ -666,6 +668,31 @@ async function startServer() {
     res.json({ added: emails.length });
   });
 
+  // PATCH /api/teams/:id/branding — admin sets agency branding (name, logo, enabled)
+  app.patch("/api/teams/:id/branding", (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Authentication required" });
+
+    const team = getTeamById(req.params.id);
+    if (!team) return res.status(404).json({ error: "Team not found" });
+    if (team.admin_user_id !== user.id) return res.status(403).json({ error: "Forbidden" });
+
+    const { agencyName, agencyLogoUrl, brandingEnabled } = req.body as {
+      agencyName?: string;
+      agencyLogoUrl?: string;
+      brandingEnabled?: boolean;
+    };
+
+    updateTeamBranding(
+      team.id,
+      typeof agencyName === "string" ? agencyName.trim() || null : team.agency_name,
+      typeof agencyLogoUrl === "string" ? agencyLogoUrl.trim() || null : team.agency_logo_url,
+      typeof brandingEnabled === "boolean" ? brandingEnabled : !!team.branding_enabled
+    );
+
+    res.json({ ok: true });
+  });
+
   // Generate brief — authenticated OR 1 free brief via cookie
   app.post("/api/generate-brief", async (req, res) => {
     try {
@@ -800,7 +827,19 @@ async function startServer() {
         });
       }
 
-      res.json({ ...data, briefId: savedBriefId });
+      // Include agency branding if user belongs to a team with branding enabled
+      let agencyBranding: { agencyName: string; agencyLogoUrl?: string } | undefined;
+      if (user) {
+        const memberTeam = getTeamByMember(user.id);
+        if (memberTeam && memberTeam.branding_enabled && memberTeam.agency_name) {
+          agencyBranding = {
+            agencyName: memberTeam.agency_name,
+            ...(memberTeam.agency_logo_url ? { agencyLogoUrl: memberTeam.agency_logo_url } : {}),
+          };
+        }
+      }
+
+      res.json({ ...data, briefId: savedBriefId, agencyBranding });
     } catch (err: any) {
       res.status(500).json({ error: err.message || "Failed to generate brief" });
     }
@@ -1285,6 +1324,10 @@ async function startServer() {
     "experienced": {
       title: "Interview Prep for Experienced Professionals | PrepFile",
       description: "10 minutes of prep that makes you the best-informed person in the room. PrepFile generates a complete briefing on the company, role, and interview format.",
+    },
+    "career-services": {
+      title: "Interview Prep for Bootcamp Students — PrepFile for Career Services",
+      description: "Give every student a personalized interview prep brief before each interview. PrepFile generates company-specific briefs in 60 seconds. Bulk seats from $5/student.",
     },
   };
 

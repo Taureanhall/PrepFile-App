@@ -159,6 +159,7 @@ export default function Page() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [output, setOutput] = useState<PrepBriefData | null>(null);
   const [briefId, setBriefId] = useState<string | null>(null);
+  const [agencyBranding, setAgencyBranding] = useState<{ agencyName: string; agencyLogoUrl?: string } | undefined>(undefined);
   const [showHistory, setShowHistory] = useState(false);
   const [hasKey, setHasKey] = useState(true);
   const [isEditor, setIsEditor] = useState(false);
@@ -341,10 +342,11 @@ export default function Page() {
 
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      const { briefId: newBriefId, ...briefData } = data;
+      const { briefId: newBriefId, agencyBranding: newAgencyBranding, ...briefData } = data;
       trackBriefGenerated(companyName, jobTitle, subscription?.plan ?? "free", !!user);
       setOutput(briefData as PrepBriefData);
       setBriefId(newBriefId ?? null);
+      setAgencyBranding(newAgencyBranding ?? undefined);
       fetchBriefCount();
     } catch (error: any) {
       console.error("Error generating brief:", error);
@@ -393,10 +395,11 @@ export default function Page() {
 
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      const { briefId: newBriefId, ...briefData } = data;
+      const { briefId: newBriefId, agencyBranding: newAgencyBranding, ...briefData } = data;
       trackBriefGenerated(qCompany, qTitle, subscription?.plan ?? "free", !!user);
       setOutput(briefData as PrepBriefData);
       setBriefId(newBriefId ?? null);
+      setAgencyBranding(newAgencyBranding ?? undefined);
       fetchBriefCount();
     } catch (error: any) {
       console.error("Error generating quick brief:", error);
@@ -817,6 +820,7 @@ Preferred Qualifications:
               isRegenerating={isGenerating}
               onUpgradeClick={() => setUpgradeReason("pro_required")}
               totalBriefs={briefCount}
+              agencyBranding={agencyBranding}
             />
 
             {/* Post-brief upgrade CTA — free users only, A/B tested copy variants */}
