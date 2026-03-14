@@ -117,8 +117,8 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
         <div className="max-w-3xl mx-auto px-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             {[
-              { stat: "< 60 sec", label: "from input to full prep brief" },
-              { stat: "100+", label: "companies covered with context-aware prep" },
+              { stat: "< 60 sec", label: "from job link to full prep brief" },
+              { stat: "Any company", label: "if they're hiring, we can prep you" },
               { stat: "Free", label: "to try — no credit card required" },
             ].map(({ stat, label }) => (
               <div key={stat} className="flex flex-col items-center gap-1">
@@ -136,7 +136,7 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
           {/* Snippet 1 — Speed */}
           <blockquote className="border-l-4 border-brand-600 pl-5">
             <p className="text-base sm:text-lg text-zinc-700 leading-relaxed italic">
-              "Interview brief in under 60 seconds. Company snapshot, role intel, round expectations, and the questions you should ask — generated from your job description while you're still reading the invite."
+              "Paste a job link. Get back a brief that knows what the company actually cares about, what this role really is, what the interview will test, and the questions that make interviewers think 'this person did their homework.'"
             </p>
           </blockquote>
 
@@ -144,7 +144,7 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
           <div className="bg-zinc-50 border border-zinc-200 rounded-2xl px-6 py-5">
             <p className="text-xs font-semibold uppercase tracking-widest text-brand-400 mb-2">What's inside a brief</p>
             <p className="text-base text-zinc-700 leading-relaxed">
-              One brief. Five sections. Company snapshot, role intelligence, round expectations, questions to ask your interviewers, and the blind spots most candidates miss. Everything you'd spend a weekend researching, ready before your next coffee.
+              What the company is doing right now and why it matters for your interview. What this role actually needs — not what the JD says. How each round works and what trips people up. Questions that show you understand their business. And the blind spots most candidates walk in with. The research you'd spend a weekend on, done before you finish reading this.
             </p>
           </div>
         </div>
