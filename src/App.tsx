@@ -149,6 +149,7 @@ export default function Page() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [briefCount, setBriefCount] = useState<number | null>(null);
+  const [showPreLimitNudge, setShowPreLimitNudge] = useState(false);
 
   const dismissToast = (id: string) => setToasts((prev) => prev.filter((t) => t.id !== id));
   const showToast = (message: string, type: "error" | "info" = "error") => {
@@ -342,6 +343,13 @@ export default function Page() {
   const freeBriefsRemaining = user && subscription?.plan === "free"
     ? Math.max(0, 3 - (subscription.free_briefs_used ?? 0))
     : null;
+
+  // Show pre-limit nudge when user has used exactly 2 briefs (1 remaining) and a brief is on screen
+  useEffect(() => {
+    if (subscription?.plan === "free" && subscription.free_briefs_used === 2 && output !== null) {
+      setShowPreLimitNudge(true);
+    }
+  }, [subscription?.free_briefs_used, output]);
 
   // Trigger MCQ slide-in when core fields are set
   useEffect(() => {
@@ -631,6 +639,9 @@ Preferred Qualifications:
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans selection:bg-zinc-200">
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      {upgradeReason === "free_limit" && (
+        <UpgradePrompt reason="free_limit" onDismiss={() => setUpgradeReason(null)} />
+      )}
       <Nav
         cta={
           !authLoading && user
@@ -743,8 +754,8 @@ Preferred Qualifications:
               </div>
             )}
 
-            {/* Upgrade prompt — shown when plan limit hit (not pro_required, which overlays the brief) */}
-            {upgradeReason && upgradeReason !== "pro_required" ? (
+            {/* Upgrade prompt — pack_exhausted replaces the form inline; free_limit/pro_required are modal overlays */}
+            {upgradeReason === "pack_exhausted" ? (
               <UpgradePrompt reason={upgradeReason} onDismiss={() => setUpgradeReason(null)} />
             ) : needsSignIn ? (
               <SignInGate />
@@ -1003,6 +1014,14 @@ Preferred Qualifications:
             {/* Pro upgrade overlay — shown on top of brief when user clicks upgrade CTAs */}
             {upgradeReason === "pro_required" && (
               <UpgradePrompt reason="pro_required" onDismiss={() => setUpgradeReason(null)} />
+            )}
+
+            {/* Pre-limit nudge — shown after brief #2 when 1 free brief remains */}
+            {showPreLimitNudge && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center justify-between gap-4 text-sm animate-in fade-in duration-300">
+                <span className="text-amber-900">You have 1 free brief left. <button onClick={() => setUpgradeReason("free_limit")} className="font-semibold underline underline-offset-2 hover:text-amber-700">Upgrade to unlock unlimited — $14.99/mo</button></span>
+                <button onClick={() => setShowPreLimitNudge(false)} className="shrink-0 text-amber-400 hover:text-amber-600">✕</button>
+              </div>
             )}
             <PrepBrief
               data={output}
