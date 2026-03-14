@@ -9,17 +9,25 @@ interface BriefSummary {
   created_at: string;
 }
 
+interface ReferralData {
+  count: number;
+  referralLink: string;
+}
+
 interface MyBriefsProps {
   onBack: () => void;
   showToast?: (message: string, type?: "error" | "info") => void;
+  plan?: string;
 }
 
-export function MyBriefs({ onBack, showToast }: MyBriefsProps) {
+export function MyBriefs({ onBack, showToast, plan = "free" }: MyBriefsProps) {
   const [briefs, setBriefs] = useState<BriefSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBrief, setSelectedBrief] = useState<PrepBriefData | null>(null);
   const [selectedMeta, setSelectedMeta] = useState<BriefSummary | null>(null);
   const [loadingBrief, setLoadingBrief] = useState(false);
+  const [referral, setReferral] = useState<ReferralData | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetch("/api/briefs")
@@ -27,7 +35,19 @@ export function MyBriefs({ onBack, showToast }: MyBriefsProps) {
       .then((d) => setBriefs(d.briefs || []))
       .catch(() => setBriefs([]))
       .finally(() => setLoading(false));
+    fetch("/api/referral-count")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => d && setReferral(d))
+      .catch(() => {});
   }, []);
+
+  const handleCopyLink = () => {
+    if (!referral) return;
+    navigator.clipboard.writeText(referral.referralLink).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   const handleSelectBrief = async (summary: BriefSummary) => {
     setLoadingBrief(true);
@@ -69,16 +89,45 @@ export function MyBriefs({ onBack, showToast }: MyBriefsProps) {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1.5"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          Back
-        </button>
-        <h2 className="text-xl font-semibold text-zinc-900">My Briefs</h2>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1.5"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            Back
+          </button>
+          <h2 className="text-xl font-semibold text-zinc-900">My Briefs</h2>
+        </div>
+        {!loading && plan === "free" && (
+          <span className="text-xs text-zinc-500 bg-zinc-100 rounded-full px-3 py-1">
+            {briefs.length} of 3 free briefs used
+          </span>
+        )}
       </div>
+
+      {referral && (
+        <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="font-semibold text-zinc-900 text-sm">Share PrepFile</h3>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                {referral.count > 0
+                  ? `${referral.count} colleague${referral.count === 1 ? "" : "s"} joined via your link`
+                  : "Share with colleagues — your referrals will appear here"}
+              </p>
+            </div>
+            <button
+              onClick={handleCopyLink}
+              className="shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 hover:bg-zinc-50 transition-colors text-zinc-700"
+            >
+              {copied ? "Copied!" : "Copy link"}
+            </button>
+          </div>
+          <p className="mt-3 text-xs text-zinc-400 font-mono truncate">{referral.referralLink}</p>
+        </div>
+      )}
 
       {loading ? (
         <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm divide-y divide-zinc-100">

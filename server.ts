@@ -41,20 +41,24 @@ import {
   getTeamByCheckoutSession,
   getTeamByMember,
   updateTeamBranding,
+  queueEmail,
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT, TEAM_SEAT_PRICE_CENTS, TEAM_MIN_SEATS } from "./src/lib/stripe.js";
 import { runNurtureEmailBatch } from "./src/lib/nurture.js";
 import { runWelcomeDripBatch } from "./src/lib/welcome-drip.js";
+import { processDripQueue } from "./src/lib/email-drip.js";
 import {
   sendWelcomeEmailImmediate,
   runWelcomeSequenceBatch,
   runReengagementBatch,
   parseUnsubscribeToken,
   makeUnsubscribeToken,
+  sendUpgradeWelcomeEmail,
+  sendDunningEmail,
 } from "./src/lib/email-sequences.js";
 import { subjectA as postBriefSubject, buildPostBriefUpgradeHtml } from "./src/lib/emails/post-brief-upgrade.js";
-import { setEmailUnsubscribed, getUserIdByEmail } from "./src/lib/db.js";
+import { setEmailUnsubscribed, getUserIdByEmail, getUserEmailById, getReferralCount } from "./src/lib/db.js";
 import { OAuth2Client } from "google-auth-library";
 
 const RATE_LIMIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -130,23 +134,42 @@ async function startServer() {
           amount_total: session.amount_total,
         },
       });
+
+      // Send upgrade welcome email (fire-and-forget)
+      const userEmail = getUserEmailById(userId);
+      if (userEmail) {
+        const appUrl = process.env.APP_URL || "https://prepfile.work";
+        sendUpgradeWelcomeEmail(userId, userEmail, appUrl, FROM_EMAIL).catch(
+          (err) => console.error("[STRIPE] upgrade welcome email error:", err)
+        );
+      }
     }
 
     if (event.type === "customer.subscription.deleted") {
       const sub = event.data.object as any;
       // Find user by stripe_customer_id and downgrade
-      const stripe = getStripe();
-      const customer = await stripe.customers.retrieve(sub.customer) as any;
-      if (customer && !customer.deleted) {
-        // We store customer_id in subscriptions; find user by scanning (small dataset)
-        // Better: store customer_id in metadata when creating customer
-        const email = customer.email;
-        if (email) {
-          // Downgrade any user with this stripe_customer_id
-          const db = (await import("./src/lib/db.js")).default;
-          const row = db.prepare("SELECT user_id FROM subscriptions WHERE stripe_customer_id = ?").get(sub.customer) as any;
-          if (row) upsertSubscription(row.user_id, "free", sub.customer, null, 0);
+      const db = (await import("./src/lib/db.js")).default;
+      const row = db.prepare("SELECT user_id FROM subscriptions WHERE stripe_customer_id = ?").get(sub.customer) as any;
+      if (row) {
+        upsertSubscription(row.user_id, "free", sub.customer, null, 0);
+        console.log(`[STRIPE] Subscription cancelled — user ${row.user_id} downgraded to free`);
+      }
+    }
+
+    if (event.type === "invoice.payment_failed") {
+      const invoice = event.data.object as any;
+      // Look up user by stripe_customer_id and send dunning email
+      const db = (await import("./src/lib/db.js")).default;
+      const row = db.prepare("SELECT user_id FROM subscriptions WHERE stripe_customer_id = ?").get(invoice.customer) as any;
+      if (row) {
+        const userEmail = getUserEmailById(row.user_id);
+        if (userEmail) {
+          const appUrl = process.env.APP_URL || "https://prepfile.work";
+          sendDunningEmail(row.user_id, userEmail, appUrl, FROM_EMAIL).catch(
+            (err) => console.error("[STRIPE] dunning email error:", err)
+          );
         }
+        console.log(`[STRIPE] invoice.payment_failed for customer ${invoice.customer} — dunning email queued`);
       }
     }
 
@@ -383,6 +406,8 @@ async function startServer() {
     if (signedInUser) {
       getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id, method: "email_otp" } });
       sendWelcomeEmailImmediate(signedInUser.id, signedInUser.email, APP_URL, FROM_EMAIL).catch(() => {});
+      // Queue welcome drip email for new users
+      if (getBriefCountForUser(signedInUser.id) === 0) queueEmail(signedInUser.id, "welcome", new Date());
     }
 
     res.cookie("session", result.sessionToken, {
@@ -412,6 +437,8 @@ async function startServer() {
       getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id } });
       // Fire welcome-1 for new users (idempotent — skips if already sent)
       sendWelcomeEmailImmediate(signedInUser.id, signedInUser.email, APP_URL, FROM_EMAIL).catch(() => {});
+      // Queue welcome drip email for new users
+      if (getBriefCountForUser(signedInUser.id) === 0) queueEmail(signedInUser.id, "welcome", new Date());
     }
 
     res.cookie("session", sessionToken, {
@@ -511,6 +538,9 @@ async function startServer() {
         getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id, method: "google", referral_source: referralSource || "direct" } });
         // Fire welcome-1 for new users (idempotent — skips if already sent)
         sendWelcomeEmailImmediate(signedInUser.id, signedInUser.email, APP_URL, FROM_EMAIL).catch(() => {});
+        // Queue welcome drip email for new users
+        const isNewSignup = getBriefCountForUser(signedInUser.id) === 0;
+        if (isNewSignup) queueEmail(signedInUser.id, "welcome", new Date());
       }
 
       res.cookie("session", sessionToken, {
@@ -526,6 +556,14 @@ async function startServer() {
       console.error("Google OAuth error:", err);
       res.status(500).send("Google sign-in failed. Please try again.");
     }
+  });
+
+  // Referral count for current user
+  app.get("/api/referral-count", (req, res) => {
+    const user = getSessionUser(req);
+    if (!user) return res.status(401).json({ error: "Not authenticated" });
+    const appUrl = process.env.APP_URL || "https://prepfile.work";
+    res.json({ count: getReferralCount(user.id), referralLink: `${appUrl}/?ref=${user.id}` });
   });
 
   // Stripe: get current plan
@@ -798,9 +836,9 @@ async function startServer() {
               return res.status(402).json({ error: "pack_exhausted", message: "Your Interview Pack is used up. Upgrade to Pro for unlimited briefs." });
             }
           } else {
-            // Free tier — 1 full brief per week
-            if (!checkAndIncrementRateLimit(`user:${user.id}:full`, FULL_BRIEF_LIMIT, RATE_LIMIT_WINDOW_MS)) {
-              return res.status(402).json({ error: "rate_limit_exceeded", message: "Free tier allows 1 full brief per week. Use quick briefs for faster prep, or upgrade for unlimited." });
+            // Free tier — hard limit of 3 briefs lifetime
+            if (getBriefCountForUser(user.id) >= 3) {
+              return res.status(402).json({ error: "free_brief_limit", message: "You've used all 3 free briefs. Upgrade to Pro for unlimited full briefs." });
             }
           }
         }
@@ -870,8 +908,17 @@ async function startServer() {
           const briefId = saveBrief(user.id, req.body.companyName || "", req.body.jobTitle || "", data);
           savedBriefId = briefId;
 
-          // Send post-brief upgrade email after first brief (free users only)
+          // Queue drip nudges after brief generation (free users only)
           const briefCount = getBriefCountForUser(user.id);
+          const sub = getUserSubscription(user.id);
+          if (sub.plan === "free") {
+            const now = new Date();
+            queueEmail(user.id, "nudge_24h", new Date(now.getTime() + 24 * 60 * 60 * 1000));
+            queueEmail(user.id, "nudge_72h", new Date(now.getTime() + 72 * 60 * 60 * 1000));
+            if (briefCount >= 3) queueEmail(user.id, "upgrade_prompt", now);
+          }
+
+          // Send post-brief upgrade email after first brief (free users only)
           if (briefCount === 1 && !hasReceivedOnboardingEmail(user.id)) {
             try {
               const sub = getUserSubscription(user.id);
@@ -1094,6 +1141,22 @@ async function startServer() {
       res.json({ ok: true });
     } catch (err) {
       console.error("[/api/cron/emails] error:", err);
+      res.status(500).json({ error: "Internal error" });
+    }
+  });
+
+  // Cron endpoint — process email drip queue (welcome, nudge_24h, nudge_72h, upgrade_prompt)
+  app.post("/api/cron/send-emails", async (req, res) => {
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret) return res.status(503).json({ error: "CRON_SECRET not configured" });
+    const provided = req.headers["x-cron-secret"];
+    if (provided !== cronSecret) return res.status(401).json({ error: "Unauthorized" });
+
+    try {
+      const result = await processDripQueue(APP_URL, FROM_EMAIL);
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      console.error("[/api/cron/send-emails] error:", err);
       res.status(500).json({ error: "Internal error" });
     }
   });

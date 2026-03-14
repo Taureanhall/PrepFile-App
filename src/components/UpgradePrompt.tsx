@@ -40,14 +40,14 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
     <div className="bg-white border border-zinc-200/60 rounded-2xl shadow-sm p-6 md:p-8 space-y-6">
       <div>
         <h2 className="text-xl font-bold text-zinc-900 mb-1">
-          {reason === "pack_exhausted" ? "Pack used up" : reason === "pro_required" ? "Upgrade to unlock this feature" : "You've used your 3 free briefs this week."}
+          {reason === "pack_exhausted" ? "Pack used up" : reason === "pro_required" ? "Upgrade to unlock this feature" : "You've used all 3 free briefs."}
         </h2>
         <p className="text-zinc-500 text-sm">
           {reason === "pack_exhausted"
             ? "Your 5-brief Interview Pack has been used. Upgrade to Pro for unlimited briefs."
             : reason === "pro_required"
             ? "Resume match, round expectations, and full company signals are available on Pro and Interview Pack."
-            : "Your next interview won't wait until the limit resets. Get unlimited briefs, resume match, and full round expectations with Pro."}
+            : "Your next interview won't wait. Get unlimited briefs, resume match, and full round expectations with Pro."}
         </p>
       </div>
 

@@ -697,7 +697,7 @@ Preferred Qualifications:
       <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
 
         {showHistory ? (
-          <MyBriefs onBack={() => setShowHistory(false)} showToast={showToast} />
+          <MyBriefs onBack={() => setShowHistory(false)} showToast={showToast} plan={subscription?.plan ?? "free"} />
         ) : !output ? (
           <div className="space-y-0">
             {/* Auth Panel — shown to unauthenticated users who haven't dismissed */}
