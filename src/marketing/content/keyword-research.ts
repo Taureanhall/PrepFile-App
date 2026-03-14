@@ -235,7 +235,7 @@ export const keywordResearch: {
       prepfileContentType: "role-page",
       existingContent: false,
       notes:
-        "PM candidates are high-intent and willing to pay. The Interview Pack ($4.99 for 5 briefs) " +
+        "PM candidates are high-intent and willing to pay. The Interview Pack ($6.99 for 5 briefs) " +
         "is a natural fit for PM candidates prepping for multiple companies.",
     },
     {

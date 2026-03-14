@@ -12,13 +12,13 @@ export function getStripe(): Stripe {
 
 export const PRICES = {
   pro: {
-    unit_amount: 999, // $9.99
+    unit_amount: 1499, // $14.99
     currency: "usd",
     recurring: { interval: "month" as const },
     product_data: { name: "PrepFile Pro" },
   },
   pack: {
-    unit_amount: 499, // $4.99
+    unit_amount: 699, // $6.99
     currency: "usd",
     product_data: { name: "PrepFile Interview Pack (5 briefs)" },
   },

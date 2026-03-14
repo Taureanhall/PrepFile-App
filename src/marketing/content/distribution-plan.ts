@@ -297,7 +297,7 @@ export const blindTemplates: BlindTemplate[] = [
 
 I built PrepFile to generate exactly that. You paste in the JD, tell it what round you're in and your prep situation, and it generates a structured brief in under a minute.
 
-Free tier: 3 briefs/week. Pro is $9.99/month if you're running multiple interview loops.
+Free tier: 3 briefs/week. Pro is $14.99/month if you're running multiple interview loops.
 
 prepfile-production.up.railway.app
 
@@ -318,7 +318,7 @@ What's the company's current strategic focus? What does this specific role evalu
 
 I built a tool that answers all of this from the JD in under a minute: PrepFile.
 
-Free: 3 briefs/week. Pro is $9.99/month.
+Free: 3 briefs/week. Pro is $14.99/month.
 
 prepfile-production.up.railway.app
 

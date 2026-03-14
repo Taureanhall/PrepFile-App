@@ -51,7 +51,7 @@ export const homepageMeta: PageSeoMeta = {
     {
       question: "Is PrepFile free to use?",
       answer:
-        "Yes. PrepFile offers a free tier with 3 briefs per week — no credit card required. Pro ($9.99/month) includes unlimited briefs, saved brief history, and resume matching.",
+        "Yes. PrepFile offers a free tier with 3 briefs per week — no credit card required. Pro ($14.99/month) includes unlimited briefs, saved brief history, and resume matching.",
     },
   ],
 };
@@ -637,7 +637,7 @@ export const comparisonPagesMeta: PageSeoMeta[] = [
       {
         question: "Is PrepFile cheaper than Interviewing.io?",
         answer:
-          "Yes. PrepFile's free tier includes 3 briefs per week at no cost. Pro is $9.99/month. Interviewing.io premium sessions run $150–300 per session. PrepFile is the research layer you do before practice sessions — not a replacement for them.",
+          "Yes. PrepFile's free tier includes 3 briefs per week at no cost. Pro is $14.99/month. Interviewing.io premium sessions run $150–300 per session. PrepFile is the research layer you do before practice sessions — not a replacement for them.",
       },
     ],
   },

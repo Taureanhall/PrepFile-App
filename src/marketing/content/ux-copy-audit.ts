@@ -70,7 +70,7 @@ export const copyAudit = {
         "A user who just finished reading their brief is at maximum conversion intent. This is the hottest moment in the funnel. The CTA button text 'See plans' is passive and weak — it sends the user away from the decision. It should capture the intent, not defer it.",
       current: "See plans",
       suggested: "Unlock Resume Match",
-      note: "Alternatively: 'Upgrade to Pro — $9.99/mo'. Either is more specific and action-oriented than 'See plans'.",
+      note: "Alternatively: 'Upgrade to Pro — $14.99/mo'. Either is more specific and action-oriented than 'See plans'.",
     },
 
     {

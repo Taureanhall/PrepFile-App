@@ -89,6 +89,10 @@ export function PricingPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 text-zinc-300">–</span>
+                <span className="text-zinc-400">No visual analytics or charts</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-zinc-300">–</span>
                 <span className="text-zinc-400">No resume match</span>
               </li>
               <li className="flex items-start gap-2">
@@ -112,7 +116,7 @@ export function PricingPage() {
             <div>
               <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Monthly</div>
               <div className="text-xl font-bold text-zinc-900">PrepFile Pro</div>
-              <div className="text-3xl font-bold text-zinc-900 mt-2">$9.99<span className="text-base font-normal text-zinc-500">/mo</span></div>
+              <div className="text-3xl font-bold text-zinc-900 mt-2">$14.99<span className="text-base font-normal text-zinc-500">/mo</span></div>
             </div>
             <ul className="text-sm text-zinc-600 space-y-2 flex-1">
               <li className="flex items-start gap-2">
@@ -121,11 +125,15 @@ export function PricingPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 text-zinc-900">✓</span>
+                <span>Visual analytics &amp; gap analysis charts</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-zinc-900">✓</span>
                 <span>Resume match &amp; personalized blind spots</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 text-zinc-900">✓</span>
-                <span>Full round expectations</span>
+                <span>Full round expectations &amp; interview timeline</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 text-zinc-900">✓</span>
@@ -150,7 +158,7 @@ export function PricingPage() {
             <div>
               <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-1">One-time</div>
               <div className="text-xl font-bold text-zinc-900">Interview Pack</div>
-              <div className="text-3xl font-bold text-zinc-900 mt-2">$4.99<span className="text-base font-normal text-zinc-500"> once</span></div>
+              <div className="text-3xl font-bold text-zinc-900 mt-2">$6.99<span className="text-base font-normal text-zinc-500"> once</span></div>
             </div>
             <ul className="text-sm text-zinc-600 space-y-2 flex-1">
               <li className="flex items-start gap-2">
@@ -159,11 +167,15 @@ export function PricingPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 text-zinc-900">✓</span>
+                <span>Visual analytics &amp; gap analysis charts</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-zinc-900">✓</span>
                 <span>Resume match &amp; personalized blind spots</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 text-zinc-900">✓</span>
-                <span>Full round expectations</span>
+                <span>Full round expectations &amp; interview timeline</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 text-zinc-900">✓</span>

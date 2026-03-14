@@ -7,7 +7,7 @@ export const launchCopy = {
     subject: "PrepFile Pro is live — unlimited briefs, resume match, history",
     body: `You signed up for PrepFile when it was free-only. That changes today.
 
-Pro is now available: unlimited briefs, brief history, and resume match for $9.99/month. Or grab an Interview Pack — 5 comprehensive briefs for $4.99, no subscription.
+Pro is now available: unlimited briefs, brief history, and resume match for $14.99/month. Or grab an Interview Pack — 5 comprehensive briefs for $6.99, no subscription.
 
 The brief you've been generating in the free tier gives you an overview. Pro gives you the full picture: every round, every signal, what to ask, and where you're likely to get tripped up.
 
@@ -37,13 +37,13 @@ Input company + role + JD → get a full interview brief in <1 min.
 - Resume match
 - Brief history
 
-$9.99/mo or $4.99 for 5 briefs.
+$14.99/mo or $6.99 for 5 briefs.
 
 → prepfile-production.up.railway.app`,
 
     reddit: `I built a tool that generates a personalized interview prep brief in under a minute — you give it the company, job title, job description, and a few context questions, and it produces a structured breakdown: company snapshot, role-specific signals, round expectations, questions to ask, and blind spots.
 
-Free tier has always been available. Pro just launched — unlimited briefs, history, and resume match for $9.99/month (or $4.99 for 5 briefs, no subscription).
+Free tier has always been available. Pro just launched — unlimited briefs, history, and resume match for $14.99/month (or $6.99 for 5 briefs, no subscription).
 
 It's at https://prepfile-production.up.railway.app if you want to try it before your next interview.`,
   },
@@ -51,7 +51,7 @@ It's at https://prepfile-production.up.railway.app if you want to try it before 
   // ─── In-app banner ─────────────────────────────────────────────────────────
   banner: {
     heading: "Pro is here",
-    body: "Unlimited briefs, brief history, and resume match. Upgrade for $9.99/month or grab 5 briefs for $4.99.",
+    body: "Unlimited briefs, brief history, and resume match. Upgrade for $14.99/month or grab 5 briefs for $6.99.",
     cta: "Upgrade to Pro",
     ctaHref: "/pricing",
     dismissible: true,

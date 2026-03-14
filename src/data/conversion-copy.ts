@@ -33,7 +33,7 @@ export const pricingPage = {
     },
     {
       name: "Pro",
-      price: "$9.99",
+      price: "$14.99",
       billingNote: "per month, cancel anytime",
       limit: "Unlimited briefs",
       briefQuality: "Comprehensive brief",
@@ -53,7 +53,7 @@ export const pricingPage = {
     },
     {
       name: "Interview Pack",
-      price: "$4.99",
+      price: "$6.99",
       billingNote: "one-time, no subscription",
       limit: "5 briefs",
       briefQuality: "Comprehensive brief",
@@ -140,7 +140,7 @@ export const pricingPage = {
     },
     {
       q: "What's the Interview Pack for?",
-      a: "If you're not job hunting regularly and don't want a monthly subscription, the Pack gives you 5 full briefs at a flat $4.99. No recurring charge. Useful if you have a few interviews coming up and want comprehensive prep without committing to a subscription.",
+      a: "If you're not job hunting regularly and don't want a monthly subscription, the Pack gives you 5 full briefs at a flat $6.99. No recurring charge. Useful if you have a few interviews coming up and want comprehensive prep without committing to a subscription.",
     },
     {
       q: "How long does it take to generate a brief?",
@@ -160,7 +160,7 @@ export const upgradeNudges = [
   {
     id: "nudge-1",
     trigger: "post_brief_generation",
-    copy: "You got the overview. Pro shows you every round, every evaluation signal, and where your resume lands. Upgrade for $9.99/month.",
+    copy: "You got the overview. Pro shows you every round, every evaluation signal, and where your resume lands. Upgrade for $14.99/month.",
     cta: "Upgrade to Pro",
   },
   {
@@ -172,8 +172,8 @@ export const upgradeNudges = [
   {
     id: "nudge-3",
     trigger: "post_brief_generation",
-    copy: "One interview coming up? The Interview Pack gives you 5 full briefs for $4.99. No subscription.",
-    cta: "Get 5 briefs — $4.99",
+    copy: "One interview coming up? The Interview Pack gives you 5 full briefs for $6.99. No subscription.",
+    cta: "Get 5 briefs — $6.99",
   },
   {
     id: "nudge-4",
@@ -202,11 +202,11 @@ export const postBriefCta = {
   subheading:
     "You have the company overview. The full brief adds every round, every evaluation signal, your blind spots, and a resume match — so you know exactly what to lead with.",
   primaryCta: {
-    label: "Unlock full brief — $9.99/mo",
+    label: "Unlock full brief — $14.99/mo",
     href: "/pricing",
   },
   secondaryCta: {
-    label: "Get 5 briefs for $4.99",
+    label: "Get 5 briefs for $6.99",
     href: "/pricing",
   },
   dismissLabel: "Continue with free brief",
@@ -222,7 +222,7 @@ export const postBriefCta = {
       href: "/pricing",
     },
     secondaryCta: {
-      label: "Get 5 briefs for $4.99",
+      label: "Get 5 briefs for $6.99",
       href: "/pricing",
     },
   },
