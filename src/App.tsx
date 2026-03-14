@@ -706,99 +706,45 @@ Preferred Qualifications:
                 {/* Step 1: The big input */}
                 <div className="space-y-4">
 
-                  {/* Extracted chips — shown when auto-extraction found values */}
-                  {jdReady && (extractedCompany || extractedTitle || companyName.trim() || jobTitle.trim()) && !showManualFields && (
-                    <div className="flex flex-wrap gap-2 animate-in fade-in duration-300">
-                      {companyName.trim() && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 text-brand-700 text-sm font-medium rounded-full border border-brand-200">
-                          <span
-                            contentEditable
-                            suppressContentEditableWarning
-                            onBlur={(e) => setCompanyName(e.currentTarget.textContent || "")}
-                            className="outline-none min-w-[2ch]"
-                          >
-                            {companyName}
-                          </span>
-                          <button
-                            onClick={() => { setCompanyName(""); setExtractedCompany(null); }}
-                            className="text-brand-400 hover:text-brand-600 transition-colors"
-                            aria-label="Clear company"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                          </button>
-                        </span>
-                      )}
-                      {jobTitle.trim() && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent-50 text-accent-700 text-sm font-medium rounded-full border border-accent-200">
-                          <span
-                            contentEditable
-                            suppressContentEditableWarning
-                            onBlur={(e) => setJobTitle(e.currentTarget.textContent || "")}
-                            className="outline-none min-w-[2ch]"
-                          >
-                            {jobTitle}
-                          </span>
-                          <button
-                            onClick={() => { setJobTitle(""); setExtractedTitle(null); }}
-                            className="text-accent-400 hover:text-accent-600 transition-colors"
-                            aria-label="Clear title"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                          </button>
-                        </span>
-                      )}
-                    </div>
-                  )}
-
                   {/* Main textarea */}
                   <textarea
                     value={jobDescription}
                     onChange={(e) => handleJDChange(e.target.value)}
-                    onPaste={(e) => {
-                      // Let the onChange fire naturally; extraction happens in handleJDChange
-                    }}
                     placeholder="Paste a job description to get started..."
                     rows={8}
                     className="w-full px-5 py-4 bg-white border-2 border-zinc-200 rounded-xl text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-600/10 transition-all duration-200 resize-y shadow-sm"
                     style={{ fontSize: "0.95rem", lineHeight: "1.6" }}
                   />
 
-                  {/* Inline fields when extraction is incomplete — show for any missing field */}
-                  {jdReady && (!companyName.trim() || !jobTitle.trim()) && !showManualFields && (
+                  {/* Company + title fields — always visible after JD paste */}
+                  {jdReady && !showManualFields && (
                     <div className="flex flex-col sm:flex-row gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      {!companyName.trim() && (
-                        <input
-                          type="text"
-                          value={companyName}
-                          onChange={(e) => setCompanyName(e.target.value)}
-                          placeholder="Company name"
-                          className="flex-1 px-4 py-2.5 bg-white border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
-                          autoFocus
-                        />
-                      )}
-                      {!jobTitle.trim() && (
-                        <input
-                          type="text"
-                          value={jobTitle}
-                          onChange={(e) => setJobTitle(e.target.value)}
-                          placeholder="Job title"
-                          className="flex-1 px-4 py-2.5 bg-white border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
-                        />
-                      )}
+                      <input
+                        type="text"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        placeholder="Company name"
+                        className={`flex-1 px-4 py-2.5 bg-white border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors ${
+                          extractedCompany && companyName === extractedCompany
+                            ? "border-brand-300 bg-brand-50/50"
+                            : "border-zinc-200"
+                        }`}
+                      />
+                      <input
+                        type="text"
+                        value={jobTitle}
+                        onChange={(e) => setJobTitle(e.target.value)}
+                        placeholder="Job title"
+                        className={`flex-1 px-4 py-2.5 bg-white border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors ${
+                          extractedTitle && jobTitle === extractedTitle
+                            ? "border-accent-300 bg-accent-50/50"
+                            : "border-zinc-200"
+                        }`}
+                      />
                     </div>
                   )}
 
-                  {/* "or enter manually" toggle */}
-                  {!showManualFields && (
-                    <button
-                      onClick={() => setShowManualFields(true)}
-                      className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
-                    >
-                      or enter manually
-                    </button>
-                  )}
-
-                  {/* Manual fallback fields */}
+                  {/* Manual fields with autocomplete suggestions */}
                   {showManualFields && (
                     <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
                       <div>
@@ -823,12 +769,6 @@ Preferred Qualifications:
                           className="w-full px-4 py-2.5 bg-white border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
                         />
                       </div>
-                      <button
-                        onClick={() => setShowManualFields(false)}
-                        className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
-                      >
-                        hide manual fields
-                      </button>
                     </div>
                   )}
                 </div>
