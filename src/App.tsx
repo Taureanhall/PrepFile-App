@@ -13,11 +13,15 @@ import { InterviewPrepIndex } from "./components/InterviewPrepIndex";
 import { BlogPage } from "./components/BlogPage";
 import { FaqPage } from "./components/FaqPage";
 import { SegmentPage } from "./components/SegmentPage";
+import { CareerServicesPage } from "./components/CareerServicesPage";
+import { RecruitingAgenciesPage } from "./components/RecruitingAgenciesPage";
 import { UpgradeCTA } from "./components/UpgradeCTA";
 import { PricingPage } from "./components/PricingPage";
+import TeamAdmin from "./components/TeamAdmin";
 import { Nav } from "./components/Nav";
 import { SuggestionInput } from "./components/SuggestionInput";
 import { POPULAR_COMPANIES, getTitleSuggestions } from "./lib/suggestions";
+import { extractFromJD } from "./lib/extractFromJD";
 import { GeneratingState } from "./components/GeneratingState";
 import { ToastContainer } from "./components/Toast";
 import type { Toast } from "./components/Toast";
@@ -108,10 +112,25 @@ export default function Page() {
     return <PricingPage />;
   }
 
+  // Route: /for/career-services — B2B career services landing page
+  if (window.location.pathname === "/for/career-services") {
+    return <CareerServicesPage />;
+  }
+
+  // Route: /for/recruiting-agencies — B2B recruiting agencies landing page
+  if (window.location.pathname === "/for/recruiting-agencies") {
+    return <RecruitingAgenciesPage />;
+  }
+
   // Route: /for/:slug — segment landing pages
   const segmentSlug = window.location.pathname.match(/^\/for\/([^/]+)$/)?.[1] ?? null;
   if (segmentSlug) {
     return <SegmentPage slug={segmentSlug} />;
+  }
+
+  // Route: /team-admin — B2B team plan admin dashboard
+  if (window.location.pathname === "/team-admin") {
+    return <TeamAdmin />;
   }
 
   // Auth state
@@ -153,6 +172,7 @@ export default function Page() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [output, setOutput] = useState<PrepBriefData | null>(null);
   const [briefId, setBriefId] = useState<string | null>(null);
+  const [agencyBranding, setAgencyBranding] = useState<{ agencyName: string; agencyLogoUrl?: string } | undefined>(undefined);
   const [showHistory, setShowHistory] = useState(false);
   const [hasKey, setHasKey] = useState(true);
   const [isEditor, setIsEditor] = useState(false);
@@ -297,19 +317,63 @@ export default function Page() {
     }
   };
 
+  // Stepped form state
+  const [showManualFields, setShowManualFields] = useState(false);
+  const [extractedCompany, setExtractedCompany] = useState<string | null>(null);
+  const [extractedTitle, setExtractedTitle] = useState<string | null>(null);
+  const [mcqsVisible, setMcqsVisible] = useState(false);
+
   // Derived State
-  const showMCQs = jobDescription.trim().length > 10;
+  const jdReady = jobDescription.trim().length > 50;
+  const coreReady = companyName.trim() !== "" && jobTitle.trim() !== "" && jdReady;
   const isFormValid =
     companyName.trim() !== "" &&
     jobTitle.trim() !== "" &&
-    jobDescription.trim() !== "" &&
-    round !== "" &&
-    familiarity !== "" &&
-    timeToPrep !== "" &&
-    biggestGap !== "";
+    jobDescription.trim() !== "";
+
+  // Trigger MCQ slide-in when core fields are set
+  useEffect(() => {
+    if (coreReady && !mcqsVisible) {
+      setMcqsVisible(true);
+    }
+  }, [coreReady]);
+
+  // Handle JD paste / change with auto-extraction
+  const handleJDChange = (text: string) => {
+    setJobDescription(text);
+    if (text.trim().length > 50) {
+      const result = extractFromJD(text);
+      if (result.company && !companyName.trim()) {
+        setCompanyName(result.company);
+        setExtractedCompany(result.company);
+      }
+      if (result.title && !jobTitle.trim()) {
+        setJobTitle(result.title);
+        setExtractedTitle(result.title);
+      }
+    }
+  };
+
+  // Fill defaults for MCQs if skipped
+  const applyMCQDefaults = () => {
+    if (!round) setRound("Not sure");
+    if (!familiarity) setFamiliarity("Know of them");
+    if (!timeToPrep) setTimeToPrep("Under 1 hour");
+    if (!biggestGap) setBiggestGap("No obvious gap");
+  };
 
   const handleGenerate = async () => {
     if (!isFormValid) return;
+
+    // Apply defaults for any unanswered MCQs
+    const finalRound = round || "Not sure";
+    const finalFamiliarity = familiarity || "Know of them";
+    const finalTimeToPrep = timeToPrep || "Under 1 hour";
+    const finalBiggestGap = biggestGap || "No obvious gap";
+    if (!round) setRound(finalRound);
+    if (!familiarity) setFamiliarity(finalFamiliarity);
+    if (!timeToPrep) setTimeToPrep(finalTimeToPrep);
+    if (!biggestGap) setBiggestGap(finalBiggestGap);
 
     setIsGenerating(true);
 
@@ -319,7 +383,7 @@ export default function Page() {
       const res = await fetch('/api/generate-brief', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(bypassKey && { 'x-bypass-key': bypassKey }) },
-        body: JSON.stringify({ companyName, jobTitle, jobDescription, round, familiarity, timeToPrep, biggestGap, referralSource }),
+        body: JSON.stringify({ companyName, jobTitle, jobDescription, round: finalRound, familiarity: finalFamiliarity, timeToPrep: finalTimeToPrep, biggestGap: finalBiggestGap, referralSource }),
       });
 
       if (res.status === 401) {
@@ -335,10 +399,11 @@ export default function Page() {
 
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      const { briefId: newBriefId, ...briefData } = data;
+      const { briefId: newBriefId, agencyBranding: newAgencyBranding, ...briefData } = data;
       trackBriefGenerated(companyName, jobTitle, subscription?.plan ?? "free", !!user);
       setOutput(briefData as PrepBriefData);
       setBriefId(newBriefId ?? null);
+      setAgencyBranding(newAgencyBranding ?? undefined);
       fetchBriefCount();
     } catch (error: any) {
       console.error("Error generating brief:", error);
@@ -387,10 +452,11 @@ export default function Page() {
 
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      const { briefId: newBriefId, ...briefData } = data;
+      const { briefId: newBriefId, agencyBranding: newAgencyBranding, ...briefData } = data;
       trackBriefGenerated(qCompany, qTitle, subscription?.plan ?? "free", !!user);
       setOutput(briefData as PrepBriefData);
       setBriefId(newBriefId ?? null);
+      setAgencyBranding(newAgencyBranding ?? undefined);
       fetchBriefCount();
     } catch (error: any) {
       console.error("Error generating quick brief:", error);
@@ -619,87 +685,173 @@ Preferred Qualifications:
             ) : isGenerating ? (
               <GeneratingState companyName={companyName || "your company"} />
             ) : (
-              <div className="space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-zinc-200/60">
+              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-md border border-zinc-200/60" style={{ background: "linear-gradient(180deg, #ffffff 0%, #fafbfc 100%)" }}>
 
-                {/* Try with example */}
-                <div className="flex items-center justify-between">
+                {/* Header + subtle example link */}
+                <div className="flex items-center justify-between mb-6">
                   <div>
                     <h1 className="text-xl font-semibold text-zinc-900">Build your prep brief</h1>
-                    <p className="text-sm text-zinc-500 mt-0.5">Fill in the details below, or try a sample first.</p>
+                    <p className="text-sm text-zinc-500 mt-0.5">Paste a job description to get started.</p>
                   </div>
                   <button
                     onClick={handleTryExample}
-                    className="shrink-0 ml-4 px-4 py-2 text-sm font-medium text-zinc-700 bg-zinc-100 border border-zinc-200 rounded-lg hover:bg-zinc-200 transition-colors"
+                    className="shrink-0 ml-4 text-sm text-zinc-400 hover:text-brand-600 transition-colors"
                   >
-                    Try with example
+                    Try an example <span aria-hidden="true">&rarr;</span>
                   </button>
                 </div>
 
-                {/* Core Inputs */}
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      Company name
-                    </label>
-                    <SuggestionInput
-                      value={companyName}
-                      onChange={setCompanyName}
-                      suggestions={POPULAR_COMPANIES}
-                      placeholder={`e.g. ${placeholders.company}`}
-                      label="Popular companies"
-                      className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      Job title
-                    </label>
-                    <SuggestionInput
-                      value={jobTitle}
-                      onChange={setJobTitle}
-                      suggestions={getTitleSuggestions(companyName)}
-                      placeholder={`e.g. ${placeholders.title}`}
-                      label={companyName.trim() ? `Roles at ${companyName}` : "Popular titles"}
-                      className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-                      Job description
-                    </label>
-                    <textarea
-                      value={jobDescription}
-                      onChange={(e) => setJobDescription(e.target.value)}
-                      placeholder="Paste the full job description here..."
-                      rows={6}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors resize-y"
-                    />
-                  </div>
+                {/* Progress indicator */}
+                <div className="flex items-center gap-2 mb-6">
+                  <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${jdReady ? "bg-brand-600" : "bg-zinc-200"}`} />
+                  <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${mcqsVisible ? "bg-brand-600" : "bg-zinc-200"}`} />
+                  <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${isFormValid ? "bg-brand-600" : "bg-zinc-200"}`} />
                 </div>
 
-                {/* MCQ Section (Conditional) */}
-                {showMCQs && (
-                  <div className="pt-6 border-t border-zinc-100 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {/* Step 1: The big input */}
+                <div className="space-y-4">
+
+                  {/* Extracted chips — shown when auto-extraction found values */}
+                  {jdReady && (extractedCompany || extractedTitle || companyName.trim() || jobTitle.trim()) && !showManualFields && (
+                    <div className="flex flex-wrap gap-2 animate-in fade-in duration-300">
+                      {companyName.trim() && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 text-brand-700 text-sm font-medium rounded-full border border-brand-200">
+                          <span
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => setCompanyName(e.currentTarget.textContent || "")}
+                            className="outline-none min-w-[2ch]"
+                          >
+                            {companyName}
+                          </span>
+                          <button
+                            onClick={() => { setCompanyName(""); setExtractedCompany(null); }}
+                            className="text-brand-400 hover:text-brand-600 transition-colors"
+                            aria-label="Clear company"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                          </button>
+                        </span>
+                      )}
+                      {jobTitle.trim() && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent-50 text-accent-700 text-sm font-medium rounded-full border border-accent-200">
+                          <span
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => setJobTitle(e.currentTarget.textContent || "")}
+                            className="outline-none min-w-[2ch]"
+                          >
+                            {jobTitle}
+                          </span>
+                          <button
+                            onClick={() => { setJobTitle(""); setExtractedTitle(null); }}
+                            className="text-accent-400 hover:text-accent-600 transition-colors"
+                            aria-label="Clear title"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Main textarea */}
+                  <textarea
+                    value={jobDescription}
+                    onChange={(e) => handleJDChange(e.target.value)}
+                    onPaste={(e) => {
+                      // Let the onChange fire naturally; extraction happens in handleJDChange
+                    }}
+                    placeholder="Paste a job description to get started..."
+                    rows={8}
+                    className="w-full px-5 py-4 bg-white border-2 border-zinc-200 rounded-xl text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-600/10 transition-all duration-200 resize-y shadow-sm"
+                    style={{ fontSize: "0.95rem", lineHeight: "1.6" }}
+                  />
+
+                  {/* Inline fields when extraction fails — shown below textarea */}
+                  {jdReady && !companyName.trim() && !jobTitle.trim() && !showManualFields && (
+                    <div className="flex flex-col sm:flex-row gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <input
+                        type="text"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        placeholder="Company name"
+                        className="flex-1 px-4 py-2.5 bg-white border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
+                      />
+                      <input
+                        type="text"
+                        value={jobTitle}
+                        onChange={(e) => setJobTitle(e.target.value)}
+                        placeholder="Job title"
+                        className="flex-1 px-4 py-2.5 bg-white border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
+                      />
+                    </div>
+                  )}
+
+                  {/* "or enter manually" toggle */}
+                  {!showManualFields && (
+                    <button
+                      onClick={() => setShowManualFields(true)}
+                      className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+                    >
+                      or enter manually
+                    </button>
+                  )}
+
+                  {/* Manual fallback fields */}
+                  {showManualFields && (
+                    <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 mb-1.5">Company name</label>
+                        <SuggestionInput
+                          value={companyName}
+                          onChange={setCompanyName}
+                          suggestions={POPULAR_COMPANIES}
+                          placeholder={`e.g. ${placeholders.company}`}
+                          label="Popular companies"
+                          className="w-full px-4 py-2.5 bg-white border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 mb-1.5">Job title</label>
+                        <SuggestionInput
+                          value={jobTitle}
+                          onChange={setJobTitle}
+                          suggestions={getTitleSuggestions(companyName)}
+                          placeholder={`e.g. ${placeholders.title}`}
+                          label={companyName.trim() ? `Roles at ${companyName}` : "Popular titles"}
+                          className="w-full px-4 py-2.5 bg-white border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
+                        />
+                      </div>
+                      <button
+                        onClick={() => setShowManualFields(false)}
+                        className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+                      >
+                        hide manual fields
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 2: Quick context MCQs — staggered slide-in */}
+                {mcqsVisible && (
+                  <div className="pt-6 mt-6 border-t border-zinc-100 space-y-6">
                     <div>
-                      <h2 className="text-lg font-semibold text-zinc-900 mb-1">Quick context</h2>
-                      <p className="text-sm text-zinc-500 mb-6">Help us tailor the brief to your specific situation.</p>
+                      <h2 className="text-base font-semibold text-zinc-900 mb-0.5">Quick context</h2>
+                      <p className="text-sm text-zinc-500">Optional — helps tailor your brief.</p>
                     </div>
 
                     {/* Question 1 */}
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-zinc-800">
-                        Which interview round is this for?
-                      </label>
-                      <div className="flex flex-wrap gap-2">
+                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-3 duration-400" style={{ animationDelay: "0ms" }}>
+                      <label className="block text-sm font-medium text-zinc-800">Interview round</label>
+                      <div className="flex flex-wrap gap-1.5">
                         {mcqOptions.round.map((option) => (
                           <button
                             key={option}
                             onClick={() => setRound(option)}
-                            className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
+                            className={`px-3 py-2 text-sm rounded-full border transition-all duration-150 hover:scale-[1.02] ${
                               round === option
-                                ? "bg-brand-600 text-white border-brand-600"
+                                ? "bg-brand-600 text-white border-brand-600 shadow-sm"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
                             }`}
                           >
@@ -710,18 +862,16 @@ Preferred Qualifications:
                     </div>
 
                     {/* Question 2 */}
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-zinc-800">
-                        How familiar are you with this company?
-                      </label>
-                      <div className="flex flex-wrap gap-2">
+                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-3 duration-400" style={{ animationDelay: "100ms", animationFillMode: "both" }}>
+                      <label className="block text-sm font-medium text-zinc-800">Company familiarity</label>
+                      <div className="flex flex-wrap gap-1.5">
                         {mcqOptions.familiarity.map((option) => (
                           <button
                             key={option}
                             onClick={() => setFamiliarity(option)}
-                            className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
+                            className={`px-3 py-2 text-sm rounded-full border transition-all duration-150 hover:scale-[1.02] ${
                               familiarity === option
-                                ? "bg-brand-600 text-white border-brand-600"
+                                ? "bg-brand-600 text-white border-brand-600 shadow-sm"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
                             }`}
                           >
@@ -732,18 +882,16 @@ Preferred Qualifications:
                     </div>
 
                     {/* Question 3 */}
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-zinc-800">
-                        How much time do you have to prep?
-                      </label>
-                      <div className="flex flex-wrap gap-2">
+                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-3 duration-400" style={{ animationDelay: "200ms", animationFillMode: "both" }}>
+                      <label className="block text-sm font-medium text-zinc-800">Time to prep</label>
+                      <div className="flex flex-wrap gap-1.5">
                         {mcqOptions.timeToPrep.map((option) => (
                           <button
                             key={option}
                             onClick={() => setTimeToPrep(option)}
-                            className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
+                            className={`px-3 py-2 text-sm rounded-full border transition-all duration-150 hover:scale-[1.02] ${
                               timeToPrep === option
-                                ? "bg-brand-600 text-white border-brand-600"
+                                ? "bg-brand-600 text-white border-brand-600 shadow-sm"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
                             }`}
                           >
@@ -754,18 +902,16 @@ Preferred Qualifications:
                     </div>
 
                     {/* Question 4 */}
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-zinc-800">
-                        What's your biggest gap for this role?
-                      </label>
-                      <div className="flex flex-wrap gap-2">
+                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-3 duration-400" style={{ animationDelay: "300ms", animationFillMode: "both" }}>
+                      <label className="block text-sm font-medium text-zinc-800">Biggest gap</label>
+                      <div className="flex flex-wrap gap-1.5">
                         {mcqOptions.biggestGap.map((option) => (
                           <button
                             key={option}
                             onClick={() => setBiggestGap(option)}
-                            className={`px-4 py-2.5 text-sm rounded-full border transition-colors ${
+                            className={`px-3 py-2 text-sm rounded-full border transition-all duration-150 hover:scale-[1.02] ${
                               biggestGap === option
-                                ? "bg-brand-600 text-white border-brand-600"
+                                ? "bg-brand-600 text-white border-brand-600 shadow-sm"
                                 : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
                             }`}
                           >
@@ -775,27 +921,43 @@ Preferred Qualifications:
                       </div>
                     </div>
 
-                    {/* Submit Button */}
-                    <div className="pt-4 space-y-3">
+                    {/* Skip link */}
+                    {!(round && familiarity && timeToPrep && biggestGap) && isFormValid && (
                       <button
-                        onClick={handleGenerate}
-                        disabled={!isFormValid || isGenerating}
-                        className="w-full flex items-center justify-center py-3.5 px-4 bg-brand-600 text-white font-medium rounded-xl hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        onClick={() => {
+                          applyMCQDefaults();
+                          handleGenerate();
+                        }}
+                        className="text-sm text-zinc-400 hover:text-brand-600 transition-colors"
                       >
-                        {isGenerating ? (
-                          <>
-                            <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Building your brief...
-                          </>
-                        ) : (
-                          "Generate My Prep Brief"
-                        )}
+                        Skip — generate now
                       </button>
-                      <p className="text-xs text-zinc-400 mt-2">This usually takes 30–60 seconds</p>
-                    </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Step 3: Generate button */}
+                {isFormValid && (
+                  <div className="pt-6 mt-2 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <button
+                      onClick={handleGenerate}
+                      disabled={isGenerating}
+                      className="w-full flex items-center justify-center py-3.5 px-4 text-white font-medium rounded-xl shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                      style={{ background: "linear-gradient(135deg, var(--color-brand-600) 0%, var(--color-brand-700) 100%)" }}
+                    >
+                      {isGenerating ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Building your brief...
+                        </>
+                      ) : (
+                        "Generate My Prep Brief"
+                      )}
+                    </button>
+                    <p className="text-xs text-zinc-400 text-center">This usually takes 30-60 seconds</p>
                   </div>
                 )}
               </div>
@@ -815,6 +977,8 @@ Preferred Qualifications:
               onRegenerate={handleGenerate}
               isRegenerating={isGenerating}
               onUpgradeClick={() => setUpgradeReason("pro_required")}
+              totalBriefs={briefCount}
+              agencyBranding={agencyBranding}
             />
 
             {/* Post-brief upgrade CTA — free users only, A/B tested copy variants */}

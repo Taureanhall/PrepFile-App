@@ -537,4 +537,118 @@ export function verifyOtpCode(email: string, code: string, referralSource?: stri
   return { sessionToken };
 }
 
+// --- Teams (B2B bulk plan) ---
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS teams (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    admin_user_id TEXT NOT NULL REFERENCES users(id),
+    seat_count INTEGER NOT NULL,
+    stripe_customer_id TEXT,
+    stripe_checkout_session_id TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS team_members (
+    id TEXT PRIMARY KEY,
+    team_id TEXT NOT NULL REFERENCES teams(id),
+    email TEXT NOT NULL,
+    user_id TEXT REFERENCES users(id),
+    joined_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(team_id, email)
+  );
+`);
+
+// Agency branding columns — added after initial table creation
+try { db.exec(`ALTER TABLE teams ADD COLUMN agency_name TEXT`); } catch {}
+try { db.exec(`ALTER TABLE teams ADD COLUMN agency_logo_url TEXT`); } catch {}
+try { db.exec(`ALTER TABLE teams ADD COLUMN branding_enabled INTEGER NOT NULL DEFAULT 0`); } catch {}
+
+export interface Team {
+  id: string;
+  name: string;
+  admin_user_id: string;
+  seat_count: number;
+  stripe_customer_id: string | null;
+  stripe_checkout_session_id: string | null;
+  status: "pending" | "active";
+  created_at: string;
+  agency_name: string | null;
+  agency_logo_url: string | null;
+  branding_enabled: 0 | 1;
+}
+
+export interface TeamMemberUsage {
+  email: string;
+  user_id: string | null;
+  joined_at: string;
+  brief_count: number;
+}
+
+export function createTeam(adminUserId: string, name: string, seatCount: number, stripeCheckoutSessionId: string): Team {
+  const id = crypto.randomUUID();
+  db.prepare(`
+    INSERT INTO teams (id, name, admin_user_id, seat_count, stripe_checkout_session_id)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(id, name, adminUserId, seatCount, stripeCheckoutSessionId);
+  return db.prepare("SELECT * FROM teams WHERE id = ?").get(id) as Team;
+}
+
+export function getTeamById(id: string): Team | null {
+  return db.prepare("SELECT * FROM teams WHERE id = ?").get(id) as Team | null;
+}
+
+export function getTeamByAdminUser(adminUserId: string): Team | null {
+  return db.prepare("SELECT * FROM teams WHERE admin_user_id = ? ORDER BY created_at DESC LIMIT 1").get(adminUserId) as Team | null;
+}
+
+export function activateTeam(teamId: string, stripeCustomerId: string): void {
+  db.prepare(`
+    UPDATE teams SET status = 'active', stripe_customer_id = ? WHERE id = ?
+  `).run(stripeCustomerId, teamId);
+}
+
+export function addTeamMember(teamId: string, email: string): void {
+  const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email.toLowerCase()) as any;
+  db.prepare(`
+    INSERT OR IGNORE INTO team_members (id, team_id, email, user_id)
+    VALUES (?, ?, ?, ?)
+  `).run(crypto.randomUUID(), teamId, email.toLowerCase(), existing?.id ?? null);
+}
+
+export function getTeamUsage(teamId: string): TeamMemberUsage[] {
+  return db.prepare(`
+    SELECT
+      tm.email,
+      tm.user_id,
+      tm.joined_at,
+      COUNT(b.id) as brief_count
+    FROM team_members tm
+    LEFT JOIN briefs b ON b.user_id = tm.user_id
+    GROUP BY tm.id
+    ORDER BY tm.joined_at ASC
+  `).all() as TeamMemberUsage[];
+}
+
+export function getTeamByCheckoutSession(sessionId: string): Team | null {
+  return db.prepare("SELECT * FROM teams WHERE stripe_checkout_session_id = ?").get(sessionId) as Team | null;
+}
+
+export function getTeamByMember(userId: string): Team | null {
+  return db.prepare(`
+    SELECT t.* FROM teams t
+    INNER JOIN team_members tm ON tm.team_id = t.id
+    WHERE tm.user_id = ? AND t.status = 'active'
+    LIMIT 1
+  `).get(userId) as Team | null;
+}
+
+export function updateTeamBranding(teamId: string, agencyName: string | null, agencyLogoUrl: string | null, brandingEnabled: boolean): void {
+  db.prepare(`
+    UPDATE teams SET agency_name = ?, agency_logo_url = ?, branding_enabled = ? WHERE id = ?
+  `).run(agencyName, agencyLogoUrl, brandingEnabled ? 1 : 0, teamId);
+}
+
 export default db;
