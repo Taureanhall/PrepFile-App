@@ -428,6 +428,9 @@ export default function Page() {
 
     setIsGenerating(true);
 
+    // Capture before fetch — needed to detect if this is the 3rd (last) free brief
+    const isLastFreeBrief = !!user && subscription?.plan === "free" && (subscription.free_briefs_used ?? 0) === 2;
+
     try {
       const bypassKey = localStorage.getItem("bypass_key") || "";
       const referralSource = sessionStorage.getItem("prepfile_ref") || "direct";
@@ -457,6 +460,10 @@ export default function Page() {
       setAgencyBranding(newAgencyBranding ?? undefined);
       fetchBriefCount();
       refreshSubscription();
+      // Gate fires AFTER brief generation: show paywall after the 3rd (final) free brief
+      if (isLastFreeBrief) {
+        setTimeout(() => setUpgradeReason("free_limit"), 1000);
+      }
     } catch (error: any) {
       console.error("Error generating brief:", error);
       if (error.message?.includes("Rate limit exceeded")) {
@@ -1018,9 +1025,16 @@ Preferred Qualifications:
 
             {/* Pre-limit nudge — shown after brief #2 when 1 free brief remains */}
             {showPreLimitNudge && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center justify-between gap-4 text-sm animate-in fade-in duration-300">
-                <span className="text-amber-900">You have 1 free brief left. <button onClick={() => setUpgradeReason("free_limit")} className="font-semibold underline underline-offset-2 hover:text-amber-700">Upgrade to unlock unlimited — $14.99/mo</button></span>
-                <button onClick={() => setShowPreLimitNudge(false)} className="shrink-0 text-amber-400 hover:text-amber-600">✕</button>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 animate-in fade-in duration-300">
+                <div className="flex items-center justify-between gap-4 text-sm mb-2">
+                  <span className="text-amber-900">You have 1 free brief left. <button onClick={() => setUpgradeReason("free_limit")} className="font-semibold underline underline-offset-2 hover:text-amber-700">Upgrade to unlock unlimited — $14.99/mo</button></span>
+                  <button onClick={() => setShowPreLimitNudge(false)} className="shrink-0 text-amber-400 hover:text-amber-600">✕</button>
+                </div>
+                <div className="flex gap-1.5">
+                  <div className="h-1.5 flex-1 rounded-full bg-amber-400" />
+                  <div className="h-1.5 flex-1 rounded-full bg-amber-400" />
+                  <div className="h-1.5 flex-1 rounded-full bg-amber-200" />
+                </div>
               </div>
             )}
             <PrepBrief
