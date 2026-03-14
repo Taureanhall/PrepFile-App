@@ -1235,6 +1235,81 @@ async function startServer() {
       title: "How to Prepare for an IBM Interview | PrepFile",
       description: "IBM's interviews span consulting, cloud, and AI roles — each with distinct formats. Here's the hiring process, what evaluators score, and how to prep for an IBM loop.",
     },
+    "johnson-and-johnson": {
+      name: "Johnson & Johnson",
+      title: "How to Prepare for a Johnson & Johnson Interview | PrepFile",
+      description: "Johnson & Johnson interview prep: behavioral rounds, virtual video interviews, and Credo-aligned storytelling. Build your personalized J&J prep brief in 10 minutes.",
+    },
+    pfizer: {
+      name: "Pfizer",
+      title: "How to Prepare for a Pfizer Interview | PrepFile",
+      description: "Pfizer interview prep: STAR-based behavioral rounds, HireVue assessments, and scientific competency questions. Build your personalized Pfizer prep brief in 10 minutes.",
+    },
+    unitedhealth: {
+      name: "UnitedHealth Group",
+      title: "How to Prepare for a UnitedHealth Group Interview | PrepFile",
+      description: "UnitedHealth Group interview prep: behavioral rounds, digital assessments, and healthcare industry knowledge. Build your personalized UHG prep brief in 10 minutes.",
+    },
+    walmart: {
+      name: "Walmart",
+      title: "How to Prepare for a Walmart Interview | PrepFile",
+      description: "Ace Walmart's 65-question assessment, STAR behavioral rounds, and Bar Raiser-style panel interviews. Build your personalized Walmart prep brief in minutes.",
+    },
+    target: {
+      name: "Target",
+      title: "How to Prepare for a Target Interview | PrepFile",
+      description: "Prepare for Target's recorded video interview, Workday application, and guest-obsessed behavioral rounds. Build your personalized Target prep brief fast.",
+    },
+    nike: {
+      name: "Nike",
+      title: "How to Prepare for a Nike Interview | PrepFile",
+      description: "Prepare for Nike's HireVue video interview, group retail exercises, and culture-driven behavioral rounds. Generate your personalized Nike prep brief today.",
+    },
+    "procter-and-gamble": {
+      name: "Procter & Gamble",
+      title: "How to Prepare for a Procter & Gamble Interview | PrepFile",
+      description: "Ace P&G's PEAK assessment, cognitive challenges, and behavioral interviews using the STAR method. Build your personalized P&G prep brief in minutes.",
+    },
+    "coca-cola": {
+      name: "Coca-Cola",
+      title: "How to Prepare for a Coca-Cola Interview | PrepFile",
+      description: "Prepare for Coca-Cola's panel interviews, competency-based questions, and situational assessments. Build your personalized Coca-Cola prep brief in minutes.",
+    },
+    boeing: {
+      name: "Boeing",
+      title: "How to Prepare for a Boeing Interview | PrepFile",
+      description: "Prepare for Boeing's STAR-format panel interviews, government compliance questions, and engineering assessments. Build your personalized Boeing prep brief.",
+    },
+    "general-electric": {
+      name: "General Electric",
+      title: "How to Prepare for a General Electric Interview | PrepFile",
+      description: "Prepare for GE's multi-stage process: situational judgment tests, video interviews, and assessment centre exercises. Build your personalized GE prep brief.",
+    },
+    visa: {
+      name: "Visa",
+      title: "How to Prepare for a Visa Interview | PrepFile",
+      description: "Prepare for Visa's multi-round interviews, technical coding assessments, and system design questions. Build your personalized Visa prep brief in minutes.",
+    },
+    "capital-one": {
+      name: "Capital One",
+      title: "How to Prepare for a Capital One Interview | PrepFile",
+      description: "Prepare for Capital One's Power Day case interviews, quantitative assessments, and behavioral rounds. Build your personalized Capital One prep brief fast.",
+    },
+    disney: {
+      name: "Disney",
+      title: "How to Prepare for a Disney Interview | PrepFile",
+      description: "Prepare for Disney's STAR behavioral interviews, assessment centre exercises, and culture-fit evaluations. Build your personalized Disney prep brief today.",
+    },
+    caterpillar: {
+      name: "Caterpillar",
+      title: "How to Prepare for a Caterpillar Interview | PrepFile",
+      description: "Prepare for Caterpillar's behavioral interviews, aptitude assessments, and on-site panel rounds. Build your personalized Caterpillar prep brief in minutes.",
+    },
+    "warner-bros": {
+      name: "Warner Bros. Discovery",
+      title: "How to Prepare for a Warner Bros. Discovery Interview | PrepFile",
+      description: "Prepare for Warner Bros. Discovery's HireVue video interview, panel rounds, and portfolio reviews. Build your personalized WBD prep brief in minutes.",
+    },
     "software-engineer": {
       name: "Software Engineer",
       title: "Software Engineer Interview Prep Guide | PrepFile",
