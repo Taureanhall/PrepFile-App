@@ -58,7 +58,7 @@ import {
   sendDunningEmail,
 } from "./src/lib/email-sequences.js";
 import { subjectA as postBriefSubject, buildPostBriefUpgradeHtml } from "./src/lib/emails/post-brief-upgrade.js";
-import { setEmailUnsubscribed, getUserIdByEmail, getUserEmailById, getReferralCount } from "./src/lib/db.js";
+import { setEmailUnsubscribed, getUserIdByEmail, getUserEmailById, getReferralCount, saveB2bLead, getB2bLeads } from "./src/lib/db.js";
 import { OAuth2Client } from "google-auth-library";
 
 const RATE_LIMIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -1162,6 +1162,61 @@ async function startServer() {
     }
   });
 
+  // POST /api/b2b-leads — capture B2B lead from landing pages
+  app.post("/api/b2b-leads", async (req, res) => {
+    const { name, email, organization, role, source } = req.body ?? {};
+
+    // Basic validation
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      return res.status(400).json({ error: "Name is required." });
+    }
+    if (!email || typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return res.status(400).json({ error: "A valid work email is required." });
+    }
+    if (!organization || typeof organization !== "string" || organization.trim().length === 0) {
+      return res.status(400).json({ error: "Organization name is required." });
+    }
+    const validRoles = ["career-services", "recruiting", "other"];
+    if (!role || !validRoles.includes(role)) {
+      return res.status(400).json({ error: "Please select a role." });
+    }
+    const validSources = ["career-services", "recruiting-agencies"];
+    const leadSource = validSources.includes(source) ? source : "unknown";
+
+    try {
+      saveB2bLead(name.trim(), email.trim(), organization.trim(), role, leadSource);
+
+      // Send admin notification email if ADMIN_NOTIFY_EMAIL is configured
+      const adminEmail = process.env.ADMIN_NOTIFY_EMAIL;
+      if (adminEmail && process.env.RESEND_API_KEY) {
+        try {
+          const { Resend } = await import("resend");
+          const resend = new Resend(process.env.RESEND_API_KEY);
+          await resend.emails.send({
+            from: FROM_EMAIL,
+            to: adminEmail,
+            subject: `New B2B lead: ${name.trim()} — ${organization.trim()}`,
+            html: `<p>New B2B lead from <strong>/for/${leadSource}</strong>:</p>
+<ul>
+  <li><strong>Name:</strong> ${name.trim()}</li>
+  <li><strong>Email:</strong> ${email.trim()}</li>
+  <li><strong>Organization:</strong> ${organization.trim()}</li>
+  <li><strong>Role:</strong> ${role}</li>
+</ul>`,
+          });
+        } catch (emailErr) {
+          console.error("[b2b-leads] admin notification email failed:", emailErr);
+          // Don't fail the request if the email fails
+        }
+      }
+
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("[b2b-leads] error:", err);
+      res.status(500).json({ error: "Failed to save lead. Please try again." });
+    }
+  });
+
   // Admin dashboard — password-gated via ADMIN_PASSWORD env var (HTTP Basic Auth)
   app.get("/admin", (req, res) => {
     const adminPassword = process.env.ADMIN_PASSWORD;
@@ -1177,6 +1232,7 @@ async function startServer() {
     }
 
     const m = getAdminMetrics();
+    const b2bLeads = getB2bLeads(50);
     const now = new Date().toUTCString();
 
     const distRows = m.briefsPerUserDistribution.map(r =>
@@ -1184,6 +1240,15 @@ async function startServer() {
     ).join("") || "<tr><td colspan='2'>No data</td></tr>";
 
     const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+    const b2bLeadRows = b2bLeads.map(r => {
+      const sourceBadge = r.source === "career-services"
+        ? `<span style="background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:9999px;font-size:11px">career services</span>`
+        : r.source === "recruiting-agencies"
+        ? `<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:9999px;font-size:11px">recruiting</span>`
+        : `<span style="color:#a1a1aa;font-size:11px">${esc(r.source)}</span>`;
+      return `<tr><td>${esc(r.name)}</td><td>${esc(r.email)}</td><td>${esc(r.organization)}</td><td>${esc(r.role)}</td><td>${sourceBadge}</td><td>${esc(r.created_at)}</td></tr>`;
+    }).join("") || "<tr><td colspan='6'>No leads yet</td></tr>";
 
     const signupRows = m.recentSignups.map(r => {
       const planBadge = r.plan === "pro"
@@ -1237,6 +1302,14 @@ async function startServer() {
   <table>
     <thead><tr><th>Briefs Generated</th><th>Users</th></tr></thead>
     <tbody>${distRows}</tbody>
+  </table>
+</section>
+
+<section>
+  <h2>B2B Leads (last 50)</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Email</th><th>Organization</th><th>Role</th><th>Source</th><th>Submitted</th></tr></thead>
+    <tbody>${b2bLeadRows}</tbody>
   </table>
 </section>
 

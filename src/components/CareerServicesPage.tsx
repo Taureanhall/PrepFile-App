@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Nav } from "./Nav";
 import { content } from "../marketing/content/career-services-landing";
+import { B2BLeadForm } from "./B2BLeadForm";
 
 export function CareerServicesPage() {
   useEffect(() => {
@@ -52,13 +53,7 @@ export function CareerServicesPage() {
             {content.headline}
           </h1>
           <p className="text-lg text-zinc-600 leading-relaxed mb-8">{content.subhead}</p>
-          <a
-            href={content.cta.href}
-            className="inline-block px-6 py-3 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-500 transition-colors"
-          >
-            {content.cta.label}
-          </a>
-          <p className="mt-3 text-xs text-zinc-400">{content.cta.subtext}</p>
+          <B2BLeadForm source="career-services" heading="Get in touch — we'll respond within 24 hours" />
         </div>
 
         {/* Value Props */}
@@ -133,15 +128,10 @@ export function CareerServicesPage() {
         </div>
 
         {/* CTA */}
-        <div className="border-t border-zinc-200 pt-12 text-center">
-          <h2 className="text-xl font-semibold text-zinc-900 mb-2">Ready to scale your placement outcomes?</h2>
-          <p className="text-sm text-zinc-500 mb-6">{content.cta.subtext}</p>
-          <a
-            href={content.cta.href}
-            className="inline-block px-6 py-3 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-500 transition-colors"
-          >
-            {content.cta.label}
-          </a>
+        <div className="border-t border-zinc-200 pt-12">
+          <h2 className="text-xl font-semibold text-zinc-900 mb-2 text-center">Ready to scale your placement outcomes?</h2>
+          <p className="text-sm text-zinc-500 mb-6 text-center">{content.cta.subtext}</p>
+          <B2BLeadForm source="career-services" heading="Get in touch" />
         </div>
       </main>
     </div>

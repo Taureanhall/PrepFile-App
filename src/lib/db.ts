@@ -711,4 +711,42 @@ export function updateTeamBranding(teamId: string, agencyName: string | null, ag
   `).run(agencyName, agencyLogoUrl, brandingEnabled ? 1 : 0, teamId);
 }
 
+// --- B2B Lead Capture ---
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS b2b_leads (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    organization TEXT NOT NULL,
+    role TEXT NOT NULL,
+    source TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+`);
+
+export interface B2bLead {
+  id: string;
+  name: string;
+  email: string;
+  organization: string;
+  role: string;
+  source: string;
+  created_at: string;
+}
+
+export function saveB2bLead(name: string, email: string, organization: string, role: string, source: string): string {
+  const id = crypto.randomUUID();
+  db.prepare(
+    "INSERT INTO b2b_leads (id, name, email, organization, role, source) VALUES (?, ?, ?, ?, ?, ?)"
+  ).run(id, name, email.toLowerCase(), organization, role, source);
+  return id;
+}
+
+export function getB2bLeads(limit = 50): B2bLead[] {
+  return db.prepare(
+    "SELECT * FROM b2b_leads ORDER BY created_at DESC LIMIT ?"
+  ).all(limit) as B2bLead[];
+}
+
 export default db;
