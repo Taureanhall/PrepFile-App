@@ -5,7 +5,7 @@
  *   1. welcome          — sent immediately on signup
  *   2. activation-nudge — sent 24h post-signup if no brief has been created
  *   3. upgrade-prompt   — sent after user generates their 2nd free brief
- *   4. reengagement     — sent 7 days after last visit if no brief generated in that window
+ *   4. reengagement     — sent 3 days after last visit if no brief generated in that window
  *
  * Each email includes two subject variants for A/B testing.
  * Body: plain text only, under 150 words.

@@ -225,7 +225,7 @@ export async function sendDunningEmail(
 }
 
 /**
- * Batch: send reengagement-1 (7d inactive) and reengagement-2 (14d inactive).
+ * Batch: send reengagement-1 (3d inactive) and reengagement-2 (14d inactive).
  */
 export async function runReengagementBatch(appUrl: string, fromEmail: string): Promise<void> {
   if (!process.env.RESEND_API_KEY) return;
