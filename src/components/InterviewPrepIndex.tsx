@@ -47,6 +47,29 @@ function getGradientForSlug(slug: string): string {
   return ind?.gradient ?? "linear-gradient(135deg, #18181b, #3f3f46)";
 }
 
+const COMPANY_IMAGES: Record<string, string> = {
+  google: "https://images.unsplash.com/photo-1766371900950-929959f2bb67?w=640&h=360&fit=crop",
+  amazon: "https://images.unsplash.com/photo-1753044346424-1ba619c33dc0?w=640&h=360&fit=crop",
+  meta: "https://images.unsplash.com/photo-1648384140606-800633cc45f7?w=640&h=360&fit=crop",
+  apple: "https://images.unsplash.com/photo-1591292784843-aa35ebb7897b?w=640&h=360&fit=crop",
+  microsoft: "https://images.unsplash.com/photo-1737922342275-71bab46ace83?w=640&h=360&fit=crop",
+  netflix: "https://images.unsplash.com/photo-1621955964441-c173e01c135b?w=640&h=360&fit=crop",
+  stripe: "https://images.unsplash.com/photo-1666649507264-0e340834e39a?w=640&h=360&fit=crop",
+  mckinsey: "https://images.unsplash.com/photo-1745015446589-7ee6f702d8c1?w=640&h=360&fit=crop",
+  "goldman-sachs": "https://images.unsplash.com/photo-1552958700-7004a2c5cb60?w=640&h=360&fit=crop",
+  jpmorgan: "https://images.unsplash.com/photo-1755707212595-b1791a744775?w=640&h=360&fit=crop",
+  bcg: "https://images.unsplash.com/photo-1759496435064-c81eddcb9b95?w=640&h=360&fit=crop",
+  uber: "https://images.unsplash.com/photo-1657947953120-6e5201f3b3ed?w=640&h=360&fit=crop",
+  deloitte: "https://images.unsplash.com/photo-1559453252-7f94751d9bb2?w=640&h=360&fit=crop",
+  airbnb: "https://images.unsplash.com/photo-1657256031855-68029292ff34?w=640&h=360&fit=crop",
+  spotify: "https://images.unsplash.com/photo-1617722694278-84453e1719a8?w=640&h=360&fit=crop",
+  linkedin: "https://images.unsplash.com/photo-1616469829581-73993eb86b02?w=640&h=360&fit=crop",
+  adobe: "https://images.unsplash.com/photo-1764229119403-42059dac36a4?w=640&h=360&fit=crop",
+  tesla: "https://images.unsplash.com/photo-1641052243298-df9255d4ddc0?w=640&h=360&fit=crop",
+  salesforce: "https://images.unsplash.com/photo-1596931628313-45b33295f5f9?w=640&h=360&fit=crop",
+  ibm: "https://images.unsplash.com/photo-1756771996235-9805f70f43bc?w=640&h=360&fit=crop",
+};
+
 export function InterviewPrepIndex() {
   const allCompanies = Object.values(COMPANIES);
   const [search, setSearch] = useState("");
@@ -235,9 +258,13 @@ export function InterviewPrepIndex() {
                       {featured.map((co) => (
                         <a key={co.slug} href={`/interview-prep/${co.slug}`} className="group block">
                           <div className="flex gap-5 items-start">
+                            {COMPANY_IMAGES[co.slug] ? (
+                            <img src={COMPANY_IMAGES[co.slug]} alt={co.name} className="w-40 h-28 rounded-xl shrink-0 object-cover" loading="lazy" />
+                          ) : (
                             <div className="w-40 h-28 rounded-xl shrink-0 flex items-center justify-center" style={{ background: getGradientForSlug(co.slug) }}>
                               <span className="text-white text-lg font-bold opacity-90">{co.name}</span>
                             </div>
+                          )}
                             <div className="pt-1">
                               <h3 className="text-base font-bold text-zinc-900 group-hover:text-zinc-600 transition-colors leading-snug mb-2">{co.tagline}</h3>
                               <p className="text-sm text-zinc-500 leading-relaxed line-clamp-3">{co.metaDescription}</p>
