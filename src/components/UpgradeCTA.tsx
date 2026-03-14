@@ -1,23 +1,40 @@
-import { useEffect } from "react";
-import { upgradeCTAVariants } from "../data/upgrade-cta-variants";
+import { useEffect, useMemo } from "react";
+import { jordanCTAVariants } from "../data/upgrade-cta-variants";
 import { trackUpgradeCTAShown, trackUpgradeCTAClicked } from "../lib/analytics";
+
+const VARIANT_STORAGE_KEY = "prepfile_upgrade_cta_variant";
+
+function pickJordanVariant() {
+  try {
+    const stored = localStorage.getItem(VARIANT_STORAGE_KEY);
+    if (stored) {
+      const found = jordanCTAVariants.find((v) => v.id === stored);
+      if (found) return found;
+    }
+    const picked = jordanCTAVariants[Math.floor(Math.random() * jordanCTAVariants.length)];
+    localStorage.setItem(VARIANT_STORAGE_KEY, picked.id);
+    return picked;
+  } catch {
+    return jordanCTAVariants[0];
+  }
+}
 
 interface Props {
   onUpgradeClick: () => void;
 }
 
-// Loss-aversion variant — PostHog feature flag will select variant in future.
-const ACTIVE_VARIANT = upgradeCTAVariants[1];
-
 export function UpgradeCTA({ onUpgradeClick }: Props) {
+  const ACTIVE_VARIANT = useMemo(() => pickJordanVariant(), []);
+
   useEffect(() => {
     trackUpgradeCTAShown(ACTIVE_VARIANT.id);
-  }, []);
+  }, [ACTIVE_VARIANT.id]);
 
   function handleClick() {
     trackUpgradeCTAClicked(ACTIVE_VARIANT.id);
     onUpgradeClick();
   }
+
 
   return (
     <div className="print:hidden bg-white border border-zinc-200 rounded-2xl px-6 py-6 space-y-4">

@@ -130,6 +130,26 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
         </div>
       </section>
 
+      {/* Social proof */}
+      <section className="bg-white border-t border-zinc-100 py-14">
+        <div className="max-w-3xl mx-auto px-6 space-y-10">
+          {/* Snippet 1 — Speed */}
+          <blockquote className="border-l-4 border-brand-600 pl-5">
+            <p className="text-base sm:text-lg text-zinc-700 leading-relaxed italic">
+              "Interview brief in under 60 seconds. Company snapshot, role intel, round expectations, and the questions you should ask — generated from your job description while you're still reading the invite."
+            </p>
+          </blockquote>
+
+          {/* Snippet 3 — Depth */}
+          <div className="bg-zinc-50 border border-zinc-200 rounded-2xl px-6 py-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-400 mb-2">What's inside a brief</p>
+            <p className="text-base text-zinc-700 leading-relaxed">
+              One brief. Five sections. Company snapshot, role intelligence, round expectations, questions to ask your interviewers, and the blind spots most candidates miss. Everything you'd spend a weekend researching, ready before your next coffee.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="bg-white border-t border-zinc-100 py-14">
         <div className="max-w-3xl mx-auto px-6">

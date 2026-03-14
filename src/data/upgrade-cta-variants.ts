@@ -6,6 +6,31 @@ export interface UpgradeCTAVariant {
   lever: "urgency" | "loss_aversion" | "social_proof" | "scarcity" | "aspirational";
 }
 
+// Jordan's copy variants (PRE-257) — rotate these on the post-brief nudge
+export const jordanCTAVariants: UpgradeCTAVariant[] = [
+  {
+    id: "jordan-a-feature-gap",
+    headline: "You're missing half the brief.",
+    body: "Free briefs skip round expectations and blind spot analysis — the parts that actually change how you prep. Pro unlocks the full picture.",
+    cta: "Upgrade to Pro — $9.99/month",
+    lever: "loss_aversion",
+  },
+  {
+    id: "jordan-b-confidence",
+    headline: "Go in knowing more than the other candidates.",
+    body: "Pro users get round-by-round expectations, a resume match against the role, and unlimited briefs. Free users get a start.",
+    cta: "Get full access →",
+    lever: "aspirational",
+  },
+  {
+    id: "jordan-c-urgency",
+    headline: "Your interview is soon. Your brief isn't done.",
+    body: "Pro briefs include what questions to ask, what signals interviewers look for, and how your resume stacks up. Upgrade before you walk in.",
+    cta: "Unlock the full brief",
+    lever: "urgency",
+  },
+];
+
 export const upgradeCTAVariants: UpgradeCTAVariant[] = [
   {
     id: "v1-urgency",

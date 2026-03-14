@@ -40,16 +40,23 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
     <div className="bg-white border border-zinc-200/60 rounded-2xl shadow-sm p-6 md:p-8 space-y-6">
       <div>
         <h2 className="text-xl font-bold text-zinc-900 mb-1">
-          {reason === "pack_exhausted" ? "Pack used up" : reason === "pro_required" ? "Upgrade to unlock this feature" : "You've hit your free limit"}
+          {reason === "pack_exhausted" ? "Pack used up" : reason === "pro_required" ? "Upgrade to unlock this feature" : "You've used your 3 free briefs this week."}
         </h2>
         <p className="text-zinc-500 text-sm">
           {reason === "pack_exhausted"
             ? "Your 5-brief Interview Pack has been used. Upgrade to Pro for unlimited briefs."
             : reason === "pro_required"
             ? "Resume match, round expectations, and full company signals are available on Pro and Interview Pack."
-            : "Free tier includes 3 briefs per week. Upgrade to keep prepping."}
+            : "Your next interview won't wait until the limit resets. Get unlimited briefs, resume match, and full round expectations with Pro."}
         </p>
       </div>
+
+      {/* Conversion signal — Jordan PRE-266 Snippet 2 */}
+      {reason === "free_limit" && (
+        <p className="text-xs text-zinc-400 italic border-l-2 border-zinc-200 pl-3">
+          The first user to try PrepFile upgraded to Pro the same session. No nudge. No discount. They generated a brief, saw what the full version included, and paid.
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Pro */}
