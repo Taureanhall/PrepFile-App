@@ -31,7 +31,7 @@ const drip: DripEmail[] = [
   <p style="color:#52525b;line-height:1.6;margin-bottom:16px">You'll get a company snapshot, what each round looks like, and specific questions to ask your interviewer.</p>
   <p style="color:#52525b;line-height:1.6;margin-bottom:24px">If you have an interview coming up, use it now. That's what it's for.</p>
   <a href="${appUrl}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;margin-bottom:16px">Create my first brief →</a>
-  <p style="color:#52525b;line-height:1.6;margin-top:24px">— Taurean</p>
+  <p style="color:#52525b;line-height:1.6;margin-top:24px">— Reese, CEO @ PrepFile</p>
   <p style="color:#a1a1aa;font-size:12px;margin-top:40px">PrepFile — AI-powered interview prep<br><a href="${unsubUrl}" style="color:#a1a1aa">Unsubscribe</a></p>
 </div>`,
   },
@@ -45,7 +45,7 @@ const drip: DripEmail[] = [
   <p style="color:#52525b;line-height:1.6;margin-bottom:16px">A PrepFile brief gives you: a company snapshot, what each round looks like, the questions to ask your interviewer, and the blind spots most candidates miss.</p>
   <p style="color:#52525b;line-height:1.6;margin-bottom:24px">Job seekers prepping for roles at Google, Stripe, Airbnb, and early-stage startups use it as their first step.</p>
   <a href="${appUrl}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;margin-bottom:16px">prepfile.work — takes a minute →</a>
-  <p style="color:#52525b;line-height:1.6;margin-top:24px">— Taurean</p>
+  <p style="color:#52525b;line-height:1.6;margin-top:24px">— Reese, CEO @ PrepFile</p>
   <p style="color:#a1a1aa;font-size:12px;margin-top:40px">PrepFile — AI-powered interview prep<br><a href="${unsubUrl}" style="color:#a1a1aa">Unsubscribe</a></p>
 </div>`,
   },
@@ -59,7 +59,7 @@ const drip: DripEmail[] = [
   <p style="color:#52525b;line-height:1.6;margin-bottom:16px">PrepFile builds you a brief before you walk in: company strategy, round structure, what the hiring team is actually evaluating, and the questions that show you've done the work.</p>
   <p style="color:#52525b;line-height:1.6;margin-bottom:24px">If you want unlimited briefs and a resume match for the specific role, Pro is $14.99/month.</p>
   <a href="${appUrl}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;margin-bottom:16px">Open PrepFile →</a>
-  <p style="color:#52525b;line-height:1.6;margin-top:24px">— Taurean</p>
+  <p style="color:#52525b;line-height:1.6;margin-top:24px">— Reese, CEO @ PrepFile</p>
   <p style="color:#a1a1aa;font-size:12px;margin-top:40px">PrepFile — AI-powered interview prep<br><a href="${unsubUrl}" style="color:#a1a1aa">Unsubscribe</a></p>
 </div>`,
   },

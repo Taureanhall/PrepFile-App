@@ -80,7 +80,7 @@ Has anyone else found that company-specific prep makes a much bigger difference 
   productHunt: {
     tagline: "Your personalized interview brief in under a minute",
     description: "PrepFile generates a personalized interview brief from your company, role, and job description — in under 60 seconds. Get a company snapshot, round-by-round expectations, smart questions to ask, and your blind spots. Free tier available.",
-    makerComment: `Hey PH! I'm Taurean, and I built PrepFile because I kept watching smart people bomb interviews not from lack of skill — but from lack of context.
+    makerComment: `Hey PH! I'm Reese, CEO of PrepFile. We built PrepFile because I kept watching smart people bomb interviews not from lack of skill — but from lack of context.
 
 Generic interview prep is everywhere. What's missing is a brief that actually knows the specific company you're interviewing at, the role you applied for, and where your gaps are.
 

@@ -70,7 +70,7 @@ function BlogIndexPage() {
   useEffect(() => {
     const title = "Interview Prep Blog | PrepFile";
     const description = "Interview prep guides, strategy, and tactics from PrepFile. Learn how to prepare smarter, not longer.";
-    const canonicalUrl = "https://prepfile.app/blog";
+    const canonicalUrl = "https://prepfile.work/blog";
     document.title = title;
     const setMeta = (attr: string, val: string, isName = false) => {
       const sel = isName ? `meta[name="${attr}"]` : `meta[property="${attr}"]`;
@@ -190,7 +190,7 @@ function BlogArticlePage({ slug }: { slug: string }) {
 
   useEffect(() => {
     if (!article) return;
-    const canonicalUrl = `https://prepfile.app/blog/${article.slug}`;
+    const canonicalUrl = `https://prepfile.work/blog/${article.slug}`;
     document.title = article.metaTitle;
     const setMeta = (attr: string, val: string, isName = false) => {
       const sel = isName ? `meta[name="${attr}"]` : `meta[property="${attr}"]`;
@@ -213,7 +213,7 @@ function BlogArticlePage({ slug }: { slug: string }) {
     schemaEl.textContent = JSON.stringify({
       "@context": "https://schema.org", "@type": "Article", headline: article.title, description: article.metaDescription, url: canonicalUrl,
       author: { "@type": "Organization", name: "PrepFile" }, datePublished: article.publishedDate, keywords: article.keywords.join(", "),
-      publisher: { "@type": "Organization", name: "PrepFile", url: "https://prepfile.app" },
+      publisher: { "@type": "Organization", name: "PrepFile", url: "https://prepfile.work" },
     });
     return () => { document.title = "PrepFile — AI Interview Prep Briefs"; document.getElementById(schemaId)?.remove(); document.head.querySelector('link[rel="canonical"]')?.remove(); };
   }, [slug, article]);

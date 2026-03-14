@@ -174,7 +174,7 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
             <a href="/faq" className="hover:text-white transition-colors">FAQ</a>
             <a href="/for/career-services" className="hover:text-white transition-colors">For Bootcamps</a>
             <a href="/for/recruiting-agencies" className="hover:text-white transition-colors">For Recruiters</a>
-            <a href="mailto:support@prepfile.app" className="hover:text-white transition-colors">Help</a>
+            <a href="mailto:support@prepfile.work" className="hover:text-white transition-colors">Help</a>
           </div>
           <div className="text-sm">&copy; {new Date().getFullYear()} PrepFile</div>
         </div>

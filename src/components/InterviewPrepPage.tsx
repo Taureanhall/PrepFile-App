@@ -374,7 +374,7 @@ export function InterviewPrepPage({ slug }: InterviewPrepPageProps) {
     );
     trackSeoPageViewed(slug, pageType);
 
-    const canonicalUrl = `https://prepfile.app/interview-prep/${data.slug}`;
+    const canonicalUrl = `https://prepfile.work/interview-prep/${data.slug}`;
 
     document.title = data.metaTitle;
 
@@ -423,7 +423,7 @@ export function InterviewPrepPage({ slug }: InterviewPrepPageProps) {
       publisher: {
         "@type": "Organization",
         name: "PrepFile",
-        url: "https://prepfile.app",
+        url: "https://prepfile.work",
       },
       step: [
         { "@type": "HowToStep", name: data.culture.heading, text: data.culture.body },

@@ -90,7 +90,7 @@ export function FaqPage() {
     const title = "Frequently Asked Questions | PrepFile";
     const description =
       "Common questions about PrepFile — how it works, pricing tiers, what's included in free vs. Pro, and how to get started.";
-    const url = "https://prepfile.app/faq";
+    const url = "https://prepfile.work/faq";
 
     document.title = title;
 
@@ -139,7 +139,7 @@ export function FaqPage() {
         <h1 className="text-3xl font-bold text-zinc-900 mb-2">Frequently asked questions</h1>
         <p className="text-base text-zinc-500 mb-10">
           Everything you need to know about PrepFile. Can't find your answer?{" "}
-          <a href="mailto:support@prepfile.app" className="text-zinc-900 underline underline-offset-2">
+          <a href="mailto:support@prepfile.work" className="text-zinc-900 underline underline-offset-2">
             Contact us.
           </a>
         </p>
