@@ -810,6 +810,7 @@ Preferred Qualifications:
               onRegenerate={handleGenerate}
               isRegenerating={isGenerating}
               onUpgradeClick={() => setUpgradeReason("pro_required")}
+              totalBriefs={briefCount}
             />
 
             {/* Post-brief upgrade CTA — free users only, A/B tested copy variants */}

@@ -9,9 +9,10 @@ interface PrepBriefProps {
   onRegenerate?: () => void;
   isRegenerating?: boolean;
   onUpgradeClick?: () => void;
+  totalBriefs?: number | null;
 }
 
-export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegenerating, onUpgradeClick }: PrepBriefProps) {
+export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegenerating, onUpgradeClick, totalBriefs }: PrepBriefProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
@@ -188,6 +189,16 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
               {window.location.origin}/b/{briefId}
             </p>
           )}
+        </div>
+      )}
+
+      {/* Social proof counter */}
+      {totalBriefs && totalBriefs > 0 && (
+        <div className="flex justify-center mb-4 print:hidden">
+          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            {totalBriefs.toLocaleString()} prep briefs generated
+          </span>
         </div>
       )}
 
