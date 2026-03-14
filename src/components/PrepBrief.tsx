@@ -1,4 +1,4 @@
-import { useState, useRef, type FormEvent, type ChangeEvent } from "react";
+import { useState, useRef, type ReactNode, type FormEvent, type ChangeEvent } from "react";
 import type { PrepBriefData, BridgingAnalysis } from "../types";
 
 interface AgencyBranding {
@@ -16,6 +16,34 @@ interface PrepBriefProps {
   onUpgradeClick?: () => void;
   totalBriefs?: number | null;
   agencyBranding?: AgencyBranding;
+}
+
+function LockIcon({ className = "w-3.5 h-3.5" }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+  );
+}
+
+function LockedSection({ label, onUpgrade, children }: { label: string; onUpgrade?: () => void; children: ReactNode }) {
+  return (
+    <div className="mt-3">
+      <div className="select-none pointer-events-none" aria-hidden="true">
+        {children}
+      </div>
+      <div className="mt-2 pt-2 border-t border-zinc-100">
+        <button
+          onClick={onUpgrade}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-brand-600 transition-colors pointer-events-auto"
+        >
+          <LockIcon className="w-3 h-3" />
+          {label}
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegenerating, onUpgradeClick, totalBriefs, agencyBranding }: PrepBriefProps) {
@@ -235,7 +263,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
           <a href="#section-5" className="hover:text-zinc-800 transition-colors">Behavioral Bank</a>
           <a href="#section-6" className="hover:text-zinc-800 transition-colors">Round Expectations</a>
           <a href="#section-7" className="hover:text-zinc-800 transition-colors">Questions to Ask</a>
-          {data.recommendedReading && data.recommendedReading.length > 0 && (
+          {(data.recommendedReading && data.recommendedReading.length > 0 || userPlan === "free") && (
             <a href="#section-8" className="hover:text-zinc-800 transition-colors">Reading</a>
           )}
         </div>
@@ -276,6 +304,20 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
               </div>
             )}
 
+            {/* Key Metrics — locked teaser for free users */}
+            {(!data.companySnapshot?.keyMetrics || data.companySnapshot.keyMetrics.length === 0) && userPlan === "free" && (
+              <div>
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">Key Metrics</h4>
+                <LockedSection label="Unlock key metrics" onUpgrade={onUpgradeClick}>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-400 border border-zinc-200 blur-[6px]">$42M Series C raised</span>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-400 border border-zinc-200 blur-[6px]">340 employees globally</span>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-400 border border-zinc-200 blur-[6px]">2.1x YoY revenue growth</span>
+                  </div>
+                </LockedSection>
+              </div>
+            )}
+
             {data.companySnapshot?.recentSignals?.length > 0 && (
               <div>
                 <h4 className="font-semibold text-zinc-900 mb-2 text-sm">Recent Signals</h4>
@@ -301,6 +343,25 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Risks & Unknowns — locked teaser for free users */}
+            {(!data.companySnapshot?.risksAndUnknowns || data.companySnapshot.risksAndUnknowns.length === 0) && userPlan === "free" && (
+              <div>
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm">Risks & Unknowns</h4>
+                <LockedSection label="Unlock risks & unknowns" onUpgrade={onUpgradeClick}>
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-3 text-zinc-400 blur-[6px]">
+                      <span className="mt-1.5 text-xs">■</span>
+                      <span className="leading-relaxed">Recent leadership turnover in engineering may signal organizational instability or shifting priorities</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-zinc-400 blur-[6px]">
+                      <span className="mt-1.5 text-xs">■</span>
+                      <span className="leading-relaxed">Runway unclear given current market conditions and limited public financial disclosures</span>
+                    </li>
+                  </ul>
+                </LockedSection>
               </div>
             )}
           </div>
@@ -540,25 +601,41 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
           </div>
         </section>
         ) : userPlan === "free" ? (
-          /* Free tier: locked round expectations teaser */
+          /* Free tier: locked round expectations teaser with blurred preview */
           <section id="section-6" className="print:hidden">
             <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
               6. Round Expectations
             </h2>
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex-1">
-                  <p className="text-zinc-500 text-sm">
-                    Round-by-round breakdown, common pitfalls, and how to stand out — available with Pro or Interview Pack.
-                  </p>
-                </div>
-                <button
-                  onClick={onUpgradeClick}
-                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors whitespace-nowrap"
-                >
-                  Unlock Round Expectations
-                </button>
+            <div className="select-none pointer-events-none" aria-hidden="true">
+              <p className="text-zinc-400 leading-relaxed blur-[6px] mb-4">
+                This round typically involves a 45-minute conversation with the hiring manager focused on assessing your technical depth and leadership approach in cross-functional settings.
+              </p>
+              <div className="mb-3">
+                <h4 className="font-semibold text-zinc-900 mb-2 text-sm blur-[6px]">What Trips People Up</h4>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-3 text-zinc-400 blur-[6px]">
+                    <span className="mt-1.5 text-xs">■</span>
+                    <span className="leading-relaxed">Candidates often over-index on technical details without connecting solutions back to business impact</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-zinc-400 blur-[6px]">
+                    <span className="mt-1.5 text-xs">■</span>
+                    <span className="leading-relaxed">Failing to demonstrate stakeholder management experience across engineering and product teams</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-zinc-400 blur-[6px]">
+                    <span className="mt-1.5 text-xs">■</span>
+                    <span className="leading-relaxed">Not preparing concrete examples of navigating ambiguity in fast-paced environments</span>
+                  </li>
+                </ul>
               </div>
+            </div>
+            <div className="mt-2 pt-2 border-t border-zinc-100">
+              <button
+                onClick={onUpgradeClick}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-brand-600 to-zinc-700 rounded-lg hover:opacity-90 transition-opacity"
+              >
+                <LockIcon className="w-3.5 h-3.5" />
+                See what trips people up in your round
+              </button>
             </div>
           </section>
         ) : null}
@@ -579,7 +656,7 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
         </section>
 
         {/* Section 8 — Recommended Reading */}
-        {data.recommendedReading && data.recommendedReading.length > 0 && (
+        {data.recommendedReading && data.recommendedReading.length > 0 ? (
           <section id="section-8">
             <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
               8. Recommended Reading
@@ -596,7 +673,38 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
               ))}
             </ul>
           </section>
-        )}
+        ) : userPlan === "free" ? (
+          <section id="section-8" className="print:hidden">
+            <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
+              8. Recommended Reading
+            </h2>
+            <LockedSection label="Unlock recommended reading" onUpgrade={onUpgradeClick}>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                  <span className="text-zinc-400 mt-1 shrink-0 text-xs blur-[6px]">■</span>
+                  <div className="blur-[6px]">
+                    <span className="font-medium text-zinc-400">Company Engineering Blog: Scaling Infrastructure at Growth Stage</span>
+                    <p className="text-zinc-400 text-sm mt-0.5">Understand how the team thinks about architecture decisions and trade-offs in production systems</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-zinc-400 mt-1 shrink-0 text-xs blur-[6px]">■</span>
+                  <div className="blur-[6px]">
+                    <span className="font-medium text-zinc-400">CEO Interview on Product Vision and Market Strategy</span>
+                    <p className="text-zinc-400 text-sm mt-0.5">Gives context on leadership priorities and where the company is heading over the next 12 months</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-zinc-400 mt-1 shrink-0 text-xs blur-[6px]">■</span>
+                  <div className="blur-[6px]">
+                    <span className="font-medium text-zinc-400">Glassdoor Interview Reviews for Senior Engineering Roles</span>
+                    <p className="text-zinc-400 text-sm mt-0.5">See what past candidates experienced and how the process has evolved recently</p>
+                  </div>
+                </li>
+              </ul>
+            </LockedSection>
+          </section>
+        ) : null}
 
       </div>
 
