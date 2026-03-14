@@ -39,8 +39,10 @@ export interface BlogArticle {
   publishedDate: string;
   /** Tailwind gradient classes for hero card */
   heroGradient?: string;
-  /** Emoji for hero card */
+  /** Emoji for hero card (fallback if no heroImage) */
   heroEmoji?: string;
+  /** Stock photo URL for hero card thumbnail */
+  heroImage?: string;
   /** Whether to feature in editor's picks */
   featured?: boolean;
 }
@@ -130,6 +132,7 @@ Your brief will still be there tomorrow morning. Give it a 10-minute re-read bef
     publishedDate: "2026-02-18",
     heroGradient: "from-blue-600 to-indigo-700",
     heroEmoji: "⏰",
+    heroImage: "https://images.unsplash.com/photo-1579389083078-4e7018379f7e?w=640&h=360&fit=crop&crop=faces",
     featured: true,
   },
 
@@ -221,6 +224,7 @@ Most candidates don't have this kind of structured prep because building it from
     publishedDate: "2026-02-25",
     heroGradient: "from-emerald-600 to-teal-700",
     heroEmoji: "✅",
+    heroImage: "https://images.unsplash.com/photo-1733758283615-224f76ab0792?w=640&h=360&fit=crop&crop=faces",
     featured: true,
   },
 
@@ -316,6 +320,7 @@ The research-first approach is not a new idea. It's what the best candidates hav
     publishedDate: "2026-03-03",
     heroGradient: "from-orange-500 to-red-600",
     heroEmoji: "🎯",
+    heroImage: "https://images.unsplash.com/photo-1698047681452-08eba22d0c64?w=640&h=360&fit=crop&crop=faces",
     featured: true,
   },
 
@@ -438,6 +443,7 @@ The brief is how you start. The rest is how you finish.`,
       buttonLabel: "Get my brief now",
     },
     publishedDate: "2026-03-05",
+    heroImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=640&h=360&fit=crop&crop=faces",
   },
 
   {
@@ -686,6 +692,7 @@ PrepFile generates a brief that tells you what a given company values, what this
       buttonLabel: "Build my brief",
     },
     publishedDate: "2026-03-08",
+    heroImage: "https://images.unsplash.com/photo-1758520144437-f068ecaf0d83?w=640&h=360&fit=crop&crop=faces",
   },
 
   {
@@ -833,5 +840,6 @@ PrepFile generates a brief that maps the company's current priorities, what this
       buttonLabel: "Build my brief",
     },
     publishedDate: "2026-03-10",
+    heroImage: "https://images.unsplash.com/photo-1758520144427-ddb02ac74e9d?w=640&h=360&fit=crop&crop=faces",
   },
 ];
