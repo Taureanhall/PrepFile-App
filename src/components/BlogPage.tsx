@@ -112,9 +112,13 @@ function BlogIndexPage() {
             <div className="grid sm:grid-cols-3 gap-5">
               {featured.map((article) => (
                 <a key={article.slug} href={`/blog/${article.slug}`} className="group block rounded-xl overflow-hidden bg-white border border-zinc-200 hover:border-zinc-400 transition-colors">
-                  <div className="h-36 flex items-center justify-center text-5xl" style={{ background: GRADIENT_MAP[article.heroGradient || ""] || "linear-gradient(135deg, #18181b, #3f3f46)" }}>
-                    {article.heroEmoji || "📝"}
-                  </div>
+                  {article.heroImage ? (
+                    <img src={article.heroImage} alt={article.title} className="h-36 w-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="h-36 flex items-center justify-center text-5xl" style={{ background: GRADIENT_MAP[article.heroGradient || ""] || "linear-gradient(135deg, #18181b, #3f3f46)" }}>
+                      {article.heroEmoji || "📝"}
+                    </div>
+                  )}
                   <div className="p-4">
                     <p className="text-xs text-zinc-400 mb-1.5">{formatDate(article.publishedDate)}</p>
                     <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-zinc-600 transition-colors leading-snug">{article.title}</h3>
@@ -137,9 +141,13 @@ function BlogIndexPage() {
                 {cardArticles.map((article) => (
                   <a key={article.slug} href={`/blog/${article.slug}`} className="group block">
                     <div className="flex gap-5 items-start">
-                      <div className="w-40 h-28 rounded-xl shrink-0 flex items-center justify-center" style={{ background: "linear-gradient(135deg, #18181b, #3f3f46)" }}>
-                        <span className="text-4xl">📝</span>
-                      </div>
+                      {article.heroImage ? (
+                        <img src={article.heroImage} alt={article.title} className="w-40 h-28 rounded-xl shrink-0 object-cover" loading="lazy" />
+                      ) : (
+                        <div className="w-40 h-28 rounded-xl shrink-0 flex items-center justify-center" style={{ background: "linear-gradient(135deg, #18181b, #3f3f46)" }}>
+                          <span className="text-4xl">📝</span>
+                        </div>
+                      )}
                       <div className="pt-1">
                         <h3 className="text-base font-bold text-zinc-900 group-hover:text-zinc-600 transition-colors leading-snug mb-2">{article.title}</h3>
                         <p className="text-sm text-zinc-500 leading-relaxed line-clamp-3">{article.metaDescription}</p>
