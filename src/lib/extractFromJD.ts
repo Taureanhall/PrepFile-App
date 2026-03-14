@@ -88,9 +88,16 @@ export function extractFromJD(text: string): ExtractResult {
   }
 
   // Pattern: first line is short and looks like a title (even without keyword)
-  if (!title && lines[0] && lines[0].length < 60 && lines[0].length > 3) {
-    // If the first line is short and doesn't look like a sentence, treat it as title
-    if (!/[.!?]$/.test(lines[0]) && !/^(we|the|our|about|join|are|this)\b/i.test(lines[0])) {
+  // Be conservative — require at least 2 words and a capitalized word to avoid garbage like "the job"
+  if (!title && lines[0] && lines[0].length < 60 && lines[0].length > 5) {
+    const words = lines[0].split(/\s+/);
+    const hasCapWord = words.some((w) => /^[A-Z]/.test(w) && w.length > 1);
+    if (
+      words.length >= 2 &&
+      hasCapWord &&
+      !/[.!?]$/.test(lines[0]) &&
+      !/^(we|the|our|about|join|are|is|this|a|an|in|on|at|for|to|and|or|if|it|as|do|no|so|up|by|of)\b/i.test(lines[0])
+    ) {
       title = lines[0].replace(/\s+[-–—|@]\s+.+$/, "").replace(/\s+at\s+.+$/i, "").trim();
     }
   }
@@ -99,9 +106,12 @@ export function extractFromJD(text: string): ExtractResult {
   if (company) company = company.replace(/[.,;:!]+$/, "").trim();
   if (title) title = title.replace(/[.,;:!]+$/, "").trim();
 
-  // Sanity: don't return single-char or very long results
+  // Sanity: don't return single-char or very long results, and filter common false positives
   if (company && (company.length < 2 || company.length > 50)) company = null;
-  if (title && (title.length < 3 || title.length > 80)) title = null;
+  if (title && (title.length < 4 || title.length > 80)) title = null;
+  // Filter out generic non-titles
+  const badTitles = /^(the job|job description|description|overview|summary|responsibilities|qualifications|requirements|about|position|apply|location)$/i;
+  if (title && badTitles.test(title)) title = null;
 
   return { company, title };
 }

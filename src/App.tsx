@@ -768,23 +768,28 @@ Preferred Qualifications:
                     style={{ fontSize: "0.95rem", lineHeight: "1.6" }}
                   />
 
-                  {/* Inline fields when extraction fails — shown below textarea */}
-                  {jdReady && !companyName.trim() && !jobTitle.trim() && !showManualFields && (
+                  {/* Inline fields when extraction is incomplete — show for any missing field */}
+                  {jdReady && (!companyName.trim() || !jobTitle.trim()) && !showManualFields && (
                     <div className="flex flex-col sm:flex-row gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <input
-                        type="text"
-                        value={companyName}
-                        onChange={(e) => setCompanyName(e.target.value)}
-                        placeholder="Company name"
-                        className="flex-1 px-4 py-2.5 bg-white border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
-                      />
-                      <input
-                        type="text"
-                        value={jobTitle}
-                        onChange={(e) => setJobTitle(e.target.value)}
-                        placeholder="Job title"
-                        className="flex-1 px-4 py-2.5 bg-white border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
-                      />
+                      {!companyName.trim() && (
+                        <input
+                          type="text"
+                          value={companyName}
+                          onChange={(e) => setCompanyName(e.target.value)}
+                          placeholder="Company name"
+                          className="flex-1 px-4 py-2.5 bg-white border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
+                          autoFocus
+                        />
+                      )}
+                      {!jobTitle.trim() && (
+                        <input
+                          type="text"
+                          value={jobTitle}
+                          onChange={(e) => setJobTitle(e.target.value)}
+                          placeholder="Job title"
+                          className="flex-1 px-4 py-2.5 bg-white border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors"
+                        />
+                      )}
                     </div>
                   )}
 
