@@ -587,11 +587,31 @@ Preferred Qualifications:
   return (
     <div className="min-h-[100dvh] bg-zinc-50 text-zinc-900 font-sans selection:bg-zinc-200">
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
-      <Nav cta={
-        !authLoading && user
-          ? { label: "Sign out", onClick: handleLogout }
-          : undefined
-      }>
+      <Nav
+        cta={
+          !authLoading && user
+            ? { label: "Sign out", onClick: handleLogout }
+            : undefined
+        }
+        onLogoClick={() => {
+          setOutput(null);
+          setBriefId(null);
+          setCompanyName("");
+          setJobTitle("");
+          setJobDescription("");
+          setRound("");
+          setFamiliarity("");
+          setTimeToPrep("");
+          setBiggestGap("");
+          setShowHistory(false);
+          setNeedsSignIn(false);
+          setUpgradeReason(null);
+          setShowManualFields(false);
+          setExtractedCompany(null);
+          setExtractedTitle(null);
+          setMcqsVisible(false);
+        }}
+      >
         {!authLoading && user && (
           <>
             <div className="hidden sm:flex items-center gap-2">
@@ -945,14 +965,17 @@ Preferred Qualifications:
       </main>
 
       {/* Footer */}
-      <footer className="max-w-3xl mx-auto px-6 py-8 mt-8 border-t border-zinc-200 flex justify-between items-center text-sm text-zinc-400 print:hidden">
-        <span>&copy; {new Date().getFullYear()} PrepFile</span>
-        <nav className="flex gap-5">
+      <footer className="max-w-3xl mx-auto px-6 py-8 mt-8 border-t border-zinc-200 print:hidden">
+        <nav className="flex flex-wrap gap-x-5 gap-y-2 justify-center text-sm text-zinc-400 mb-4">
           <a href="/pricing" className="hover:text-zinc-600 transition-colors">Pricing</a>
           <a href="/interview-prep" className="hover:text-zinc-600 transition-colors">Interview Guides</a>
           <a href="/blog" className="hover:text-zinc-600 transition-colors">Blog</a>
           <a href="/faq" className="hover:text-zinc-600 transition-colors">FAQ</a>
+          <a href="/for/career-services" className="hover:text-zinc-600 transition-colors">For Bootcamps</a>
+          <a href="/for/recruiting-agencies" className="hover:text-zinc-600 transition-colors">For Recruiters</a>
+          <a href="mailto:support@prepfile.work" className="hover:text-zinc-600 transition-colors">Help</a>
         </nav>
+        <p className="text-center text-sm text-zinc-400">&copy; {new Date().getFullYear()} PrepFile</p>
       </footer>
     </div>
   );

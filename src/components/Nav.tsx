@@ -7,15 +7,19 @@ const NAV_LINKS = [
   { label: "Pricing", href: "/pricing" },
   { label: "Blog", href: "/blog" },
   { label: "FAQ", href: "/faq" },
+  { label: "For Bootcamps", href: "/for/career-services" },
+  { label: "For Recruiters", href: "/for/recruiting-agencies" },
 ];
 
 interface NavProps {
   cta?: { label: string; href: string } | { label: string; onClick: () => void };
   /** Extra elements rendered before the hamburger (e.g. user controls) */
   children?: ReactNode;
+  /** Called when logo or Home is clicked — lets parent reset SPA state */
+  onLogoClick?: () => void;
 }
 
-export function Nav({ cta, children }: NavProps) {
+export function Nav({ cta, children, onLogoClick }: NavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const ctaElement = cta ? (
@@ -37,7 +41,16 @@ export function Nav({ cta, children }: NavProps) {
   return (
     <>
       <nav className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center border-b border-zinc-100">
-        <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <a
+          href="/"
+          onClick={(e) => {
+            if (onLogoClick && window.location.pathname === "/") {
+              e.preventDefault();
+              onLogoClick();
+            }
+          }}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <img src="/logo.png" alt="" className="h-8 w-8 rounded-full object-cover object-center" />
           <span className="text-2xl font-bold tracking-tight">PrepFile</span>
         </a>
@@ -93,6 +106,13 @@ export function Nav({ cta, children }: NavProps) {
                   <a
                     key={href}
                     href={href}
+                    onClick={(e) => {
+                      if (href === "/" && onLogoClick && window.location.pathname === "/") {
+                        e.preventDefault();
+                        onLogoClick();
+                        setMenuOpen(false);
+                      }
+                    }}
                     className="flex items-center justify-between px-6 py-4 text-base font-semibold text-zinc-900 hover:bg-zinc-50 transition-colors"
                   >
                     {label}
