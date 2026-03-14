@@ -51,11 +51,11 @@ export function extractFromJD(text: string): ExtractResult {
     }
   }
 
-  // Pattern: "[Company] is hiring" / "[Company] is looking"
+  // Pattern: "[Company] is hiring/partnering/looking" — scan deeper (recruiting firms often appear after title)
   if (!company) {
-    for (const line of lines.slice(0, 5)) {
-      const hiringMatch = line.match(/^([A-Z][A-Za-z0-9&'. -]{1,40}?)\s+is\s+(?:hiring|looking|seeking|searching)/i);
-      if (hiringMatch) {
+    for (const line of lines.slice(0, 15)) {
+      const hiringMatch = line.match(/^([A-Z][A-Za-z0-9&'. -]{1,40}?)\s+is\s+(?:hiring|looking|seeking|searching|partnering|recruiting|working with|teaming)/i);
+      if (hiringMatch && !notCompany.test(hiringMatch[1].trim())) {
         company = hiringMatch[1].trim();
         break;
       }
