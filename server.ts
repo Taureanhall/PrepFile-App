@@ -412,6 +412,20 @@ async function startServer() {
     res.json({ success: true });
   });
 
+  // Capture email from skip-for-now flow (no session created, just stores the email for nurture)
+  app.post("/api/auth/capture-email", (req, res) => {
+    const { email } = req.body;
+    if (!email || typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Invalid email" });
+    }
+    try {
+      getOrCreateUserByEmail(email);
+      res.json({ success: true });
+    } catch {
+      res.status(500).json({ error: "Failed to save email" });
+    }
+  });
+
   // Email unsubscribe — linked from all marketing emails
   app.get("/api/unsubscribe", (req, res) => {
     const { token } = req.query;

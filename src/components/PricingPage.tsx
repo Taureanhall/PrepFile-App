@@ -3,7 +3,21 @@ import { AnimatePresence } from "motion/react";
 import { Nav } from "./Nav";
 import { AuthPanel } from "./AuthPanel";
 
+function formatCount(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k+`;
+  return `${n}+`;
+}
+
 export function PricingPage() {
+  const [briefCount, setBriefCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/stats")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.totalBriefs >= 10) setBriefCount(d.totalBriefs); })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     const title = "Pricing | PrepFile";
     const description = "Simple, honest pricing for PrepFile interview prep briefs. Start free, upgrade when you need more.";
@@ -60,6 +74,12 @@ export function PricingPage() {
 
       <main className="max-w-5xl mx-auto px-6 pb-20">
         <header className="pt-10 pb-8 text-center">
+          {briefCount !== null && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent-50 border border-accent-200 rounded-full text-xs font-medium text-accent-600 mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-400 inline-block" />
+              <span>{formatCount(briefCount)} briefs generated</span>
+            </div>
+          )}
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 mb-4">Simple, honest pricing</h1>
           <p className="text-lg text-zinc-500 leading-relaxed">Start free. Upgrade when you need more.</p>
         </header>

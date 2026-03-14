@@ -6,8 +6,8 @@ interface Props {
   onUpgradeClick: () => void;
 }
 
-// Hardcoded to variant 1 for now — PostHog feature flag will select variant in future.
-const ACTIVE_VARIANT = upgradeCTAVariants[0];
+// Loss-aversion variant — PostHog feature flag will select variant in future.
+const ACTIVE_VARIANT = upgradeCTAVariants[1];
 
 export function UpgradeCTA({ onUpgradeClick }: Props) {
   useEffect(() => {
