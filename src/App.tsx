@@ -342,6 +342,7 @@ export default function Page() {
   const handleJDChange = (text: string) => {
     setJobDescription(text);
     if (text.trim().length > 50) {
+      // Instant regex extraction as fallback
       const result = extractFromJD(text);
       if (result.company && !companyName.trim()) {
         setCompanyName(result.company);
@@ -351,6 +352,36 @@ export default function Page() {
         setJobTitle(result.title);
         setExtractedTitle(result.title);
       }
+
+      // LLM extraction for accuracy — runs in background, overwrites only empty/regex-filled fields
+      fetch("/api/extract-jd", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text.trim() }),
+      })
+        .then((r) => r.json())
+        .then((llm: { company: string | null; title: string | null }) => {
+          if (llm.company) {
+            setCompanyName((prev) => {
+              // Only overwrite if empty or still the regex result
+              if (!prev.trim() || prev === result.company) {
+                setExtractedCompany(llm.company);
+                return llm.company!;
+              }
+              return prev;
+            });
+          }
+          if (llm.title) {
+            setJobTitle((prev) => {
+              if (!prev.trim() || prev === result.title) {
+                setExtractedTitle(llm.title);
+                return llm.title!;
+              }
+              return prev;
+            });
+          }
+        })
+        .catch(() => {}); // regex fallback already set
     }
   };
 
