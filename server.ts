@@ -120,6 +120,16 @@ async function startServer() {
       } else if (product === "pack") {
         upsertSubscription(userId, "pack", session.customer, null, PACK_BRIEF_COUNT);
       }
+
+      getPostHogClient()?.capture({
+        distinctId: userId,
+        event: "payment_completed",
+        properties: {
+          plan: product,
+          stripe_customer_id: session.customer,
+          amount_total: session.amount_total,
+        },
+      });
     }
 
     if (event.type === "customer.subscription.deleted") {

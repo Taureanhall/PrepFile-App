@@ -77,3 +77,8 @@ export function trackExampleBriefClicked() {
   if (!POSTHOG_KEY) return;
   posthog.capture("example_brief_clicked");
 }
+
+export function trackPaymentCompleted(plan: string) {
+  if (!POSTHOG_KEY) return;
+  posthog.capture("payment_completed", { plan });
+}

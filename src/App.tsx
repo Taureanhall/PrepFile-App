@@ -26,7 +26,7 @@ import { GeneratingState } from "./components/GeneratingState";
 import { ToastContainer } from "./components/Toast";
 import type { Toast } from "./components/Toast";
 import type { PrepBriefData } from "./types";
-import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted, trackExampleBriefClicked } from "./lib/analytics";
+import { trackPageView, identifyUser, resetUser, trackBriefGenerated, trackLogin, trackUpgradeClicked, trackSignupCompleted, trackExampleBriefClicked, trackPaymentCompleted } from "./lib/analytics";
 
 // Canonical slug mapping for /interview-prep/roles/:shortSlug
 const ROLE_SLUG_MAP: Record<string, string> = {
@@ -238,6 +238,7 @@ export default function Page() {
           if (d) {
             setSubscription(d);
             setPaymentPlan(d.plan === "pro" ? "Pro" : d.plan === "pack" ? "Interview Pack" : null);
+            trackPaymentCompleted(d.plan || "unknown");
           }
         })
         .catch(() => {});

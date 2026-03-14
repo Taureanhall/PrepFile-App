@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AnimatePresence } from "motion/react";
 import { Nav } from "./Nav";
 import { AuthPanel } from "./AuthPanel";
+import { trackPageView, trackUpgradeClicked } from "../lib/analytics";
 
 function formatCount(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k+`;
@@ -12,6 +13,7 @@ export function PricingPage() {
   const [briefCount, setBriefCount] = useState<number | null>(null);
 
   useEffect(() => {
+    trackPageView();
     fetch("/api/stats")
       .then((r) => r.ok ? r.json() : null)
       .then((d) => { if (d?.totalBriefs >= 10) setBriefCount(d.totalBriefs); })
@@ -47,6 +49,7 @@ export function PricingPage() {
   async function startCheckout(product: "pro" | "pack") {
     setLoading(product);
     setCheckoutError(null);
+    trackUpgradeClicked("pricing_page", product);
     try {
       const res = await fetch("/api/stripe/create-checkout-session", {
         method: "POST",
