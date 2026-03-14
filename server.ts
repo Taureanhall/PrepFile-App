@@ -6,6 +6,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import multer from "multer";
 import { createServer as createViteServer } from "vite";
+import { GoogleGenAI } from "@google/genai";
 import { generateBrief, generateQuickBrief, generateBridgingAnalysis } from "./src/lib/generateBrief.js";
 import {
   createMagicLink,
@@ -702,26 +703,28 @@ async function startServer() {
       }
 
       const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-      if (!apiKey) return res.json({ company: null, title: null });
+      if (!apiKey) {
+        console.warn("[extract-jd] No API key found");
+        return res.json({ company: null, title: null });
+      }
 
-      const { GoogleGenAI } = await import("@google/genai");
       const ai = new GoogleGenAI({ apiKey });
 
-      const snippet = text.slice(0, 3000); // first 3k chars is plenty
-      const result = await ai.models.generateContent({
+      const snippet = text.slice(0, 3000);
+      const response = await ai.models.generateContent({
         model: "gemini-2.0-flash",
         contents: `Extract the company name and job title from this job description. Return ONLY valid JSON: {"company": "..." , "title": "..."}\nUse null for any field you cannot confidently determine. For company, identify the hiring company (not the recruiting agency). For title, use the exact job title as stated.\n\nJob description:\n${snippet}`,
+        config: { responseMimeType: "application/json" },
       });
 
-      const raw = result.text?.trim() || "";
-      // Strip markdown fences if present
-      const jsonStr = raw.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
-      const parsed = JSON.parse(jsonStr);
+      const raw = response.text?.trim() || "";
+      const parsed = JSON.parse(raw);
       res.json({
         company: typeof parsed.company === "string" ? parsed.company.slice(0, 100) : null,
         title: typeof parsed.title === "string" ? parsed.title.slice(0, 100) : null,
       });
-    } catch {
+    } catch (err) {
+      console.error("[extract-jd] Error:", err);
       res.json({ company: null, title: null });
     }
   });
