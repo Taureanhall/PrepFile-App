@@ -737,6 +737,9 @@ Preferred Qualifications:
                     onChange={(e) => handleJDChange(e.target.value)}
                     placeholder="Paste a job description to get started..."
                     rows={8}
+                    data-gramm="false"
+                    data-gramm_editor="false"
+                    data-enable-grammarly="false"
                     className="w-full px-5 py-4 bg-white border-2 border-zinc-200 rounded-xl text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-600/10 transition-all duration-200 resize-y shadow-sm"
                     style={{ fontSize: "0.95rem", lineHeight: "1.6" }}
                   />

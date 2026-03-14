@@ -124,6 +124,30 @@ export function extractFromJD(text: string): ExtractResult {
     }
   }
 
+  // Pattern: "seeking a [Title]" / "looking for a [Title]" / "hiring a [Title]" anywhere in text
+  if (!title) {
+    for (const line of lines.slice(0, 15)) {
+      const seekingMatch = line.match(/(?:seeking|looking for|hiring)\s+(?:a|an)\s+([A-Z][A-Za-z /&-]{3,50}?)(?:\s+(?:to|who|with|that|for|in)\b|\s*[.,;!]|$)/);
+      if (seekingMatch && roleKeywords.test(seekingMatch[1])) {
+        title = seekingMatch[1].trim();
+        break;
+      }
+    }
+  }
+
+  // Pattern: short standalone line with role keyword deeper in the JD (e.g., section header like "Senior Investment Analyst")
+  if (!title) {
+    for (const line of lines.slice(3, 15)) {
+      if (line.length > 5 && line.length < 60 && roleKeywords.test(line) && !/[.!?;,]$/.test(line)) {
+        const words = line.split(/\s+/);
+        if (words.length >= 2 && words.length <= 6 && /^[A-Z]/.test(line)) {
+          title = line.replace(/\s+[-–—|@]\s+.+$/, "").trim();
+          break;
+        }
+      }
+    }
+  }
+
   // Pattern: first line is short and looks like a title (even without keyword)
   // Be conservative — require at least 2 words and a capitalized word to avoid garbage like "the job"
   if (!title && lines[0] && lines[0].length < 60 && lines[0].length > 5) {
