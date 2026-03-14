@@ -18,6 +18,9 @@ export interface MandateBridge {
   mandate: string;
   resumeEvidence: string;
   bridge: string;
+  talkingPoint: string;
+  matchStrength: "strong" | "partial" | "gap";
+  competitiveDynamic: string;
 }
 
 export interface BridgingAnalysis {

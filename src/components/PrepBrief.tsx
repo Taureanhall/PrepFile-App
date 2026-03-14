@@ -590,13 +590,40 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
               <span className="text-xs font-medium px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full shrink-0 mb-2">Personalized</span>
             </div>
             <div className="space-y-4">
-              {bridging.mandateBridges.map((bridge, i) => (
-                <div key={i} className="bg-white rounded-lg border border-blue-100 p-4 space-y-2">
-                  <p className="text-sm font-semibold text-zinc-900">{bridge.mandate}</p>
-                  <p className="text-sm text-zinc-600"><span className="font-medium text-zinc-700">Your evidence:</span> {bridge.resumeEvidence}</p>
-                  <p className="text-sm text-blue-700 italic">{bridge.bridge}</p>
-                </div>
-              ))}
+              {[...bridging.mandateBridges]
+                .sort((a, b) => {
+                  const order = { gap: 0, partial: 1, strong: 2 };
+                  return (order[a.matchStrength] ?? 1) - (order[b.matchStrength] ?? 1);
+                })
+                .map((bridge, i) => {
+                  const strengthConfig = {
+                    strong: { border: "border-emerald-200", bg: "bg-emerald-50/40", badge: "bg-emerald-100 text-emerald-700", label: "Strong match" },
+                    partial: { border: "border-amber-200", bg: "bg-amber-50/40", badge: "bg-amber-100 text-amber-700", label: "Partial match" },
+                    gap: { border: "border-red-200", bg: "bg-red-50/40", badge: "bg-red-100 text-red-700", label: "Prep needed" },
+                  };
+                  const config = strengthConfig[bridge.matchStrength] || strengthConfig.partial;
+                  return (
+                    <details key={i} className={`bg-white rounded-lg border ${config.border} overflow-hidden group`}>
+                      <summary className="p-4 cursor-pointer list-none">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${config.badge} uppercase tracking-wide`}>{config.label}</span>
+                            </div>
+                            <p className="text-sm font-semibold text-zinc-900">{bridge.mandate}</p>
+                            <p className="text-sm text-zinc-800">{bridge.talkingPoint}</p>
+                          </div>
+                          <svg className="w-4 h-4 text-zinc-400 shrink-0 mt-1 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                        </div>
+                      </summary>
+                      <div className={`px-4 pb-4 pt-2 ${config.bg} border-t ${config.border} space-y-2.5`}>
+                        <p className="text-xs text-zinc-500 italic">{bridge.competitiveDynamic}</p>
+                        <p className="text-sm text-zinc-600"><span className="font-medium text-zinc-700">Your proof:</span> {bridge.resumeEvidence}</p>
+                        <p className="text-sm text-zinc-700">{bridge.bridge}</p>
+                      </div>
+                    </details>
+                  );
+                })}
             </div>
           </section>
         )}

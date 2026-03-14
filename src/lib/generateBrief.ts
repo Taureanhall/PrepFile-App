@@ -454,8 +454,8 @@ export async function generateBridgingAnalysis(
   const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
   const ai = new GoogleGenAI({ apiKey });
 
-  const prompt = `You are analyzing a job candidate's resume against a completed strategic company intelligence brief.
-Your sole job is to produce precise bridging analysis — not generic career advice.
+  const prompt = `You are a sharp industry analyst reviewing a candidate's resume against a company intelligence brief.
+Your job: produce bridging analysis that sounds like insider knowledge from someone who deeply understands the competitive dynamics of this industry — not career advice.
 
 COMPANY INTELLIGENCE BRIEF:
 ${JSON.stringify(brief, null, 2)}
@@ -471,9 +471,22 @@ STRUCTURAL CONSTRAINT: Every output item must reference BOTH:
 
 Any item that references only one side is invalid output.
 
-TRANSLATION RULE: No academic framing. No career-coach language. Concrete tactical advice only.
+VOICE RULE: Write like a well-connected industry insider giving a friend the real read on their positioning — not a career coach, not a textbook. You understand why this company needs this role right now, what competitive pressures are driving the hire, and where the candidate's background gives them an edge (or doesn't).
+
 BAD: "Leverage your transferable skills in cross-functional environments."
-GOOD: "Your [specific project] at [Company] is the direct analog to their core mandate — you built exactly the capability they're testing for."
+BAD: "This aligns with the threat of new entrants in the market." (no frameworks jargon)
+GOOD: "They're hiring this role because [competitor] just launched [X] and they're playing catch-up — your experience doing [Y] at [Company] means you've already solved the exact problem they're scrambling to staff for."
+GOOD: "The real reason this mandate matters: their clients can get this analysis from [alternative] now, so the bar for what counts as 'value-add' just went up. Your [specific work] is proof you operate above that bar."
+
+COMPETITIVE DYNAMICS LENS (use implicitly, never name these frameworks):
+For each mandate bridge, think through:
+- Why does this company need this capability NOW? What competitive pressure, market shift, or client demand is driving it?
+- What alternatives exist? (competitors, automation, in-house workarounds, clients doing it themselves)
+- Who has leverage in this relationship — the company, their clients, their suppliers, or new players entering?
+- What would happen if they DON'T fill this role well? What erodes?
+- Is this a defend-the-moat hire or a capture-new-ground hire?
+
+Weave these dynamics into the bridge and competitiveDynamic fields naturally. The candidate should walk away understanding the BUSINESS REASON their experience matters — not just the skills match.
 
 ---
 
@@ -484,8 +497,11 @@ For each of the following from the brief, find the closest matching experience i
 
 For each match, output:
 - mandate: The specific item from the brief (quoted exactly)
-- resumeEvidence: The specific resume experience — exact role, project, or metric. If nothing maps clearly, say so plainly.
-- bridge: The precise connection. Format: "Your [X] at [Company] maps to their need for [Y] because [concrete reason]." Not standalone "you did X."
+- resumeEvidence: The single sharpest proof point from their resume — one specific metric, project name, or outcome. Max 25 words. Do NOT copy-paste a full resume bullet. Extract the core.
+- bridge: The precise connection. Format: "Your [X] at [Company] maps to their need for [Y] because [concrete reason rooted in competitive dynamics]."
+- talkingPoint: One sentence, max 20 words, that the candidate can say OUT LOUD in the interview. Written in first person. Not a description — an actual utterance.
+- matchStrength: "strong" if the resume shows direct, proven experience with measurable outcomes. "partial" if the experience is adjacent or the evidence is thin. "gap" if this is a real stretch or the resume has nothing close.
+- competitiveDynamic: One sentence explaining WHY this mandate exists from a business/competitive standpoint — what market pressure, client demand, or competitive threat makes this capability non-negotiable right now. Sound like someone who covers this industry, not someone reading a job description.
 
 TASK 2 — PERSONALIZED ROUND STRENGTHS
 Write exactly 3 items replacing the generic roundExpectations.howToShowUpStrong with resume-grounded tactics.
@@ -494,6 +510,7 @@ Each item must:
 - Name a specific resume experience
 - Connect it to what this round is evaluating per the brief's roundExpectations context
 - Give a tactical instruction: what to open with, what to lead with, what to say when a specific topic surfaces
+- Reflect understanding of why the interviewer cares about this (what competitive/business pressure makes this question important)
 
 TASK 3 — CANDIDATE-SPECIFIC GAPS
 Using roleIntelligence.commonFailureModes and roundExpectations.whatTripsPeopleUp as the lens:
@@ -501,6 +518,7 @@ Identify 1-3 things the role actually needs that are thin or absent in this resu
 
 For each gap:
 - State it plainly: what the role needs that this resume doesn't demonstrate clearly
+- Explain the business reason this gap matters (not "they want X skill" but "without X, the team can't do Y, which matters because Z competitive pressure")
 - Give a concrete interview mitigation: the exact framing or story structure the candidate should use when this gap surfaces. Not "brush up on X." The actual words and approach.
 
 ---
@@ -508,7 +526,7 @@ For each gap:
 Return valid JSON matching this schema exactly:
 {
   "mandateBridges": [
-    { "mandate": string, "resumeEvidence": string, "bridge": string }
+    { "mandate": string, "resumeEvidence": string, "bridge": string, "talkingPoint": string, "matchStrength": "strong" | "partial" | "gap", "competitiveDynamic": string }
   ],
   "howToShowUpStrong": [string, string, string],
   "blindSpots": [string]
@@ -530,8 +548,11 @@ Return valid JSON matching this schema exactly:
                 mandate: { type: Type.STRING },
                 resumeEvidence: { type: Type.STRING },
                 bridge: { type: Type.STRING },
+                talkingPoint: { type: Type.STRING },
+                matchStrength: { type: Type.STRING, enum: ["strong", "partial", "gap"] },
+                competitiveDynamic: { type: Type.STRING },
               },
-              required: ["mandate", "resumeEvidence", "bridge"],
+              required: ["mandate", "resumeEvidence", "bridge", "talkingPoint", "matchStrength", "competitiveDynamic"],
             },
           },
           howToShowUpStrong: {
