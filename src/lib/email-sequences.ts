@@ -9,7 +9,7 @@
  *   welcome-3 (day 5) — sent by runWelcomeSequenceBatch
  *
  * Re-engagement sequence:
- *   reengagement-1 (day 7 inactive)  — sent by runReengagementBatch
+ *   reengagement-1 (day 3 inactive)  — sent by runReengagementBatch
  *   reengagement-2 (day 14 inactive) — sent by runReengagementBatch
  */
 

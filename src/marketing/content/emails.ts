@@ -199,12 +199,12 @@ Five is usually enough for a full hiring process.`,
 export const upgradeNudgeSequence: Email[] = [upgradeNudge1Email, upgradeNudge2Email];
 
 // ─── 4. Re-engagement ────────────────────────────────────────────────────────
-// Trigger: 7 days since last app visit, no brief generated in that window
+// Trigger: 3 days since last brief (or signup), no upgrade
 
 export const reengagementEmail: Email = {
   id: "reengagement-1",
-  delayDays: 7,
-  trigger: "user.last_visit + 7d, no brief in 7d",
+  delayDays: 3,
+  trigger: "user.last_active_at + 3d, brief_count >= 1, plan = free, no upgrade prompt in 7d",
   subjectA: "Still preparing for that interview?",
   subjectB: "Your PrepFile account is here when you need it",
   previewText: "When you have a job description, you're ready.",

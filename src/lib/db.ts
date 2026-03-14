@@ -502,7 +502,7 @@ export function getUsersForWelcomeEmail(
 /**
  * Users whose last brief (or signup, if no briefs) was >= delayDays ago,
  * haven't received emailId, and are not unsubscribed.
- * Used for reengagement-1 (day 7) and reengagement-2 (day 14).
+ * Used for reengagement-1 (day 3) and reengagement-2 (day 14).
  */
 export function getUsersForReengagement(
   emailId: string,
