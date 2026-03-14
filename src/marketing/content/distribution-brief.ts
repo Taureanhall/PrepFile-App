@@ -79,7 +79,7 @@ Most interview prep tools give you the same generic advice. If you're interviewi
 
 I built PrepFile to generate exactly that. You paste in the JD, tell it what round you're in and your prep situation, and it generates a structured brief in under a minute.
 
-Free tier: 3 briefs/week. Pro is $9.99/month if you're running multiple interview loops.
+Free tier: 3 briefs/week. Pro is $14.99/month if you're running multiple interview loops.
 
 https://prepfile-production.up.railway.app
 
@@ -139,7 +139,7 @@ What's been the biggest gap in your interview prep that generic advice never cov
 | 2 | Tell us the role. We do the research. | Company + job title + JD → structured brief, instantly. |
 | 3 | Know what's coming before you walk in. | Round-by-round expectations. Smart questions to ask. Blind spots flagged. |
 | 4 | Resume match — close the gap. | See exactly how your experience reads against the role. |
-| 5 | Free to start. No credit card. | 3 briefs/week free. Pro at $9.99/mo for unlimited. |
+| 5 | Free to start. No credit card. | 3 briefs/week free. Pro at $14.99/mo for unlimited. |
 
 ### Maker comment (post immediately when listing goes live):
 Hey PH! 👋 I'm Reese, CEO of PrepFile. We built PrepFile because I kept watching smart people bomb interviews not from lack of skill — but from lack of context.
@@ -154,7 +154,7 @@ So we built PrepFile: paste in a company name, job title, and job description �
 
 We use a proprietary framework combining competitive analysis and skill gap detection. It's not a chatbot — it's a structured brief.
 
-Free tier lets you run 3 briefs/week. Pro is $9.99/mo for unlimited + brief history + resume match.
+Free tier lets you run 3 briefs/week. Pro is $14.99/mo for unlimited + brief history + resume match.
 
 Try it right now at prepfile-production.up.railway.app — takes 60 seconds, no credit card.
 
@@ -172,7 +172,7 @@ Would love your feedback. What prep info do you wish you'd had going into your l
 > If you're preparing for Google, Meta, Stripe, or any competitive tech company — the bar for "knowing the company" is high. PrepFile generates briefs that go deep: how the company thinks, what signals matter for your specific role, and what questions will make you stand out.
 
 **Comment 4 — Free tier:**
-> Quick note for anyone on the fence: PrepFile has a free tier — 3 briefs/week, no credit card required. Use it for your next interview. If it helps (it will), Pro is $9.99/month for unlimited briefs + history + resume match.
+> Quick note for anyone on the fence: PrepFile has a free tier — 3 briefs/week, no credit card required. Use it for your next interview. If it helps (it will), Pro is $14.99/month for unlimited briefs + history + resume match.
 
 **Comment 5 — Resume match:**
 > The feature I didn't expect to love: resume match. Once you have your brief, PrepFile can analyze your resume against it — flagging gaps, suggesting what to emphasize in your answers, and identifying what the interviewer is most likely to probe. Pro/pack feature.
@@ -190,7 +190,7 @@ PrepFile fixes that. You input: company name, job title, job description. You ge
 ✓ Smart questions to ask interviewers
 ✓ Blind spot analysis
 
-Free tier: 3 briefs/week, no credit card. Pro ($9.99/mo): unlimited briefs + history + resume match.
+Free tier: 3 briefs/week, no credit card. Pro ($14.99/mo): unlimited briefs + history + resume match.
 
 [PH LINK] — an upvote goes a long way 🙏
 
@@ -218,7 +218,7 @@ Free tier available.
 **Body:**
 You signed up for PrepFile when it was free-only. That changes today.
 
-Pro is now available: unlimited briefs, brief history, and resume match for $9.99/month. Or grab an Interview Pack — 5 comprehensive briefs for $4.99, no subscription.
+Pro is now available: unlimited briefs, brief history, and resume match for $14.99/month. Or grab an Interview Pack — 5 comprehensive briefs for $6.99, no subscription.
 
 The brief you've been generating in the free tier gives you an overview. Pro gives you the full picture: every round, every signal, what to ask, and where you're likely to get tripped up.
 
@@ -247,20 +247,20 @@ Input company + role + JD → full interview brief in <1 min.
 - Resume match
 - Brief history
 
-$9.99/mo or $4.99 for 5 briefs.
+$14.99/mo or $6.99 for 5 briefs.
 
 → prepfile-production.up.railway.app
 
 ### Reddit (r/cscareerquestions):
 I built a tool that generates a personalized interview prep brief in under a minute — you give it the company, job title, job description, and a few context questions, and it produces a structured breakdown: company snapshot, role-specific signals, round expectations, questions to ask, and blind spots.
 
-Free tier has always been available. Pro just launched — unlimited briefs, history, and resume match for $9.99/month (or $4.99 for 5 briefs, no subscription).
+Free tier has always been available. Pro just launched — unlimited briefs, history, and resume match for $14.99/month (or $6.99 for 5 briefs, no subscription).
 
 https://prepfile-production.up.railway.app
 
 ### In-app banner:
 **Heading:** Pro is here
-**Body:** Unlimited briefs, brief history, and resume match. Upgrade for $9.99/month or grab 5 briefs for $4.99.
+**Body:** Unlimited briefs, brief history, and resume match. Upgrade for $14.99/month or grab 5 briefs for $6.99.
 **CTA:** Upgrade to Pro → /pricing
 
 ---

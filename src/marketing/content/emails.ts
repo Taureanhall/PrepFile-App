@@ -73,7 +73,7 @@ export const welcome3Email: Email = {
 If you're prepping for multiple roles, Pro gives you unlimited briefs, full round-by-round breakdowns, and resume match against each job description. No weekly limits.
 
 Free briefs are a good start. Pro is what you use when the stakes are higher.`,
-  ctaText: "Upgrade to Pro — $9.99/mo",
+  ctaText: "Upgrade to Pro — $14.99/mo",
   ctaUrl: "https://prepfile.work/upgrade",
 };
 
@@ -93,7 +93,7 @@ Free briefs give you the essentials — company snapshot, role signals, and a fe
 
 If you're interviewing at a competitive company or preparing for multiple roles, that depth matters.
 
-Pro is $9.99/month. Unlimited briefs, brief history, resume match — no weekly limits.`,
+Pro is $14.99/month. Unlimited briefs, brief history, resume match — no weekly limits.`,
   ctaText: "See What Pro Unlocks",
   ctaUrl: "https://prepfile.work/upgrade",
 };
@@ -112,7 +112,7 @@ It runs your resume against the job description and tells you specifically where
 That lets you prepare specific stories, reframe experience, or acknowledge gaps before you're asked. Candidates who do this walk in without blind spots.
 
 Free tier doesn't include resume match. Pro does.`,
-  ctaText: "Upgrade to Pro — $9.99/mo",
+  ctaText: "Upgrade to Pro — $14.99/mo",
   ctaUrl: "https://prepfile.work/upgrade",
 };
 
@@ -147,7 +147,7 @@ export const upgradePromptEmail: Email = {
   delayDays: 0,
   trigger: "user.brief_created, count == 2 (free tier)",
   subjectA: "You've used 2 of 3 free briefs — here's what Pro unlocks",
-  subjectB: "Unlimited briefs, resume match, full analysis — $9.99/mo",
+  subjectB: "Unlimited briefs, resume match, full analysis — $14.99/mo",
   previewText: "One free brief left this week.",
   body: `You've generated 2 free briefs. You have one left this week.
 
@@ -156,7 +156,7 @@ Free briefs cover the essentials. Pro briefs include the full round-by-round bre
 The resume match alone changes how you prep — it shows specifically where your experience doesn't map to what the role requires, so you're not blindsided in the room.
 
 If you have more than one interview coming up, Pro pays for itself.`,
-  ctaText: "Upgrade to Pro — $9.99/mo",
+  ctaText: "Upgrade to Pro — $14.99/mo",
   ctaUrl: "https://prepfile.work/upgrade",
 };
 
@@ -171,10 +171,10 @@ export const upgradeNudge1Email: Email = {
 
 If you have more interviews lined up, Pro removes the cap entirely — unlimited briefs, brief history, resume match, and full round-by-round breakdowns.
 
-Pro is $9.99/month. If you'd rather not commit, the Interview Pack is $4.99 one-time for 5 comprehensive briefs with resume match included. No subscription.
+Pro is $14.99/month. If you'd rather not commit, the Interview Pack is $6.99 one-time for 5 comprehensive briefs with resume match included. No subscription.
 
 Either way, you won't hit another limit.`,
-  ctaText: "Upgrade to Pro — $9.99/mo",
+  ctaText: "Upgrade to Pro — $14.99/mo",
   ctaUrl: "https://prepfile.work/upgrade",
 };
 
@@ -182,17 +182,17 @@ export const upgradeNudge2Email: Email = {
   id: "upgrade-nudge-2",
   delayDays: 1,
   trigger: "user.brief_created + 24h, count == 2 (free tier), no upgrade",
-  subjectA: "No subscription? The Interview Pack is $4.99",
-  subjectB: "5 full briefs + resume match, one-time $4.99",
+  subjectA: "No subscription? The Interview Pack is $6.99",
+  subjectB: "5 full briefs + resume match, one-time $6.99",
   previewText: "5 comprehensive briefs. No monthly charge.",
   body: `Not ready for a monthly subscription? The Interview Pack is a one-time purchase.
 
-$4.99 gets you 5 comprehensive briefs — full round-by-round breakdowns, resume match against each job description, and no weekly limits. Pay once, use them whenever you need them.
+$6.99 gets you 5 comprehensive briefs — full round-by-round breakdowns, resume match against each job description, and no weekly limits. Pay once, use them whenever you need them.
 
 If you have a round of interviews coming up, that's the right option. One brief for each stage: phone screen, technical, behavioral, final panel.
 
 Five is usually enough for a full hiring process.`,
-  ctaText: "Get the Interview Pack — $4.99",
+  ctaText: "Get the Interview Pack — $6.99",
   ctaUrl: "https://prepfile.work/upgrade",
 };
 

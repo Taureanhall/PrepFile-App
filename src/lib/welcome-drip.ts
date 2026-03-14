@@ -57,7 +57,7 @@ const drip: DripEmail[] = [
   <p style="color:#52525b;line-height:1.6;margin-bottom:16px">Hey,</p>
   <p style="color:#52525b;line-height:1.6;margin-bottom:16px">Most candidates walk in having read the company website and nothing else. They get asked "what do you know about our product direction?" and go blank. It's not a trick question — it's a signal check.</p>
   <p style="color:#52525b;line-height:1.6;margin-bottom:16px">PrepFile builds you a brief before you walk in: company strategy, round structure, what the hiring team is actually evaluating, and the questions that show you've done the work.</p>
-  <p style="color:#52525b;line-height:1.6;margin-bottom:24px">If you want unlimited briefs and a resume match for the specific role, Pro is $9.99/month.</p>
+  <p style="color:#52525b;line-height:1.6;margin-bottom:24px">If you want unlimited briefs and a resume match for the specific role, Pro is $14.99/month.</p>
   <a href="${appUrl}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;margin-bottom:16px">Open PrepFile →</a>
   <p style="color:#52525b;line-height:1.6;margin-top:24px">— Reese, CEO @ PrepFile</p>
   <p style="color:#a1a1aa;font-size:12px;margin-top:40px">PrepFile — AI-powered interview prep<br><a href="${unsubUrl}" style="color:#a1a1aa">Unsubscribe</a></p>

@@ -38,7 +38,7 @@ So we built PrepFile: paste in a company name, job title, and job description �
 
 We use a proprietary framework combining competitive analysis and skill gap detection. It's not a chatbot — it's a structured brief.
 
-Free tier lets you run 3 briefs/week. Pro is $9.99/mo for unlimited + brief history + resume match.
+Free tier lets you run 3 briefs/week. Pro is $14.99/mo for unlimited + brief history + resume match.
 
 Try it right now at prepfile-production.up.railway.app — takes 60 seconds, no credit card.
 
@@ -71,7 +71,7 @@ PrepFile generates briefs that go deep: how the company thinks, what signals mat
       angle: "Free tier — low barrier to try",
       comment: `Quick note for anyone on the fence: PrepFile has a free tier — 3 briefs/week, no credit card required.
 
-Use it for your next interview. If it helps (it will), Pro is $9.99/month for unlimited briefs + history + resume match. But start free and see for yourself.`,
+Use it for your next interview. If it helps (it will), Pro is $14.99/month for unlimited briefs + history + resume match. But start free and see for yourself.`,
     },
     {
       angle: "Resume match — hidden gem feature",
@@ -110,7 +110,7 @@ Once you have your brief, PrepFile can analyze your resume against it — flaggi
     {
       slide: 5,
       headline: "Free to start. No credit card.",
-      subhead: "3 briefs/week free. Pro at $9.99/mo for unlimited.",
+      subhead: "3 briefs/week free. Pro at $14.99/mo for unlimited.",
     },
   ],
 
@@ -161,7 +161,7 @@ You get back a structured brief in under 60 seconds:
 ✓ Blind spot analysis — what gaps might come up
 
 Free tier: 3 briefs/week, no credit card.
-Pro ($9.99/mo): unlimited briefs + history + resume match.
+Pro ($14.99/mo): unlimited briefs + history + resume match.
 
 If you or someone you know has an interview coming up, I'd love for you to try it.
 

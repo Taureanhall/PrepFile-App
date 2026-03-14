@@ -212,7 +212,7 @@ You enter the company, job title, and job description. Answer 4 quick questions 
 — Questions to ask interviewers that show real homework
 — Your personal blind spots given your background
 
-Free tier: 3 briefs per week. Pro is $9.99/month.
+Free tier: 3 briefs per week. Pro is $14.99/month.
 
 https://prepfile-production.up.railway.app
 

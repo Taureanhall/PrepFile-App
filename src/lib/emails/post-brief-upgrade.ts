@@ -42,11 +42,11 @@ export function buildPostBriefUpgradeHtml(appUrl: string, unsubscribeUrl: string
     didn't know they had. Resume match fixes that.
   </p>
   <a href="${upgradeUrl}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;margin-bottom:12px">
-    Upgrade to Pro — $9.99/mo
+    Upgrade to Pro — $14.99/mo
   </a>
   <p style="margin:4px 0 24px">
     <a href="${upgradeUrl}" style="color:#52525b;font-size:14px;text-decoration:underline">
-      Or get the Interview Pack — 5 full briefs for $4.99, no subscription
+      Or get the Interview Pack — 5 full briefs for $6.99, no subscription
     </a>
   </p>
   <p style="color:#a1a1aa;font-size:12px;margin-top:32px">
@@ -72,6 +72,6 @@ What Pro adds to your brief:
 
 Most interviews aren't lost on answers. They're lost on blind spots the candidate didn't know they had. Resume match fixes that.
 
-Upgrade to Pro ($9.99/mo): ${upgradeUrl}
-Or get the Interview Pack — 5 full briefs for $4.99, no subscription: ${upgradeUrl}`;
+Upgrade to Pro ($14.99/mo): ${upgradeUrl}
+Or get the Interview Pack — 5 full briefs for $6.99, no subscription: ${upgradeUrl}`;
 }

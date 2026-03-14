@@ -83,7 +83,7 @@ Would especially like feedback from people interviewing at mid-size companies or
 
 I built PrepFile to generate exactly that. You paste in the JD, tell it what round you're in and your prep situation, and it generates a structured brief in under a minute.
 
-Free tier: 3 briefs/week. Pro is $9.99/month if you're running multiple interview loops.
+Free tier: 3 briefs/week. Pro is $14.99/month if you're running multiple interview loops.
 
 https://prepfile-production.up.railway.app
 

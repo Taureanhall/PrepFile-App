@@ -57,10 +57,11 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
           <div>
             <div className="text-xs font-semibold text-accent-500 uppercase tracking-wide mb-1">Most popular</div>
             <div className="text-lg font-bold text-zinc-900">PrepFile Pro</div>
-            <div className="text-3xl font-bold text-zinc-900 mt-1">$9.99<span className="text-base font-normal text-zinc-500">/mo</span></div>
+            <div className="text-3xl font-bold text-zinc-900 mt-1">$14.99<span className="text-base font-normal text-zinc-500">/mo</span></div>
           </div>
           <ul className="text-sm text-zinc-600 space-y-1">
             <li>✓ Unlimited full briefs</li>
+            <li>✓ Visual analytics & gap charts</li>
             <li>✓ Resume match & personalized blind spots</li>
             <li>✓ Brief history saved</li>
             <li>✓ Cancel anytime</li>
@@ -79,9 +80,10 @@ export function UpgradePrompt({ reason, onDismiss }: Props) {
           <div>
             <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-1">One-time</div>
             <div className="text-lg font-bold text-zinc-900">Interview Pack</div>
-            <div className="text-3xl font-bold text-zinc-900 mt-1">$4.99<span className="text-base font-normal text-zinc-500"> once</span></div>
+            <div className="text-3xl font-bold text-zinc-900 mt-1">$6.99<span className="text-base font-normal text-zinc-500"> once</span></div>
           </div>
           <ul className="text-sm text-zinc-600 space-y-1">
+            <li>✓ Visual analytics & gap charts</li>
             <li>✓ Resume match & personalized blind spots</li>
             <li>✓ 5 full briefs, never expire</li>
             <li>✓ Brief history saved</li>

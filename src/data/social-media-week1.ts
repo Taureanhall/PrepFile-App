@@ -63,8 +63,8 @@ https://prepfile.work`,
     type: "product_announcement",
     copy: `PrepFile now accepts payments.
 
-Pro plan: $9.99/month — unlimited briefs, brief history, resume match.
-Interview Pack: $4.99 one-time — 5 pro-tier briefs.
+Pro plan: $14.99/month — unlimited briefs, brief history, resume match.
+Interview Pack: $6.99 one-time — 5 pro-tier briefs.
 Free tier: 3 briefs/week, no credit card.
 
 If you have an interview coming up and you've been using the free tier, now's the time to get the full brief.
@@ -180,8 +180,8 @@ The brief covers:
 — Blind spots (where candidates usually miss for this role)
 
 Free tier: 3 briefs/week, no credit card required.
-Pro: $9.99/month — unlimited briefs, brief history, resume match.
-Interview Pack: $4.99 one-time — 5 pro-tier briefs.
+Pro: $14.99/month — unlimited briefs, brief history, resume match.
+Interview Pack: $6.99 one-time — 5 pro-tier briefs.
 
 If you have an interview coming up: https://prepfile.work`,
     hashtags: ["#PrepFile", "#InterviewPrep", "#JobSearch", "#ProductLaunch"],

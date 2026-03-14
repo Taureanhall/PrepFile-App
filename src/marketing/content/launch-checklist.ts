@@ -67,7 +67,7 @@ What's been the biggest gap in your interview prep that generic advice never cov
 
 I built PrepFile to generate exactly that. You paste in the JD, tell it what round you're in and your prep situation, and it generates a structured brief in under a minute.
 
-Free tier: 3 briefs/week. Pro is $9.99/month if you're running multiple interview loops.
+Free tier: 3 briefs/week. Pro is $14.99/month if you're running multiple interview loops.
 
 https://prepfile-production.up.railway.app
 
@@ -92,7 +92,7 @@ So we built PrepFile: paste in a company name, job title, and job description �
 
 We use a proprietary framework combining competitive analysis and skill gap detection. It's not a chatbot — it's a structured brief.
 
-Free tier lets you run 3 briefs/week. Pro is $9.99/mo for unlimited + brief history + resume match.
+Free tier lets you run 3 briefs/week. Pro is $14.99/mo for unlimited + brief history + resume match.
 
 Try it right now at prepfile-production.up.railway.app — takes 60 seconds, no credit card.
 
@@ -106,7 +106,7 @@ Would love your feedback. What prep info do you wish you'd had going into your l
     subject: "PrepFile Pro is live — unlimited briefs, resume match, history",
     body: `You signed up for PrepFile when it was free-only. That changes today.
 
-Pro is now available: unlimited briefs, brief history, and resume match for $9.99/month. Or grab an Interview Pack — 5 comprehensive briefs for $4.99, no subscription.
+Pro is now available: unlimited briefs, brief history, and resume match for $14.99/month. Or grab an Interview Pack — 5 comprehensive briefs for $6.99, no subscription.
 
 The brief you've been generating in the free tier gives you an overview. Pro gives you the full picture: every round, every signal, what to ask, and where you're likely to get tripped up.
 

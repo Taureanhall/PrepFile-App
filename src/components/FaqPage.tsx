@@ -9,7 +9,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "How much does PrepFile cost?",
-    a: "PrepFile has three tiers: Free ($0, 3 briefs per week, concise brief format), Pro ($9.99/month, unlimited briefs, full comprehensive brief, brief history, resume match), and Interview Pack ($4.99 one-time, 5 comprehensive briefs + resume match — designed for a single job search). You can try the free tier without a credit card.",
+    a: "PrepFile has three tiers: Free ($0, 3 briefs per week, concise brief format), Pro ($14.99/month, unlimited briefs, visual analytics, gap analysis charts, interview timeline, resume match, brief history), and Interview Pack ($6.99 one-time, 5 comprehensive briefs + all Pro features — designed for a single job search). You can try the free tier without a credit card.",
   },
   {
     q: "What do I get with a comprehensive brief vs. a free brief?",

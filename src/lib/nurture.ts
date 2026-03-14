@@ -27,8 +27,8 @@ function buildTouch1Html(appUrl: string): string {
   const upgradeSection = isStripeLive()
     ? `<div style="background:#f4f4f5;border-radius:8px;padding:16px;margin-top:16px">
         <p style="color:#3f3f46;font-size:14px;margin:0 0 8px">
-          <strong>Ready for your next interview?</strong> PrepFile Pro gives you unlimited briefs at $9.99/month,
-          or grab an Interview Pack (5 briefs) for $4.99.
+          <strong>Ready for your next interview?</strong> PrepFile Pro gives you unlimited briefs at $14.99/month,
+          or grab an Interview Pack (5 briefs) for $6.99.
         </p>
         <a href="${appUrl}" style="color:#18181b;font-size:14px;font-weight:500">Upgrade to Pro →</a>
       </div>`
