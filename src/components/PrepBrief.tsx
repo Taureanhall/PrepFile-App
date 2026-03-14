@@ -365,19 +365,24 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
         </div>
       )}
 
-      {/* Jump nav */}
+      {/* Jump nav — only shows sections that are actually rendered */}
       <nav className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-zinc-100 -mx-5 md:-mx-8 lg:-mx-12 px-5 md:px-8 lg:px-12 py-2.5 mb-8 print:hidden overflow-x-auto">
         <div className="flex gap-5 text-xs font-medium text-zinc-400 whitespace-nowrap">
-          <a href="#section-1" className="hover:text-zinc-800 transition-colors">Company Snapshot</a>
-          <a href="#section-2" className="hover:text-zinc-800 transition-colors">Role Intelligence</a>
-          <a href="#section-3" className="hover:text-zinc-800 transition-colors">Interview Themes</a>
-          <a href="#section-4" className="hover:text-zinc-800 transition-colors">Process Questions</a>
-          <a href="#section-5" className="hover:text-zinc-800 transition-colors">Behavioral Bank</a>
-          <a href="#section-6" className="hover:text-zinc-800 transition-colors">Round Expectations</a>
-          <a href="#section-7" className="hover:text-zinc-800 transition-colors">Questions to Ask</a>
-          {(data.recommendedReading && data.recommendedReading.length > 0 || userPlan === "free") && (
-            <a href="#section-8" className="hover:text-zinc-800 transition-colors">Reading</a>
-          )}
+          {(() => {
+            const sections: { id: string; label: string }[] = [
+              { id: "company-snapshot", label: "Company Snapshot" },
+              { id: "role-intelligence", label: "Role Intelligence" },
+              { id: "interview-themes", label: "Interview Themes" },
+            ];
+            if (data.processOperationalQuestions) sections.push({ id: "process-questions", label: "Process Questions" });
+            if (data.behavioralQuestionBank && data.behavioralQuestionBank.length > 0) sections.push({ id: "behavioral-bank", label: "Behavioral Bank" });
+            if (data.roundExpectations || userPlan === "free") sections.push({ id: "round-expectations", label: "Round Expectations" });
+            sections.push({ id: "questions-to-ask", label: "Questions to Ask" });
+            if (data.recommendedReading && data.recommendedReading.length > 0 || userPlan === "free") sections.push({ id: "recommended-reading", label: "Reading" });
+            return sections.map((s) => (
+              <a key={s.id} href={`#${s.id}`} className="hover:text-zinc-800 transition-colors">{s.label}</a>
+            ));
+          })()}
         </div>
       </nav>
 
@@ -420,9 +425,9 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
       <div className="space-y-12">
 
         {/* Section 1 — Company Snapshot */}
-        <section id="section-1">
+        <section id="company-snapshot">
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-            1. Company Snapshot
+            Company Snapshot
           </h2>
           <div className="space-y-4">
             <p className="text-zinc-700 leading-relaxed">{data.companySnapshot?.overview}</p>
@@ -629,9 +634,9 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
         )}
 
         {/* Section 2 — Role Intelligence */}
-        <section id="section-2">
+        <section id="role-intelligence">
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-            2. Role Intelligence
+            Role Intelligence
           </h2>
           <div className="space-y-4">
             <p className="text-zinc-700 leading-relaxed"><span className="font-semibold text-zinc-900">Core Mandate:</span> {data.roleIntelligence?.coreMandate}</p>
@@ -668,9 +673,9 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
 
         {/* Section 3 — Likely Interview Themes */}
         {data.interviewThemes && data.interviewThemes.length > 0 && (
-          <section id="section-3">
+          <section id="interview-themes">
             <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-              3. Likely Interview Themes
+              Likely Interview Themes
             </h2>
             <div className="space-y-8">
               {data.interviewThemes.map((theme, i) => (
@@ -695,9 +700,9 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
 
         {/* Section 4 — Process & Operational Questions */}
         {data.processOperationalQuestions && (
-          <section id="section-4">
+          <section id="process-questions">
             <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-              4. Process & Operational Questions
+              Process & Operational Questions
             </h2>
             <div className="space-y-4">
               <p className="text-zinc-600 text-sm leading-relaxed italic">{data.processOperationalQuestions.context}</p>
@@ -715,9 +720,9 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
 
         {/* Section 5 — Behavioral Question Bank */}
         {data.behavioralQuestionBank && data.behavioralQuestionBank.length > 0 && (
-          <section id="section-5">
+          <section id="behavioral-bank">
             <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-              5. Behavioral Question Bank
+              Behavioral Question Bank
             </h2>
             <div className="space-y-8">
               {data.behavioralQuestionBank.map((item, i) => (
@@ -739,9 +744,9 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
 
         {/* Section 6 — Round Expectations (Pro/Pack only — hidden when data is absent) */}
         {data.roundExpectations && (data.roundExpectations.overview || data.roundExpectations.whatTripsPeopleUp?.length > 0 || howToShowUpStrong?.length > 0) ? (
-        <section id="section-6">
+        <section id="round-expectations">
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-            6. Round Expectations
+            Round Expectations
           </h2>
           <div className="space-y-4">
             <p className="text-zinc-700 leading-relaxed">{data.roundExpectations?.overview}</p>
@@ -784,9 +789,9 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
         </section>
         ) : userPlan === "free" ? (
           /* Free tier: locked round expectations teaser with blurred preview */
-          <section id="section-6" className="print:hidden">
+          <section id="round-expectations" className="print:hidden">
             <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-              6. Round Expectations
+              Round Expectations
             </h2>
             <div className="select-none pointer-events-none" aria-hidden="true">
               <p className="text-zinc-400 leading-relaxed blur-[6px] mb-4">
@@ -823,9 +828,9 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
         ) : null}
 
         {/* Section 7 — Questions to Ask */}
-        <section id="section-7">
+        <section id="questions-to-ask">
           <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-            7. Questions to Ask Them
+            Questions to Ask Them
           </h2>
           <ul className="space-y-3">
             {data.questionsToAsk?.map((point, i) => (
@@ -839,9 +844,9 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
 
         {/* Section 8 — Recommended Reading */}
         {data.recommendedReading && data.recommendedReading.length > 0 ? (
-          <section id="section-8">
+          <section id="recommended-reading">
             <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-              8. Recommended Reading
+              Recommended Reading
             </h2>
             <ul className="space-y-4">
               {data.recommendedReading.map((item, i) => (
@@ -856,9 +861,9 @@ export function PrepBrief({ data, user, userPlan, briefId, onRegenerate, isRegen
             </ul>
           </section>
         ) : userPlan === "free" ? (
-          <section id="section-8" className="print:hidden">
+          <section id="recommended-reading" className="print:hidden">
             <h2 className="text-xl font-bold text-zinc-900 mb-4 pb-2 border-b border-zinc-100 uppercase tracking-wider text-sm">
-              8. Recommended Reading
+              Recommended Reading
             </h2>
             <LockedSection label="Unlock recommended reading" onUpgrade={onUpgradeClick}>
               <ul className="space-y-4">
