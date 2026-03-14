@@ -1,6 +1,163 @@
+import { useState, useRef, useEffect } from "react";
+
+type Step = "choose" | "code";
+
 export function SignInGate() {
+  const [step, setStep] = useState<Step>("choose");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const codeInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (step === "code") codeInputRef.current?.focus();
+  }, [step]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  const isValidEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+
+  const handleSendCode = async () => {
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/request-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send code");
+      setStep("code");
+      setResendCooldown(30);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (code.length !== 6) {
+      setError("Please enter the 6-digit code.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Verification failed");
+      window.location.href = "/?auth_method=email";
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (resendCooldown > 0) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/request-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to resend");
+      setResendCooldown(30);
+      setCode("");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (step === "code") {
+    return (
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-zinc-200/60 space-y-6 max-w-md mx-auto">
+        <button
+          onClick={() => { setStep("choose"); setCode(""); setError(null); }}
+          className="flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          Back
+        </button>
+
+        <div>
+          <h2 className="text-xl font-bold text-zinc-900">Check your email for a code</h2>
+          <p className="text-zinc-500 mt-1.5">
+            We sent a code to <strong className="text-zinc-900">{email}</strong>. It expires in 10 minutes.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-zinc-900">Enter code</label>
+          <input
+            ref={codeInputRef}
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            value={code}
+            onChange={(e) => { setCode(e.target.value.replace(/\D/g, "")); setError(null); }}
+            onKeyDown={(e) => e.key === "Enter" && handleVerifyCode()}
+            placeholder="000000"
+            className="w-full px-4 py-3.5 bg-white border-2 border-zinc-200 rounded-xl focus:outline-none focus:border-brand-600 transition-colors text-xl tracking-widest text-center font-mono"
+            autoComplete="one-time-code"
+          />
+        </div>
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
+
+        <div className="text-sm text-zinc-500">
+          Didn't receive your code?{" "}
+          {resendCooldown > 0 ? (
+            <span className="text-zinc-400">Resend in {resendCooldown}s</span>
+          ) : (
+            <button
+              onClick={handleResend}
+              disabled={loading}
+              className="font-semibold text-zinc-900 hover:underline disabled:opacity-50"
+            >
+              Send new code
+            </button>
+          )}
+        </div>
+
+        <button
+          onClick={handleVerifyCode}
+          disabled={loading || code.length !== 6}
+          className="w-full flex items-center justify-center gap-2 py-3.5 bg-brand-600 text-white font-semibold rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {loading ? "Verifying..." : "Sign in"}
+          {!loading && (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          )}
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white p-8 rounded-2xl shadow-sm border border-zinc-200/60 space-y-6">
+    <div className="bg-white p-8 rounded-2xl shadow-sm border border-zinc-200/60 space-y-6 max-w-md mx-auto">
       <div>
         <h2 className="text-xl font-bold text-zinc-900">Sign in to continue</h2>
         <p className="text-zinc-500 mt-1.5">
@@ -8,9 +165,10 @@ export function SignInGate() {
         </p>
       </div>
 
+      {/* Google */}
       <a
         href="/api/auth/google"
-        className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-brand-600 text-white font-medium rounded-xl hover:bg-brand-700 transition-colors"
+        className="flex items-center justify-center gap-3 w-full px-4 py-3.5 bg-white text-zinc-900 font-semibold rounded-xl border-2 border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 transition-colors"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
@@ -20,6 +178,40 @@ export function SignInGate() {
         </svg>
         Continue with Google
       </a>
+
+      {/* Divider */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1 h-px bg-zinc-200" />
+        <span className="text-sm text-zinc-400">or</span>
+        <div className="flex-1 h-px bg-zinc-200" />
+      </div>
+
+      {/* Email */}
+      <div className="space-y-2">
+        <label className="block text-sm font-semibold text-zinc-900">Email address</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => { setEmail(e.target.value); setError(null); }}
+          onKeyDown={(e) => e.key === "Enter" && handleSendCode()}
+          placeholder="you@example.com"
+          className="w-full px-4 py-3.5 bg-white border-2 border-zinc-200 rounded-xl focus:outline-none focus:border-brand-600 transition-colors"
+          autoComplete="email"
+        />
+      </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <button
+        onClick={handleSendCode}
+        disabled={loading || !isValidEmail(email)}
+        className="w-full flex items-center justify-center gap-2 py-3.5 bg-brand-600 text-white font-semibold rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {loading ? "Sending..." : "Continue"}
+        {!loading && (
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        )}
+      </button>
     </div>
   );
 }
