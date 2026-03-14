@@ -204,14 +204,32 @@ export function AuthPanel({ onDismiss }: AuthPanelProps) {
                 )}
               </button>
 
-              {/* Skip */}
-              <div className="text-center">
-                <button
-                  onClick={onDismiss}
-                  className="text-zinc-400 text-sm hover:text-zinc-600 transition-colors"
-                >
-                  Skip for now
-                </button>
+              {/* Skip — capture email first */}
+              <div className="text-center space-y-2">
+                {!email.trim() ? (
+                  <button
+                    onClick={onDismiss}
+                    className="text-zinc-400 text-sm hover:text-zinc-600 transition-colors"
+                  >
+                    Skip for now
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (isValidEmail(email)) {
+                        fetch("/api/auth/capture-email", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ email }),
+                        }).catch(() => {});
+                      }
+                      onDismiss();
+                    }}
+                    className="text-zinc-400 text-sm hover:text-zinc-600 transition-colors"
+                  >
+                    Skip for now
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
