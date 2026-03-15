@@ -785,22 +785,6 @@ Preferred Qualifications:
                   </button>
                 </div>
 
-                {/* Briefs remaining counter — free users only */}
-                {freeBriefsRemaining !== null && (
-                  <div className={`mb-5 inline-flex items-center text-xs px-3 py-1.5 rounded-full border ${
-                    freeBriefsRemaining === 0
-                      ? "bg-red-50 text-red-700 border-red-200"
-                      : freeBriefsRemaining === 1
-                      ? "bg-amber-50 text-amber-700 border-amber-200"
-                      : "bg-zinc-50 text-zinc-500 border-zinc-200"
-                  }`}>
-                    {freeBriefsRemaining === 0
-                      ? "All 3 free briefs used — upgrade to Pro for unlimited"
-                      : freeBriefsRemaining === 1
-                      ? "Last free brief — upgrade to Pro for unlimited"
-                      : `${freeBriefsRemaining} of 3 free briefs remaining`}
-                  </div>
-                )}
 
                 {/* Progress indicator */}
                 <div className="flex items-center gap-2 mb-6">
@@ -985,13 +969,6 @@ Preferred Qualifications:
                 {/* Step 3: Generate button */}
                 {isFormValid && (
                   <div className="pt-6 mt-2 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    {freeBriefsRemaining !== null && freeBriefsRemaining <= 1 && (
-                      <p className={`text-xs text-center ${freeBriefsRemaining === 0 ? "text-red-600" : "text-amber-600"}`}>
-                        {freeBriefsRemaining === 0
-                          ? "No free briefs remaining — upgrade to Pro to continue"
-                          : "Last free brief — upgrade to Pro for unlimited"}
-                      </p>
-                    )}
                     <button
                       onClick={handleGenerate}
                       disabled={isGenerating}
@@ -1011,6 +988,49 @@ Preferred Qualifications:
                       )}
                     </button>
                     <p className="text-xs text-zinc-400 text-center">This usually takes 30-60 seconds</p>
+
+                    {/* Depleting usage counter — free users, shown after brief #1 */}
+                    {freeBriefsRemaining !== null && freeBriefsRemaining < 3 && (
+                      <div className={`rounded-xl border px-4 py-3 animate-in fade-in duration-200 ${
+                        freeBriefsRemaining === 0
+                          ? "bg-red-50 border-red-200"
+                          : freeBriefsRemaining === 1
+                          ? "bg-amber-50 border-amber-200"
+                          : "bg-zinc-50 border-zinc-200"
+                      }`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`text-xs font-medium ${
+                            freeBriefsRemaining === 0 ? "text-red-700" : freeBriefsRemaining === 1 ? "text-amber-700" : "text-zinc-600"
+                          }`}>
+                            {freeBriefsRemaining === 0
+                              ? "No free briefs remaining"
+                              : freeBriefsRemaining === 1
+                              ? "1 free brief left — unlock unlimited"
+                              : "2 free briefs remaining"}
+                          </span>
+                          {freeBriefsRemaining <= 1 && (
+                            <button
+                              onClick={() => setUpgradeReason("free_limit")}
+                              className={`text-xs font-semibold hover:underline underline-offset-2 ${freeBriefsRemaining === 0 ? "text-red-600" : "text-amber-600"}`}
+                            >
+                              Upgrade — $14.99/mo
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex gap-1.5">
+                          {[0, 1, 2].map(i => (
+                            <div
+                              key={i}
+                              className={`h-1.5 flex-1 rounded-full transition-colors ${
+                                i < freeBriefsRemaining
+                                  ? freeBriefsRemaining === 1 ? "bg-amber-400" : "bg-brand-500"
+                                  : "bg-zinc-200"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
