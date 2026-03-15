@@ -1,9 +1,181 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { landingBaseline, landingVariants, type LandingVariant } from "../marketing/content/landing-variants";
 import { trackAbVariant } from "../lib/analytics";
 import { Nav } from "./Nav";
 import { SuggestionInput } from "./SuggestionInput";
 import { POPULAR_COMPANIES, getTitleSuggestions } from "../lib/suggestions";
+
+const DEMO_COMPANY = "Google";
+const DEMO_ROLE = "Product Manager";
+const DEMO_SECTIONS = [
+  {
+    label: "Company Snapshot",
+    text: "Google is defending its core search monopoly while expanding aggressively into cloud and AI. PM interviews probe how you'd prioritize revenue-protecting vs. growth bets.",
+  },
+  {
+    label: "What This Role Needs",
+    bullets: ["Structured thinking under ambiguity (STAR + data)", "Metrics ownership — AARRR fluency expected", "Systems-level product sense, not feature lists"],
+  },
+  {
+    label: "Interview Format",
+    text: "4–5 rounds: phone screen → 2× product sense → 1× analytical → 1× leadership. Each product sense round is 50 min with a senior PM.",
+  },
+  {
+    label: "Smart Questions to Ask",
+    bullets: ['"How does the team balance search vs. cloud growth priorities?"', '"What does the 90-day ramp look like for a new PM here?"'],
+  },
+];
+
+type DemoPhase = "idle" | "typing-company" | "typing-role" | "generating" | "result";
+
+function useTypingText(target: string, active: boolean, delayMs = 65): string {
+  const [text, setText] = useState("");
+  useEffect(() => {
+    if (!active) { setText(""); return; }
+    let i = 0;
+    setText("");
+    const id = setInterval(() => {
+      i++;
+      setText(target.slice(0, i));
+      if (i >= target.length) clearInterval(id);
+    }, delayMs);
+    return () => clearInterval(id);
+  }, [active, target, delayMs]);
+  return text;
+}
+
+function DemoAnimation() {
+  const [phase, setPhase] = useState<DemoPhase>("idle");
+  const [genStep, setGenStep] = useState(0);
+  const [visibleSections, setVisibleSections] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const companyText = useTypingText(DEMO_COMPANY, phase === "typing-company");
+  const roleText    = useTypingText(DEMO_ROLE,    phase === "typing-role");
+
+  function schedule(fn: () => void, ms: number) {
+    timerRef.current = setTimeout(fn, ms);
+  }
+
+  useEffect(() => {
+    // Kick off the sequence
+    schedule(() => setPhase("typing-company"), 600);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
+
+  useEffect(() => {
+    if (phase === "typing-company" && companyText === DEMO_COMPANY) {
+      schedule(() => setPhase("typing-role"), 500);
+    }
+  }, [phase, companyText]);
+
+  useEffect(() => {
+    if (phase === "typing-role" && roleText === DEMO_ROLE) {
+      schedule(() => setPhase("generating"), 600);
+    }
+  }, [phase, roleText]);
+
+  useEffect(() => {
+    if (phase !== "generating") return;
+    setGenStep(0);
+    const steps = [900, 1700, 2500, 3300];
+    const ids = steps.map((t, i) => setTimeout(() => setGenStep(i + 1), t));
+    const done = setTimeout(() => {
+      setVisibleSections(0);
+      setPhase("result");
+    }, 4400);
+    return () => { ids.forEach(clearTimeout); clearTimeout(done); };
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "result") return;
+    const ids = DEMO_SECTIONS.map((_, i) =>
+      setTimeout(() => setVisibleSections(i + 1), 400 + i * 380)
+    );
+    const reset = setTimeout(() => {
+      setPhase("idle");
+      setVisibleSections(0);
+      setGenStep(0);
+      schedule(() => setPhase("typing-company"), 800);
+    }, 400 + DEMO_SECTIONS.length * 380 + 5800);
+    return () => { ids.forEach(clearTimeout); clearTimeout(reset); };
+  }, [phase]);
+
+  const genLabels = ["Company snapshot & strategy", "Role priorities & skills", "Interview format & traps", "Smart questions to ask"];
+
+  return (
+    <div className="max-w-xl mx-auto rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-md">
+      {/* Form area */}
+      {(phase === "idle" || phase === "typing-company" || phase === "typing-role") && (
+        <div className="p-6">
+          <p className="text-xs font-medium text-zinc-500 mb-4">Enter your interview details</p>
+          <div className="space-y-3">
+            <div className={`flex items-center px-4 py-3 rounded-xl border text-sm ${phase === "typing-company" ? "border-brand-600 ring-2 ring-brand-600/10" : "border-zinc-200"}`}>
+              <span className="text-zinc-900 flex-1 min-h-[20px]">{companyText || <span className="text-zinc-400">Company name (e.g. Google)</span>}</span>
+              {phase === "typing-company" && <span className="inline-block w-0.5 h-4 bg-brand-600 animate-[blink_0.8s_step-end_infinite]" />}
+            </div>
+            <div className={`flex items-center px-4 py-3 rounded-xl border text-sm ${phase === "typing-role" ? "border-brand-600 ring-2 ring-brand-600/10" : "border-zinc-200"}`}>
+              <span className="text-zinc-900 flex-1 min-h-[20px]">{roleText || <span className="text-zinc-400">Job title (e.g. Product Manager)</span>}</span>
+              {phase === "typing-role" && <span className="inline-block w-0.5 h-4 bg-brand-600 animate-[blink_0.8s_step-end_infinite]" />}
+            </div>
+            <div className={`w-full py-3.5 rounded-xl text-sm font-semibold text-center transition-colors ${phase === "typing-role" && roleText === DEMO_ROLE ? "bg-brand-600 text-white" : "bg-zinc-100 text-zinc-400"}`}>
+              Generate My Brief →
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Generating state */}
+      {phase === "generating" && (
+        <div className="p-8 flex flex-col items-center gap-5">
+          <div className="w-9 h-9 rounded-full border-2 border-zinc-200 border-t-brand-600 animate-spin" />
+          <div>
+            <p className="text-sm font-semibold text-zinc-800 text-center">Researching {DEMO_COMPANY}…</p>
+            <p className="text-xs text-zinc-400 text-center mt-1">Analyzing competitive position, role priorities, and interview format</p>
+          </div>
+          <div className="w-full max-w-xs space-y-2">
+            {genLabels.map((label, i) => (
+              <div key={label} className={`flex items-center gap-2.5 text-xs transition-all duration-300 ${genStep > i ? "text-zinc-700 opacity-100 translate-y-0" : "text-zinc-300 opacity-0 translate-y-1"}`}>
+                <span className={`w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-bold transition-colors ${genStep > i ? "bg-green-50 border border-green-300 text-green-600" : "bg-zinc-100 border border-zinc-200"}`}>
+                  {genStep > i ? "✓" : ""}
+                </span>
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Brief result */}
+      {phase === "result" && (
+        <div className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm font-bold text-zinc-900">{DEMO_COMPANY} · {DEMO_ROLE}</p>
+              <p className="text-xs text-zinc-400">Interview Prep Brief</p>
+            </div>
+            <span className="text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-full px-2.5 py-1">Ready</span>
+          </div>
+          <div className="space-y-3">
+            {DEMO_SECTIONS.map((s, i) => (
+              <div key={s.label} className={`transition-all duration-350 ${visibleSections > i ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1.5"}`}>
+                {i > 0 && <hr className="border-zinc-100 mb-3" />}
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-accent-500 mb-1.5">{s.label}</p>
+                {"text" in s ? (
+                  <p className="text-xs text-zinc-600 leading-relaxed">{s.text}</p>
+                ) : (
+                  <ul className="text-xs text-zinc-600 space-y-1">
+                    {s.bullets.map((b) => <li key={b} className="before:content-['→_'] before:text-brand-600 before:font-semibold">{b}</li>)}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const AB_STORAGE_KEY = "prepfile_ab_landing_v1";
 const ALL_VARIANTS: LandingVariant[] = [landingBaseline, ...landingVariants];
@@ -189,6 +361,15 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* See it in action */}
+      <section className="bg-zinc-50 border-t border-zinc-100 py-14">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-brand-400 mb-2">See it in action</h2>
+          <p className="text-center text-sm text-zinc-400 mb-8">Type a company and role → get a full brief in under 60 seconds</p>
+          <DemoAnimation />
         </div>
       </section>
 

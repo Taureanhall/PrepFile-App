@@ -61,7 +61,7 @@ export function Nav({ cta, children, onLogoClick }: NavProps) {
             <a href="/pricing" className="text-sm font-medium text-zinc-700 px-3 py-2 rounded-lg hover:bg-zinc-100 transition-colors">Pricing</a>
           </div>
           {children}
-          {ctaElement}
+          <span className="hidden sm:inline-flex">{ctaElement}</span>
           <button
             onClick={() => setMenuOpen(true)}
             className="p-2.5 border border-zinc-200 rounded-lg hover:bg-zinc-100 transition-colors"
@@ -100,6 +100,21 @@ export function Nav({ cta, children, onLogoClick }: NavProps) {
                     <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                 </button>
+              </div>
+              <div className="px-6 pb-4 sm:hidden">
+                {cta && "href" in cta ? (
+                  <a href={cta.href} className="block w-full text-center text-sm px-4 py-3 bg-brand-600 text-white rounded-lg hover:bg-brand-500 transition-colors font-semibold">
+                    {cta.label}
+                  </a>
+                ) : cta ? (
+                  <button onClick={(cta as any).onClick} className="block w-full text-center text-sm px-4 py-3 border border-zinc-200 text-zinc-700 rounded-lg hover:bg-zinc-100 transition-colors font-semibold">
+                    {cta.label}
+                  </button>
+                ) : (
+                  <a href="/" className="block w-full text-center text-sm px-4 py-3 bg-brand-600 text-white rounded-lg hover:bg-brand-500 transition-colors font-semibold">
+                    Get your prep brief
+                  </a>
+                )}
               </div>
               <div className="divide-y divide-zinc-100">
                 {NAV_LINKS.map(({ label, href }) => (
