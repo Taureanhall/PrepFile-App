@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # tweet.sh — Post a tweet via Twitter/X v2 API using OAuth 1.0a
 # Usage: ./scripts/tweet.sh "Your tweet text here" [--reply-to <tweet_id>] [--media <filepath>]
+#        ./scripts/tweet.sh --retweet <tweet_id>
 # Requires: python3
 #
 # Env vars needed:
@@ -14,28 +15,40 @@ if [[ $# -lt 1 || -z "${1:-}" ]]; then
   exit 1
 fi
 
-TWEET_TEXT="$1"
-shift
-
+RETWEET_ID=""
+TWEET_TEXT=""
 REPLY_TO_TWEET_ID=""
 MEDIA_PATH=""
 
-while [[ $# -gt 0 ]]; do
-  case "${1:-}" in
-    --reply-to)
-      REPLY_TO_TWEET_ID="${2:-}"
-      shift 2
-      ;;
-    --media)
-      MEDIA_PATH="${2:-}"
-      shift 2
-      ;;
-    *)
-      echo "Unknown argument: ${1}" >&2
-      exit 1
-      ;;
-  esac
-done
+# Check if first arg is --retweet (special mode, no tweet text needed)
+if [[ "${1:-}" == "--retweet" ]]; then
+  RETWEET_ID="${2:-}"
+  if [[ -z "$RETWEET_ID" ]]; then
+    echo "Usage: $0 --retweet <tweet_id>" >&2
+    exit 1
+  fi
+  shift 2
+else
+  TWEET_TEXT="$1"
+  shift
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --reply-to)
+        REPLY_TO_TWEET_ID="${2:-}"
+        shift 2
+        ;;
+      --media)
+        MEDIA_PATH="${2:-}"
+        shift 2
+        ;;
+      *)
+        echo "Unknown argument: ${1}" >&2
+        exit 1
+        ;;
+    esac
+  done
+fi
 
 # --- Load from TOOLS.md if env vars not set ---
 TOOLS_FILE="${TWITTER_TOOLS_FILE:-/Users/taureanhall/Developer/Prepflow-Company/agents/marketing/TOOLS.md}"
@@ -55,6 +68,79 @@ MISSING=()
 if [[ ${#MISSING[@]} -gt 0 ]]; then
   echo "Error: missing required env vars: ${MISSING[*]}" >&2
   exit 1
+fi
+
+# --- Retweet mode ---
+if [[ -n "$RETWEET_ID" ]]; then
+  # Get authenticated user ID first, then POST retweet
+  RESULT=$(python3 - "$RETWEET_ID" "$TWITTER_API_KEY" "$TWITTER_API_KEY_SECRET" "$TWITTER_ACCESS_TOKEN" "$TWITTER_ACCESS_TOKEN_SECRET" << 'PYEOF'
+import sys, json, time, hashlib, hmac, urllib.parse, secrets, http.client, base64
+
+tweet_id = sys.argv[1]
+api_key = sys.argv[2]
+api_key_secret = sys.argv[3]
+access_token = sys.argv[4]
+access_token_secret = sys.argv[5]
+
+def make_auth_header(method, url, params=None):
+    oauth_params = {
+        "oauth_consumer_key": api_key,
+        "oauth_nonce": secrets.token_hex(16),
+        "oauth_signature_method": "HMAC-SHA1",
+        "oauth_timestamp": str(int(time.time())),
+        "oauth_token": access_token,
+        "oauth_version": "1.0",
+    }
+    all_params = {**oauth_params}
+    if params:
+        all_params.update(params)
+    param_string = "&".join(f"{urllib.parse.quote(k, safe='')}={urllib.parse.quote(v, safe='')}"
+                            for k, v in sorted(all_params.items()))
+    base_string = f"{method}&{urllib.parse.quote(url, safe='')}&{urllib.parse.quote(param_string, safe='')}"
+    signing_key = f"{urllib.parse.quote(api_key_secret, safe='')}&{urllib.parse.quote(access_token_secret, safe='')}"
+    signature = hmac.new(signing_key.encode(), base_string.encode(), hashlib.sha1).digest()
+    oauth_params["oauth_signature"] = base64.b64encode(signature).decode()
+    return "OAuth " + ", ".join(
+        f'{urllib.parse.quote(k, safe="")}="{urllib.parse.quote(v, safe="")}"'
+        for k, v in sorted(oauth_params.items())
+    )
+
+# Get user ID
+conn = http.client.HTTPSConnection("api.twitter.com")
+url = "https://api.twitter.com/2/users/me"
+conn.request("GET", "/2/users/me", headers={"Authorization": make_auth_header("GET", url)})
+resp = conn.getresponse()
+user_data = json.loads(resp.read().decode())
+conn.close()
+user_id = user_data.get("data", {}).get("id", "")
+if not user_id:
+    print(json.dumps({"status": 400, "body": {"error": "could not get user id"}}))
+    sys.exit(1)
+
+# Retweet
+url = f"https://api.twitter.com/2/users/{user_id}/retweets"
+body = json.dumps({"tweet_id": tweet_id})
+conn = http.client.HTTPSConnection("api.twitter.com")
+conn.request("POST", f"/2/users/{user_id}/retweets", body=body, headers={
+    "Authorization": make_auth_header("POST", url),
+    "Content-Type": "application/json",
+})
+resp = conn.getresponse()
+data = resp.read().decode()
+conn.close()
+print(json.dumps({"status": resp.status, "body": json.loads(data) if data else {}}))
+PYEOF
+  )
+
+  HTTP_STATUS=$(echo "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin)['status'])")
+  HTTP_BODY=$(echo "$RESULT" | python3 -c "import json,sys; print(json.dumps(json.load(sys.stdin)['body'], indent=2))")
+  echo "$HTTP_BODY"
+  if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
+    echo "Error: HTTP $HTTP_STATUS" >&2
+    exit 1
+  fi
+  echo "Retweeted: https://twitter.com/i/web/status/$RETWEET_ID" >&2
+  exit 0
 fi
 
 # --- Validate media file if provided ---
