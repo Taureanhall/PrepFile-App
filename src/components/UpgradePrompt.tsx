@@ -10,15 +10,6 @@ interface Props {
 export function UpgradePrompt({ reason, onDismiss, userName }: Props) {
   const [loading, setLoading] = useState<"pro" | "pack" | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [foundingRemaining, setFoundingRemaining] = useState<number | null>(null);
-
-  useEffect(() => {
-    fetch("/api/founding-members/remaining")
-      .then((r) => r.json())
-      .then((data) => { if (data.remaining > 0) setFoundingRemaining(data.remaining); })
-      .catch(() => {});
-  }, []);
-
   useEffect(() => {
     if (reason === "pro_required" || reason === "free_limit") {
       document.body.style.overflow = "hidden";
@@ -96,11 +87,6 @@ export function UpgradePrompt({ reason, onDismiss, userName }: Props) {
 
             {/* CTA section */}
             <div className="px-6 pb-6 space-y-3">
-              {foundingRemaining !== null && (
-                <div className="bg-accent-50 border border-accent-200 rounded-xl px-4 py-3 text-sm text-accent-700 text-center font-medium">
-                  🎉 Founding Member Bonus — Only {foundingRemaining} spot{foundingRemaining === 1 ? "" : "s"} left! First 50 Pro members get 5 extra briefs free.
-                </div>
-              )}
               <button
                 onClick={() => startCheckout("pro")}
                 disabled={loading !== null}
@@ -110,7 +96,7 @@ export function UpgradePrompt({ reason, onDismiss, userName }: Props) {
               </button>
 
               <p className="text-xs text-center text-zinc-400">
-                Most interview prep tools charge $50–$149/mo. We don't.
+                Cancel anytime. No long-term commitment.
               </p>
 
               {checkoutError && (

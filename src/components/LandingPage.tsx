@@ -5,24 +5,6 @@ import { Nav } from "./Nav";
 import { SuggestionInput } from "./SuggestionInput";
 import { POPULAR_COMPANIES, getTitleSuggestions } from "../lib/suggestions";
 
-const TESTIMONIALS = [
-  {
-    quote: "I used PrepFile before my Google interview and felt 10x more prepared. The blind spots section alone saved me.",
-    name: "Sarah K.",
-    role: "Software Engineer → Google",
-  },
-  {
-    quote: "Went from panicking about my McKinsey final round to walking in with a clear game plan. The company snapshot was spot-on.",
-    name: "James R.",
-    role: "Strategy Consultant → McKinsey",
-  },
-  {
-    quote: "I've done dozens of interviews. PrepFile caught things about the role I would have completely missed. Worth every minute.",
-    name: "Priya M.",
-    role: "Product Manager → Stripe",
-  },
-];
-
 const DEMO_COMPANY = "Google";
 const DEMO_ROLE = "Product Manager";
 const DEMO_SECTIONS = [
@@ -228,19 +210,11 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
   const [variant, setVariant] = useState<LandingVariant>(landingBaseline);
   const [company, setCompany] = useState("");
   const [title, setTitle] = useState("");
-  const [foundingRemaining, setFoundingRemaining] = useState<number | null>(null);
   const [isProductHunt, setIsProductHunt] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("ref") === "producthunt") setIsProductHunt(true);
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/founding-members/remaining")
-      .then((r) => r.json())
-      .then((data) => { if (data.remaining > 0) setFoundingRemaining(data.remaining); })
-      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -340,23 +314,6 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
         </div>
       </section>
 
-      {/* Social proof — testimonials */}
-      <section className="bg-white border-t border-zinc-100 py-14">
-        <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-brand-400 mb-10">What candidates are saying</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="bg-zinc-50 border border-zinc-200 rounded-2xl p-5 flex flex-col gap-4">
-                <p className="text-sm text-zinc-700 leading-relaxed flex-1">"{t.quote}"</p>
-                <div>
-                  <p className="text-sm font-semibold text-zinc-900">{t.name}</p>
-                  <p className="text-xs text-zinc-400">{t.role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* How it works */}
       <section className="bg-white border-t border-zinc-100 py-14">
@@ -405,14 +362,6 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
       <section className="bg-zinc-50 border-t border-zinc-100 py-14" id="pricing">
         <div className="max-w-3xl mx-auto px-6">
           <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-brand-400 mb-6">Pricing</h2>
-          {foundingRemaining !== null && (
-            <div className="max-w-xl mx-auto mb-8 bg-accent-50 border border-accent-200 rounded-2xl px-6 py-4 text-center">
-              <p className="text-base font-bold text-accent-700">Founding Member Offer</p>
-              <p className="text-sm text-accent-600 mt-1">
-                First 50 Pro subscribers get <span className="font-semibold">5 bonus briefs free</span>. Only {foundingRemaining} spot{foundingRemaining === 1 ? "" : "s"} remaining.
-              </p>
-            </div>
-          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-xl mx-auto">
             {/* Free */}
             <div className="bg-white border border-zinc-200 rounded-2xl p-6 flex flex-col gap-3">
@@ -439,11 +388,6 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
                 <div className="text-xs font-semibold text-accent-500 uppercase tracking-wide mb-1">Most popular</div>
                 <div className="text-lg font-bold text-zinc-900">PrepFile Pro</div>
                 <div className="text-3xl font-bold text-zinc-900 mt-1">$14.99<span className="text-base font-normal text-zinc-500">/mo</span></div>
-                {foundingRemaining !== null && (
-                  <p className="mt-2 text-xs text-accent-600 font-medium">
-                    🎉 Only {foundingRemaining} founding member spot{foundingRemaining === 1 ? "" : "s"} left — first 50 get 5 extra briefs free
-                  </p>
-                )}
               </div>
               <ul className="text-sm text-zinc-600 space-y-1 flex-1">
                 <li>✓ Unlimited full briefs</li>
