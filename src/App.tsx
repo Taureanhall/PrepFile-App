@@ -767,10 +767,12 @@ Preferred Qualifications:
 
             {/* Activation nudge — shown to users who haven't generated their first brief yet */}
             {showWelcome && (
-              <div className="mb-6 p-4 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 text-sm flex items-center gap-3">
-                <span className="text-base">✦</span>
-                <span className="flex-1"><span className="font-medium">Your first brief takes 60 seconds.</span> Paste a job description below and PrepFile will tell you what to expect, what to ask, and where most candidates miss.</span>
-                <button onClick={() => setShowWelcome(false)} className="text-brand-500 hover:text-brand-800 shrink-0">✕</button>
+              <div className="mb-6 p-4 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 text-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-base">✦</span>
+                  <span className="flex-1"><span className="font-medium">Your first brief takes 60 seconds.</span> Paste a job description below — or <button onClick={() => { handleTryExample(); setShowWelcome(false); }} className="font-semibold underline underline-offset-2 hover:text-brand-700">try with a sample</button> to see how it works.</span>
+                  <button onClick={() => setShowWelcome(false)} className="text-brand-500 hover:text-brand-800 shrink-0">✕</button>
+                </div>
               </div>
             )}
 
@@ -819,6 +821,18 @@ Preferred Qualifications:
                     className="w-full px-5 py-4 bg-white border-2 border-zinc-200 rounded-xl text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-600/10 transition-all duration-200 resize-y shadow-sm"
                     style={{ fontSize: "0.95rem", lineHeight: "1.6" }}
                   />
+
+                  {/* Sample JD prompt — shown when textarea is empty */}
+                  {!jobDescription.trim() && (
+                    <button
+                      onClick={handleTryExample}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-brand-600 bg-brand-50 border border-brand-200 rounded-lg hover:bg-brand-100 transition-colors"
+                    >
+                      <span>No JD handy?</span>
+                      <span className="font-medium">Try with a sample</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </button>
+                  )}
 
                   {/* Company + title fields — always visible after JD paste */}
                   {jdReady && !showManualFields && (
@@ -1140,11 +1154,20 @@ Preferred Qualifications:
               }}
               className="w-full py-3 bg-brand-600 text-white font-medium rounded-xl hover:bg-brand-700 transition-colors shadow-sm"
             >
-              Generate my first brief
+              I have a job description
+            </button>
+            <button
+              onClick={() => {
+                setShowWelcomeModal(false);
+                handleTryExample();
+              }}
+              className="mt-2 w-full py-3 bg-white text-brand-600 font-medium rounded-xl border border-brand-200 hover:bg-brand-50 transition-colors"
+            >
+              Try with a sample first
             </button>
             <button
               onClick={() => setShowWelcomeModal(false)}
-              className="mt-3 w-full py-2 text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
+              className="mt-2 w-full py-2 text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
             >
               Skip for now
             </button>
