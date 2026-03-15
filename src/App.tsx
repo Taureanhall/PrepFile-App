@@ -147,7 +147,9 @@ export default function Page() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const activationNudgeFired = useRef(false);
+  const jdRef = useRef<HTMLTextAreaElement>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [briefCount, setBriefCount] = useState<number | null>(null);
   const [showPreLimitNudge, setShowPreLimitNudge] = useState(false);
@@ -242,7 +244,7 @@ export default function Page() {
       trackSignupCompleted(authMethod);
     }
     if (params.get("welcome") === "1") {
-      setShowWelcome(true);
+      setShowWelcomeModal(true);
     }
     if (authMethod || params.get("welcome") === "1") {
       window.history.replaceState({}, "", window.location.pathname);
@@ -809,6 +811,7 @@ Preferred Qualifications:
 
                   {/* Main textarea */}
                   <textarea
+                    ref={jdRef}
                     value={jobDescription}
                     onChange={(e) => handleJDChange(e.target.value)}
                     placeholder="Paste a job description to get started..."
@@ -1111,6 +1114,43 @@ Preferred Qualifications:
         </nav>
         <p className="text-center text-sm text-zinc-400">&copy; {new Date().getFullYear()} PrepFile</p>
       </footer>
+
+      {/* Welcome modal — shown to new users on first signup, prompts them to generate first brief */}
+      {showWelcomeModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0"
+          onClick={() => setShowWelcomeModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-600 mb-2">Welcome to PrepFile</p>
+            <h2 className="text-xl font-semibold text-zinc-900 mb-3">Let's build your first prep brief.</h2>
+            <p className="text-sm text-zinc-500 leading-relaxed mb-6">
+              Paste a job description and PrepFile will generate a personalized brief — what to expect in the interview, what questions to ask, and where candidates usually miss.
+            </p>
+            <button
+              onClick={() => {
+                setShowWelcomeModal(false);
+                setTimeout(() => {
+                  jdRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  jdRef.current?.focus();
+                }, 150);
+              }}
+              className="w-full py-3 bg-brand-600 text-white font-medium rounded-xl hover:bg-brand-700 transition-colors shadow-sm"
+            >
+              Generate my first brief
+            </button>
+            <button
+              onClick={() => setShowWelcomeModal(false)}
+              className="mt-3 w-full py-2 text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
+            >
+              Skip for now
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
