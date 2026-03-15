@@ -1,14 +1,16 @@
 /**
  * Email drip processor — queue-based scheduled sends via Resend.
- * Templates: welcome, nudge_24h, nudge_72h, upgrade_prompt
+ * Templates: welcome, nudge_24h, nudge_72h, upgrade_prompt, ph_upgrade_welcome
  * Queue populated at event time; processed by POST /api/cron/send-emails.
  */
 
 import { getPendingEmailQueue, markQueuedEmailSent, markQueuedEmailFailed } from "./db.js";
+import { makeUnsubscribeToken } from "./email-sequences.js";
+import { buildPhUpgradeWelcomeHtml } from "./ph-emails.js";
 
 const BATCH_SIZE = 10;
 
-function buildHtml(template: string, appUrl: string): { subject: string; html: string } {
+function buildHtml(template: string, appUrl: string, userId?: string): { subject: string; html: string } {
   switch (template) {
     case "welcome":
       return {
@@ -50,6 +52,10 @@ function buildHtml(template: string, appUrl: string): { subject: string; html: s
   <p style="color:#52525b;line-height:1.6;margin-top:24px">— Reese, CEO @ PrepFile</p>
 </div>`,
       };
+    case "ph_upgrade_welcome": {
+      const token = userId ? makeUnsubscribeToken(userId) : "";
+      return buildPhUpgradeWelcomeHtml(appUrl, token);
+    }
     default:
       return { subject: "PrepFile", html: "" };
   }
@@ -67,7 +73,7 @@ export async function processDripQueue(appUrl: string, fromEmail: string): Promi
   let failed = 0;
 
   for (const item of pending) {
-    const { subject, html } = buildHtml(item.template, appUrl);
+    const { subject, html } = buildHtml(item.template, appUrl, item.user_id);
     if (!html) {
       markQueuedEmailFailed(item.id);
       failed++;

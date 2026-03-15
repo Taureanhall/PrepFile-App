@@ -61,7 +61,8 @@ import {
   sendDunningEmail,
 } from "./src/lib/email-sequences.js";
 import { subjectA as postBriefSubject, buildPostBriefUpgradeHtml } from "./src/lib/emails/post-brief-upgrade.js";
-import { setEmailUnsubscribed, getUserIdByEmail, getUserEmailById, getReferralCount, saveB2bLead, getB2bLeads } from "./src/lib/db.js";
+import { sendPhWelcomeImmediate, sendPhFreeLimitImmediate, runPhEmailBatch } from "./src/lib/ph-emails.js";
+import { setEmailUnsubscribed, getUserIdByEmail, getUserEmailById, getReferralCount, saveB2bLead, getB2bLeads, isProductHuntUser } from "./src/lib/db.js";
 import { OAuth2Client } from "google-auth-library";
 
 const RATE_LIMIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -153,6 +154,10 @@ async function startServer() {
         sendUpgradeWelcomeEmail(userId, userEmail, appUrl, FROM_EMAIL).catch(
           (err) => console.error("[STRIPE] upgrade welcome email error:", err)
         );
+        // PH users also get a PH-specific upgrade welcome (+24h)
+        if (isProductHuntUser(userId)) {
+          queueEmail(userId, "ph_upgrade_welcome", new Date(Date.now() + 24 * 60 * 60 * 1000));
+        }
       }
     }
 
@@ -423,10 +428,15 @@ async function startServer() {
 
   // Founding member spots remaining — public, no auth required
   app.get("/api/founding-members/remaining", (_req, res) => {
-    const TOTAL = 50;
-    const taken = getProSubscriberCount();
-    const remaining = Math.max(0, TOTAL - taken);
-    res.json({ total: TOTAL, taken, remaining });
+    try {
+      const TOTAL = 50;
+      const taken = getProSubscriberCount();
+      const remaining = Math.max(0, TOTAL - taken);
+      res.json({ total: TOTAL, taken, remaining });
+    } catch (err: any) {
+      console.error("[founding-members/remaining] Error:", err);
+      res.status(500).json({ error: "Failed to get founding member count" });
+    }
   });
 
   // Auth: get current user
@@ -670,8 +680,13 @@ async function startServer() {
       const signedInUser = getUserBySession(sessionToken);
       if (signedInUser) {
         getPostHogClient()?.capture({ distinctId: signedInUser.id, event: "user_signed_in", properties: { user_id: signedInUser.id, method: "google", referral_source: referralSource || "direct" } });
-        // Fire welcome-1 for new users (idempotent — skips if already sent)
-        sendWelcomeEmailImmediate(signedInUser.id, signedInUser.email, APP_URL, FROM_EMAIL).catch(() => {});
+        // Fire welcome email for new users (idempotent — skips if already sent)
+        // PH users get a PH-specific welcome; everyone else gets the generic one
+        if (referralSource === "producthunt") {
+          sendPhWelcomeImmediate(signedInUser.id, signedInUser.email, APP_URL, FROM_EMAIL).catch(() => {});
+        } else {
+          sendWelcomeEmailImmediate(signedInUser.id, signedInUser.email, APP_URL, FROM_EMAIL).catch(() => {});
+        }
         // Queue welcome drip email for new users
         const isNewSignup = getBriefCountForUser(signedInUser.id) === 0;
         if (isNewSignup) queueEmail(signedInUser.id, "welcome", new Date());
@@ -1075,7 +1090,13 @@ async function startServer() {
             const now = new Date();
             queueEmail(user.id, "nudge_24h", new Date(now.getTime() + 24 * 60 * 60 * 1000));
             queueEmail(user.id, "nudge_72h", new Date(now.getTime() + 72 * 60 * 60 * 1000));
-            if (briefCount >= 3) queueEmail(user.id, "upgrade_prompt", now);
+            if (briefCount >= 3) {
+              queueEmail(user.id, "upgrade_prompt", now);
+              // PH users get a PH-specific free-limit email
+              if (isProductHuntUser(user.id)) {
+                sendPhFreeLimitImmediate(user.id, user.email, APP_URL, FROM_EMAIL).catch(() => {});
+              }
+            }
           }
 
           // Send post-brief upgrade email after first brief (free users only)
@@ -1298,6 +1319,7 @@ async function startServer() {
       await runWelcomeSequenceBatch(APP_URL, FROM_EMAIL);
       await runReengagementBatch(APP_URL, FROM_EMAIL);
       await runNurtureEmailBatch(APP_URL, FROM_EMAIL);
+      await runPhEmailBatch(APP_URL, FROM_EMAIL);
       res.json({ ok: true });
     } catch (err) {
       console.error("[/api/cron/emails] error:", err);

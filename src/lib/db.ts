@@ -288,7 +288,7 @@ db.exec(`
   );
 `);
 
-export type EmailTemplate = "welcome" | "nudge_24h" | "nudge_72h" | "upgrade_prompt";
+export type EmailTemplate = "welcome" | "nudge_24h" | "nudge_72h" | "upgrade_prompt" | "ph_upgrade_welcome";
 
 /** Queue an email for a user. Idempotent — skips if a pending/sent entry already exists for this (user_id, template). */
 export function queueEmail(userId: string, template: EmailTemplate, sendAt: Date): void {
@@ -529,6 +529,86 @@ export function getUsersForReengagement(
     SELECT u.id, u.email
     FROM users u
     WHERE u.email_unsubscribed = 0
+      AND NOT EXISTS (
+        SELECT 1 FROM email_sequences es WHERE es.user_id = u.id AND es.email_id = ?
+      )
+      AND CAST((julianday('now') - julianday(
+        COALESCE(
+          (SELECT MAX(b.created_at) FROM briefs b WHERE b.user_id = u.id),
+          u.created_at
+        )
+      )) AS INTEGER) >= ?
+  `).all(emailId, delayDays) as Array<{ id: string; email: string }>;
+}
+
+// --- PH-specific email queries (PRE-341) ---
+
+/** Check if a user signed up from Product Hunt (referral_source = 'producthunt'). */
+export function isProductHuntUser(userId: string): boolean {
+  const row = db.prepare("SELECT referral_source FROM users WHERE id = ?").get(userId) as any;
+  return row?.referral_source === "producthunt";
+}
+
+/**
+ * PH users who signed up >= delayDays ago, have 0 briefs, haven't received emailId.
+ * Used for ph-nudge-24h (day 1) and ph-nudge-72h (day 3).
+ */
+export function getPhUsersNoBrief(
+  emailId: string,
+  delayDays: number
+): Array<{ id: string; email: string }> {
+  return db.prepare(`
+    SELECT u.id, u.email
+    FROM users u
+    WHERE u.email_unsubscribed = 0
+      AND u.referral_source = 'producthunt'
+      AND CAST((julianday('now') - julianday(u.created_at)) AS INTEGER) >= ?
+      AND NOT EXISTS (
+        SELECT 1 FROM email_sequences es WHERE es.user_id = u.id AND es.email_id = ?
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM briefs b WHERE b.user_id = u.id
+      )
+  `).all(delayDays, emailId) as Array<{ id: string; email: string }>;
+}
+
+/**
+ * PH users with exactly 1 brief, last brief >= delayDays ago, haven't received emailId.
+ * Used for ph-brief-followup (+48h after first brief).
+ */
+export function getPhUsersOneBriefInactive(
+  emailId: string,
+  delayDays: number
+): Array<{ id: string; email: string }> {
+  return db.prepare(`
+    SELECT u.id, u.email
+    FROM users u
+    WHERE u.email_unsubscribed = 0
+      AND u.referral_source = 'producthunt'
+      AND NOT EXISTS (
+        SELECT 1 FROM email_sequences es WHERE es.user_id = u.id AND es.email_id = ?
+      )
+      AND (SELECT COUNT(*) FROM briefs b WHERE b.user_id = u.id) = 1
+      AND CAST((julianday('now') - julianday(
+        (SELECT MAX(b.created_at) FROM briefs b WHERE b.user_id = u.id)
+      )) AS INTEGER) >= ?
+  `).all(emailId, delayDays) as Array<{ id: string; email: string }>;
+}
+
+/**
+ * PH Pro users whose last brief was >= delayDays ago, haven't received emailId.
+ * Used for ph-pro-reengage (+7d after last brief).
+ */
+export function getPhProUsersInactive(
+  emailId: string,
+  delayDays: number
+): Array<{ id: string; email: string }> {
+  return db.prepare(`
+    SELECT u.id, u.email
+    FROM users u
+    JOIN subscriptions s ON s.user_id = u.id AND s.plan = 'pro'
+    WHERE u.email_unsubscribed = 0
+      AND u.referral_source = 'producthunt'
       AND NOT EXISTS (
         SELECT 1 FROM email_sequences es WHERE es.user_id = u.id AND es.email_id = ?
       )
