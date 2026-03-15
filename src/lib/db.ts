@@ -217,6 +217,20 @@ export function upsertSubscription(
   }
 }
 
+export function getProSubscriberCount(): number {
+  const row = db.prepare("SELECT COUNT(*) as count FROM subscriptions WHERE plan = 'pro'").get() as any;
+  return row?.count ?? 0;
+}
+
+export function applyFoundingMemberBonus(userId: string, bonusBriefs: number): void {
+  db.prepare(`
+    UPDATE subscriptions
+    SET pack_briefs_remaining = pack_briefs_remaining + ?,
+        updated_at = datetime('now')
+    WHERE user_id = ?
+  `).run(bonusBriefs, userId);
+}
+
 export function getUserEmailById(userId: string): string | null {
   const row = db.prepare("SELECT email FROM users WHERE id = ?").get(userId) as any;
   return row?.email ?? null;
