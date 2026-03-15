@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PrepBrief } from "./components/PrepBrief";
 import { AuthPanel } from "./components/AuthPanel";
 import { SignInGate } from "./components/SignInGate";
@@ -147,6 +147,7 @@ export default function Page() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+  const activationNudgeFired = useRef(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [briefCount, setBriefCount] = useState<number | null>(null);
   const [showPreLimitNudge, setShowPreLimitNudge] = useState(false);
@@ -212,6 +213,15 @@ export default function Page() {
       .then((d) => { if (d) setSubscription(d); })
       .catch(() => {});
   };
+
+  // Auto-show activation nudge for authenticated users who haven't generated their first brief yet
+  useEffect(() => {
+    if (!user || activationNudgeFired.current) return;
+    if (subscription && subscription.free_briefs_used === 0) {
+      activationNudgeFired.current = true;
+      setShowWelcome(true);
+    }
+  }, [subscription, user]);
 
   // Track page view on mount; handle Stripe return params and auth completion
   useEffect(() => {
@@ -753,11 +763,12 @@ Preferred Qualifications:
               </div>
             )}
 
-            {/* Welcome banner for new users arriving from OAuth */}
+            {/* Activation nudge — shown to users who haven't generated their first brief yet */}
             {showWelcome && (
-              <div className="mb-6 p-4 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 text-sm flex justify-between items-center">
-                <span className="font-medium">Welcome to PrepFile — generate your first interview prep brief below.</span>
-                <button onClick={() => setShowWelcome(false)} className="text-brand-600 hover:text-brand-800 ml-4">✕</button>
+              <div className="mb-6 p-4 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 text-sm flex items-center gap-3">
+                <span className="text-base">✦</span>
+                <span className="flex-1"><span className="font-medium">Your first brief takes 60 seconds.</span> Paste a job description below and PrepFile will tell you what to expect, what to ask, and where most candidates miss.</span>
+                <button onClick={() => setShowWelcome(false)} className="text-brand-500 hover:text-brand-800 shrink-0">✕</button>
               </div>
             )}
 

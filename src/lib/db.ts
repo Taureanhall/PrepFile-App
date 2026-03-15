@@ -481,8 +481,8 @@ export function getOrCreateUserByEmail(email: string, referralSource?: string): 
 }
 
 /**
- * Users who signed up >= delayDays ago, haven't received emailId, and are not unsubscribed.
- * Used for welcome-2 (day 2) and welcome-3 (day 5).
+ * Users who signed up >= delayDays ago, haven't received emailId, are not unsubscribed,
+ * and have not yet generated any briefs (activation drip — only for inactive users).
  */
 export function getUsersForWelcomeEmail(
   emailId: string,
@@ -495,6 +495,9 @@ export function getUsersForWelcomeEmail(
       AND CAST((julianday('now') - julianday(u.created_at)) AS INTEGER) >= ?
       AND NOT EXISTS (
         SELECT 1 FROM email_sequences es WHERE es.user_id = u.id AND es.email_id = ?
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM briefs b WHERE b.user_id = u.id
       )
   `).all(delayDays, emailId) as Array<{ id: string; email: string }>;
 }
