@@ -45,6 +45,7 @@ import {
 } from "./src/lib/db.js";
 import { getPostHogClient } from "./src/lib/posthog.js";
 import { getStripe, PRICES, PACK_BRIEF_COUNT, TEAM_SEAT_PRICE_CENTS, TEAM_MIN_SEATS } from "./src/lib/stripe.js";
+import { createLSCheckoutUrl, verifyLSWebhookSignature, mapLSStatusToPlan } from "./src/lib/lemonsqueezy.js";
 import { runNurtureEmailBatch } from "./src/lib/nurture.js";
 import { runWelcomeDripBatch } from "./src/lib/welcome-drip.js";
 import { processDripQueue } from "./src/lib/email-drip.js";
@@ -170,6 +171,121 @@ async function startServer() {
           );
         }
         console.log(`[STRIPE] invoice.payment_failed for customer ${invoice.customer} — dunning email queued`);
+      }
+    }
+
+    res.sendStatus(200);
+  });
+
+  // Lemon Squeezy webhook — raw body required, before express.json()
+  app.post("/api/lemonsqueezy/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+    const sig = req.headers["x-signature"] as string;
+    const webhookSecret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
+    if (!sig || !webhookSecret) return res.status(400).send("Missing signature or secret");
+
+    if (!verifyLSWebhookSignature(req.body, sig, webhookSecret)) {
+      console.error("[LS] Webhook signature verification failed");
+      return res.status(400).send("Invalid signature");
+    }
+
+    let event: any;
+    try {
+      event = JSON.parse(req.body.toString());
+    } catch {
+      return res.status(400).send("Invalid JSON");
+    }
+
+    const eventName: string = event.meta?.event_name || "";
+    const data = event.data?.attributes || {};
+    const customData = event.meta?.custom_data || {};
+    const userId: string = customData.user_id || "";
+    const product: string = customData.product || "pro";
+
+    console.log(`[LS] Webhook received: ${eventName}`);
+
+    if (eventName === "subscription_created") {
+      if (!userId) {
+        // Try to find user by email from subscription
+        const email = data.user_email;
+        if (!email) {
+          console.error("[LS] subscription_created with no user_id and no email");
+          return res.sendStatus(200);
+        }
+        const foundUserId = getOrCreateUserByEmail(email);
+        upsertSubscription(foundUserId, "pro", String(data.customer_id), String(event.data?.id));
+        console.log(`[LS] Created/found user ${foundUserId} for unauthenticated LS subscription`);
+      } else {
+        upsertSubscription(userId, "pro", String(data.customer_id), String(event.data?.id));
+      }
+
+      getPostHogClient()?.capture({
+        distinctId: userId || data.user_email,
+        event: "payment_completed",
+        properties: { plan: "pro", ls_customer_id: data.customer_id, amount_total: data.total },
+      });
+
+      const userEmail = userId ? getUserEmailById(userId) : data.user_email;
+      if (userEmail) {
+        const appUrl = process.env.APP_URL || "https://prepfile.work";
+        sendUpgradeWelcomeEmail(userId || userEmail, userEmail, appUrl, FROM_EMAIL).catch(
+          (err) => console.error("[LS] upgrade welcome email error:", err)
+        );
+      }
+    }
+
+    if (eventName === "order_created" && product === "pack") {
+      // One-time Interview Pack purchase
+      const orderUserId = userId || "";
+      if (!orderUserId) {
+        const email = data.user_email;
+        if (!email) {
+          console.error("[LS] order_created (pack) with no user_id and no email");
+          return res.sendStatus(200);
+        }
+        const foundUserId = getOrCreateUserByEmail(email);
+        upsertSubscription(foundUserId, "pack", String(data.customer_id), null, PACK_BRIEF_COUNT);
+        getPostHogClient()?.capture({
+          distinctId: foundUserId,
+          event: "payment_completed",
+          properties: { plan: "pack", ls_customer_id: data.customer_id, amount_total: data.total },
+        });
+      } else {
+        upsertSubscription(orderUserId, "pack", String(data.customer_id), null, PACK_BRIEF_COUNT);
+        getPostHogClient()?.capture({
+          distinctId: orderUserId,
+          event: "payment_completed",
+          properties: { plan: "pack", ls_customer_id: data.customer_id, amount_total: data.total },
+        });
+      }
+    }
+
+    if (eventName === "subscription_updated" || eventName === "subscription_cancelled") {
+      const status = data.status as string;
+      const planStatus = mapLSStatusToPlan(status);
+      const db = (await import("./src/lib/db.js")).default;
+      const subRow = db.prepare("SELECT user_id FROM subscriptions WHERE stripe_subscription_id = ?").get(String(event.data?.id)) as any;
+      if (subRow) {
+        if (planStatus === "cancelled") {
+          upsertSubscription(subRow.user_id, "free", String(data.customer_id), null, 0);
+          console.log(`[LS] Subscription cancelled — user ${subRow.user_id} downgraded to free`);
+        } else if (planStatus) {
+          console.log(`[LS] Subscription updated — user ${subRow.user_id} status: ${status}`);
+        }
+      }
+    }
+
+    if (eventName === "subscription_payment_failed") {
+      const db = (await import("./src/lib/db.js")).default;
+      const subRow = db.prepare("SELECT user_id FROM subscriptions WHERE stripe_subscription_id = ?").get(String(event.data?.id)) as any;
+      if (subRow) {
+        const userEmail = getUserEmailById(subRow.user_id);
+        if (userEmail) {
+          const appUrl = process.env.APP_URL || "https://prepfile.work";
+          sendDunningEmail(subRow.user_id, userEmail, appUrl, FROM_EMAIL).catch(
+            (err) => console.error("[LS] dunning email error:", err)
+          );
+        }
+        console.log(`[LS] subscription_payment_failed for user ${subRow.user_id} — dunning email queued`);
       }
     }
 
@@ -579,7 +695,8 @@ async function startServer() {
     });
   });
 
-  // Stripe: create checkout session (works for both authenticated and unauthenticated users)
+  // Checkout session — routes to Lemon Squeezy or Stripe based on PAYMENT_PROVIDER env var
+  // PAYMENT_PROVIDER=lemonsqueezy (default when set) | stripe
   app.post("/api/stripe/create-checkout-session", async (req, res) => {
     const user = getSessionUser(req);
 
@@ -588,7 +705,19 @@ async function startServer() {
       return res.status(400).json({ error: "Invalid product" });
     }
 
+    const provider = process.env.PAYMENT_PROVIDER || "stripe";
+
     try {
+      if (provider === "lemonsqueezy") {
+        const url = await createLSCheckoutUrl(product, {
+          email: user?.email,
+          userId: user?.id,
+          successUrl: `${APP_URL}/?payment=success`,
+        });
+        return res.json({ url });
+      }
+
+      // Stripe path (default when PAYMENT_PROVIDER=stripe or not set)
       const stripe = getStripe();
       const priceConfig = PRICES[product];
       const isSubscription = product === "pro";
@@ -603,7 +732,6 @@ async function startServer() {
       };
 
       if (user) {
-        // Authenticated: attach user info and reuse Stripe customer
         sessionParams.metadata.user_id = user.id;
         sessionParams.customer_email = user.email;
         const sub = getUserSubscription(user.id);
@@ -612,7 +740,6 @@ async function startServer() {
           sessionParams.customer = sub.stripe_customer_id;
         }
       }
-      // Unauthenticated: Stripe collects email during checkout
 
       const session = await stripe.checkout.sessions.create(sessionParams);
       res.json({ url: session.url });
@@ -622,7 +749,7 @@ async function startServer() {
     }
   });
 
-  // Stripe: customer portal (manage subscription)
+  // Customer portal — routes to Lemon Squeezy or Stripe based on PAYMENT_PROVIDER
   const handlePortalSession = async (req: express.Request, res: express.Response) => {
     const user = getSessionUser(req);
     if (!user) return res.status(401).json({ error: "Not authenticated" });
@@ -630,7 +757,21 @@ async function startServer() {
     const sub = getUserSubscription(user.id);
     if (!sub.stripe_customer_id) return res.status(400).json({ error: "No active subscription" });
 
+    const provider = process.env.PAYMENT_PROVIDER || "stripe";
+
     try {
+      if (provider === "lemonsqueezy") {
+        // Lemon Squeezy customer portal: direct user to LS subscription management
+        // stripe_subscription_id stores the LS subscription ID when using LS
+        const lsSubId = sub.stripe_subscription_id;
+        if (lsSubId) {
+          return res.json({ url: `https://app.lemonsqueezy.com/my-orders/${lsSubId}` });
+        }
+        // Fallback: LS customer portal by customer ID
+        return res.json({ url: "https://app.lemonsqueezy.com/my-orders" });
+      }
+
+      // Stripe path
       const session = await getStripe().billingPortal.sessions.create({
         customer: sub.stripe_customer_id,
         return_url: APP_URL,
@@ -1998,6 +2139,22 @@ async function startServer() {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     console.log(`[STRIPE] STRIPE_WEBHOOK_SECRET: ${webhookSecret ? "set" : "NOT set — webhooks will fail"}`);
     console.log(`[STRIPE] APP_URL: ${APP_URL}`);
+
+    // Lemon Squeezy / payment provider diagnostics
+    const provider = process.env.PAYMENT_PROVIDER || "stripe";
+    console.log(`[PAYMENT] PAYMENT_PROVIDER: ${provider}`);
+    if (provider === "lemonsqueezy") {
+      const lsKey = process.env.LEMONSQUEEZY_API_KEY;
+      const lsStore = process.env.LEMONSQUEEZY_STORE_ID;
+      const lsWebhook = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
+      const lsProVariant = process.env.LEMONSQUEEZY_VARIANT_ID_PRO;
+      const lsPackVariant = process.env.LEMONSQUEEZY_VARIANT_ID_PACK;
+      console.log(`[LS] LEMONSQUEEZY_API_KEY: ${lsKey ? "set" : "NOT set — checkout will fail"}`);
+      console.log(`[LS] LEMONSQUEEZY_STORE_ID: ${lsStore ? lsStore : "NOT set — checkout will fail"}`);
+      console.log(`[LS] LEMONSQUEEZY_WEBHOOK_SECRET: ${lsWebhook ? "set" : "NOT set — webhooks will fail"}`);
+      console.log(`[LS] LEMONSQUEEZY_VARIANT_ID_PRO: ${lsProVariant ? lsProVariant : "NOT set — Pro checkout will fail"}`);
+      console.log(`[LS] LEMONSQUEEZY_VARIANT_ID_PACK: ${lsPackVariant ? lsPackVariant : "NOT set — Pack checkout will fail"}`);
+    }
   });
 
   // Nurture email batch — run once on startup (after 30s) then every 4 hours
