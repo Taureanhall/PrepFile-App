@@ -13,115 +13,138 @@ export async function generateBrief(inputs: {
   const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
   const ai = new GoogleGenAI({ apiKey });
 
-  const prompt = `
-    You are an elite executive recruiter and strategic advisor. You think using rigorous business frameworks but always translate them into ground-level, role-specific reality.
-    Your goal is to create a highly strategic interview prep brief for a candidate.
+  const prompt = `<documents>
+<document index="1">
+<source>candidate_context</source>
+<document_content>
+Company: ${inputs.companyName}
+Job Title: ${inputs.jobTitle}
+Interview Round: ${inputs.round}
+Familiarity with Company: ${inputs.familiarity}
+Prep Time Available: ${inputs.timeToPrep}
+Self-Identified Gap: ${inputs.biggestGap}
+</document_content>
+</document>
+<document index="2">
+<source>job_description</source>
+<document_content>
+${inputs.jobDescription}
+</document_content>
+</document>
+</documents>
 
-    CANDIDATE CONTEXT:
-    - Company: ${inputs.companyName}
-    - Job Title: ${inputs.jobTitle}
-    - Interview Round: ${inputs.round}
-    - Familiarity with Company: ${inputs.familiarity}
-    - Prep Time Available: ${inputs.timeToPrep}
-    - Self-Identified Gap: ${inputs.biggestGap}
+<instructions>
+You are an elite executive recruiter and strategic advisor. You think using rigorous business frameworks but always translate them into ground-level, role-specific reality.
 
-    JOB DESCRIPTION:
-    ${inputs.jobDescription}
+<constraint name="specificity">
+Every question, insight, and recommendation must be anchored to ${inputs.companyName} and the ${inputs.jobTitle} role specifically.
+Generic interview advice (e.g., "Tell me about a time you led a team") is forbidden.
+Every interview question must reflect something a ${inputs.companyName} interviewer would actually ask given their specific competitive pressures, operational realities, and this role's actual responsibilities.
+Do not produce generic industry observations. If you don't have enough data on the company, say so in blindSpots — but do not pad the output with generic advice.
+</constraint>
 
-    SPECIFICITY MANDATE:
-    Every question, insight, and recommendation must be anchored to ${inputs.companyName} and the ${inputs.jobTitle} role specifically.
-    Generic interview advice (e.g., "Tell me about a time you led a team") is forbidden.
-    Every interview question must reflect something a ${inputs.companyName} interviewer would actually ask given their specific competitive pressures, operational realities, and this role's actual responsibilities.
-    Do not produce generic industry observations. If you don't have enough data on the company, say so in blindSpots — but do not pad the output with generic advice.
+<constraint name="formatting">
+Do not use inline citation numbers, footnotes, or reference markers (e.g. [1], [2], (1)) anywhere in the output. Write in clean prose and bullet points only.
+Keep the tone direct, specific, and confident. Cut all filler. Every sentence should be load-bearing.
+</constraint>
 
-    INSTRUCTIONS & CHAIN OF THOUGHT:
-    Work through the following four lenses in the '_internalStrategicAnalysis' object before writing anything visible to the candidate.
+<constraint name="translation">
+NEVER use academic terms (Porter, Deming, Five Forces, Value Chain, Generic Strategy, etc.) in the visible output sections. Translate everything into the plain language of the candidate's role and industry.
+</constraint>
 
-    LENS 1 — PORTER'S COMPETITIVE POSITION (from Competitive Advantage & Competitive Strategy):
-    - Generic Strategy: Cost Leadership, Differentiation, or Focus — and how purely are they executing it?
-    - Dominant Five Forces threat: which single force is most likely to erode their margins or position right now?
-    - Strategic Group: who do they actually compete with, and what dimensions define the competition (price, service, geography, segment)?
-    - Value Chain: which primary activities (inbound logistics, operations, outbound logistics, marketing/sales, service) and which support activities (HR, technology, procurement, firm infrastructure) are the primary sources of their competitive advantage? Where does this role sit in that value chain?
-    - Activity System fit: are their key competitive activities mutually reinforcing (tight fit = durable advantage) or loosely connected (fragile, easy to copy)?
+<chain_of_thought>
+Work through these lenses in the '_internalStrategicAnalysis' object before writing anything visible to the candidate.
 
-    LENS 2 — DEMING'S SYSTEM DIAGNOSIS (from Out of the Crisis):
-    - System vs. blame culture: does available evidence suggest this company treats problems as systemic/process failures (Deming) or as individual failures (blame culture)? Look for signals like how they talk about quality, how they handle mistakes publicly, layoff patterns, leadership language.
-    - Variation and data: do they appear to manage by data and process metrics, or by gut, quotas, and short-term financial pressure? Management-by-quotas destroys quality; note if this is present.
-    - Barriers and silos: are there signals of broken handoffs between departments (sales overpromises ops, engineering ignores customer feedback)? This affects how cross-functional this role will actually need to be.
-    - Implication for the role: given the Deming diagnosis, what systemic forces will this person be swimming against or with?
+LENS 1 — COMPETITIVE POSITION:
+- Generic Strategy: Cost Leadership, Differentiation, or Focus — and how purely are they executing it?
+- Dominant threat: which single force is most likely to erode their margins or position right now?
+- Strategic Group: who do they actually compete with, and what dimensions define the competition?
+- Value Chain: which activities are the primary sources of their competitive advantage? Where does this role sit?
+- Activity System fit: are their key competitive activities mutually reinforcing (durable) or loosely connected (fragile)?
 
-    LENS 3 — ROLE TRANSLATION:
-    Synthesize lenses 1-2 into a single clear statement of what this role is REALLY for — the unstated strategic mandate behind the job description.
+LENS 2 — SYSTEM DIAGNOSIS:
+- System vs. blame culture: does evidence suggest they treat problems as systemic/process failures or individual failures?
+- Variation and data: do they manage by data and process metrics, or by gut, quotas, and short-term financial pressure?
+- Barriers and silos: signals of broken handoffs between departments?
+- Implication for the role: what systemic forces will this person be swimming against or with?
 
-    CRITICAL TRANSLATION RULE: NEVER use academic terms (Porter, Deming, Five Forces, Value Chain, Generic Strategy, etc.) in the visible output sections. Translate everything into the plain language of the candidate's role and industry.
+LENS 3 — ROLE TRANSLATION:
+Synthesize lenses 1-2 into a single clear statement of what this role is REALLY for — the unstated strategic mandate behind the job description.
+</chain_of_thought>
 
-    GOOD TRANSLATION EXAMPLES:
-    - Engineering: "They win on product differentiation but their activity system is fragile — engineering, design, and product operate in silos. Your real job is building features fast enough to stay ahead while quietly fixing the coordination failures that slow everything down."
-    - Operations/Manufacturing: "They compete on cost but manage by shifting blame when targets are missed rather than fixing the processes that cause misses. Expect quotas that ignore variation. Your leverage is introducing data-driven process controls that make the numbers move without the firefighting."
-    - Sales: "Their competitive advantage is relationship depth in mid-market, but sales and delivery don't talk. Deals get closed that ops can't fulfill. You'll need to self-manage that handoff or your numbers will suffer for someone else's failure."
-    - HR/People Ops: "Retention is their core operational risk — high turnover destroys the institutional knowledge that protects their margins. But they're likely managing it reactively (exit interviews, counter-offers) rather than systematically. Your job is to shift that."
+<examples>
+<example name="engineering_translation">
+"They win on product differentiation but their activity system is fragile — engineering, design, and product operate in silos. Your real job is building features fast enough to stay ahead while quietly fixing the coordination failures that slow everything down."
+</example>
+<example name="operations_translation">
+"They compete on cost but manage by shifting blame when targets are missed rather than fixing the processes that cause misses. Expect quotas that ignore variation. Your leverage is introducing data-driven process controls that make the numbers move without the firefighting."
+</example>
+<example name="sales_translation">
+"Their competitive advantage is relationship depth in mid-market, but sales and delivery don't talk. Deals get closed that ops can't fulfill. You'll need to self-manage that handoff or your numbers will suffer for someone else's failure."
+</example>
+<example name="hr_translation">
+"Retention is their core operational risk — high turnover destroys the institutional knowledge that protects their margins. But they're likely managing it reactively (exit interviews, counter-offers) rather than systematically. Your job is to shift that."
+</example>
+</examples>
 
-    Now generate the final structured JSON with the following visible sections:
+<output_sections>
+COMPANY SNAPSHOT:
+- overview: What the company is actually optimizing for right now, based on the full strategic analysis. Not a Wikipedia summary — a strategic read.
+${tier === "free"
+  ? `- recentSignals: Exactly 2 recent developments that reveal strategic direction or pressure. Return exactly 2 items, no more.
+- Do NOT include keyMetrics, risksAndUnknowns, or competitivePositioning.`
+  : `- keyMetrics: Use Google Search to find 2-4 hard, current, quantitative metrics (revenue, AUM, funding, headcount, growth rate, market share). Exact numbers for public/large companies. Omit if unreliable.
+- competitivePositioning: Rate this company on a 1-10 scale across exactly these 5 dimensions: "Growth", "Culture", "Compensation", "Prestige", "Work-Life Balance". Base on Glassdoor, compensation data, growth trajectory, brand reputation. Return as [{dimension, score}].
+- recentSignals: 2-4 recent developments that reveal strategic direction or pressure.
+- risksAndUnknowns: 2-4 honest risks — market threats, execution risks, cultural signals, unknowns in the JD.`}
 
-    COMPANY SNAPSHOT:
-    - overview: What the company is actually optimizing for right now, based on the full strategic analysis. Not a Wikipedia summary — a strategic read.
-    ${tier === "free"
-      ? "- recentSignals: Exactly 2 recent developments that reveal strategic direction or pressure (hiring patterns, product launches, leadership changes, earnings signals, press). Return exactly 2 items, no more.\n    - Do NOT include keyMetrics, risksAndUnknowns, or competitivePositioning."
-      : `- keyMetrics: Use Google Search to find 2-4 hard, current, quantitative metrics (revenue, AUM, funding, headcount, growth rate, market share). Exact numbers for public/large companies. Omit if unreliable.
-    - competitivePositioning: Rate this company on a 1-10 scale across exactly these 5 dimensions: "Growth", "Culture", "Compensation", "Prestige", "Work-Life Balance". Base on Glassdoor, compensation data, growth trajectory, brand reputation. Return as [{dimension, score}].
-    - recentSignals: 2-4 recent developments that reveal strategic direction or pressure (hiring patterns, product launches, leadership changes, earnings signals, press).
-    - risksAndUnknowns: 2-4 honest risks — market threats, execution risks, cultural signals, unknowns in the JD.`
-    }
+ROLE INTELLIGENCE:
+- coreMandate: The real job behind the job description — synthesized from all lenses. What problem does this role exist to solve at the system level?
+- success90Days: 3-4 concrete, measurable things that would make this hire look like a home run in the first 90 days.
+- commonFailureModes: 3-4 specific ways people fail in this exact role at this type of company — not generic advice.
 
-    ROLE INTELLIGENCE:
-    - coreMandate: The real job behind the job description — synthesized from all lenses. What problem does this role exist to solve at the system level?
-    - success90Days: 3-4 concrete, measurable things that would make this hire look like a home run in the first 90 days.
-    - commonFailureModes: 3-4 specific ways people fail in this exact role at this type of company — not generic advice.
+LIKELY INTERVIEW THEMES:
+Generate 3-4 interview themes directly derived from the competitive analysis. Each must be specific to ${inputs.companyName}'s actual strategic situation.
+For each theme:
+- theme: A specific, named theme tied to this company's real pressures (e.g., "Winning accounts while AWS commoditizes the infrastructure layer" — not just "Competition")
+- whyItMatters: Why this theme is live RIGHT NOW at ${inputs.companyName} — 1-2 sentences, no jargon
+- questions: 3-5 concrete interview questions a ${inputs.companyName} interviewer would likely ask about this theme for the ${inputs.jobTitle} role. Strategic/situational, not behavioral STAR prompts.
 
-    LIKELY INTERVIEW THEMES (Porter-derived):
-    Generate 3-4 interview themes directly derived from the competitive analysis. Each theme must be specific to ${inputs.companyName}'s actual strategic situation — not generic industry themes.
-    For each theme:
-    - theme: A specific, named theme tied to this company's real pressures (e.g., "Winning accounts while AWS commoditizes the infrastructure layer" — not just "Competition")
-    - whyItMatters: Why this theme is live RIGHT NOW at ${inputs.companyName} based on the strategic analysis — 1-2 sentences, no jargon
-    - questions: 3-5 concrete interview questions a ${inputs.companyName} interviewer would likely ask about this theme for the ${inputs.jobTitle} role. Phrased as the interviewer would ask them. These are strategic/situational questions, not behavioral STAR prompts.
+PROCESS & OPERATIONAL QUESTIONS:
+Based on the operational/systems analysis of ${inputs.companyName}:
+- context: How this company actually manages processes, quality, and failure — and what that means for how the ${inputs.jobTitle} role will be evaluated. No jargon. 2-3 sentences.
+- questions: 4-6 specific process/operational questions derived from how ${inputs.companyName} actually operates.
 
-    PROCESS & OPERATIONAL QUESTIONS (Deming-derived):
-    Based on the operational/systems analysis of ${inputs.companyName}:
-    - context: How this company actually manages processes, quality, and failure — and what that means for how the ${inputs.jobTitle} role will be evaluated. No jargon. 2-3 sentences.
-    - questions: 4-6 specific process/operational questions the interviewer will likely ask for this role, derived from how ${inputs.companyName} actually operates. These should reveal the interviewer's real concerns about process maturity, cross-functional execution, and operational discipline.
+BEHAVIORAL QUESTION BANK:
+Identify 3-4 core competencies that the ${inputs.jobTitle} role at ${inputs.companyName} actually tests.
+For each:
+- competency: Specific to what ${inputs.companyName} actually values (e.g., "Influencing roadmap without direct authority in a matrix org" not just "Leadership")
+- questions: 2-3 behavioral questions in STAR format. Make them specific to situations this candidate will face at this company.
 
-    BEHAVIORAL QUESTION BANK:
-    Identify 3-4 core competencies that the ${inputs.jobTitle} role at ${inputs.companyName} actually tests — based on the JD and what the strategic analysis reveals about how they operate.
-    For each:
-    - competency: The specific competency (tied to what ${inputs.companyName} actually values — e.g., "Influencing roadmap without direct authority in a matrix org" not just "Leadership")
-    - questions: 2-3 behavioral questions a ${inputs.companyName} interviewer would actually ask to probe this competency. Phrased in STAR format prompts. Make them specific — reference the type of situation this candidate will face at this company.
+${tier === "pro" ? `ROUND EXPECTATIONS:
+- overview: What this specific round (${inputs.round}) is actually evaluating at ${inputs.companyName}, and what format to expect.
+- whatTripsPeopleUp: 3 specific mistakes candidates make in this round at this type of company.
+- howToShowUpStrong: 3 specific things that make candidates stand out in this round.
+- interviewStages: The full interview process as 3-6 stages. For each: stage, durationMinutes, focus, order (1-based).` : "Do NOT include a roundExpectations section."}
 
-    ${tier === "pro" ? `ROUND EXPECTATIONS:
-    - overview: What this specific round (${inputs.round}) is actually evaluating at ${inputs.companyName}, and what format to expect.
-    - whatTripsPeopleUp: 3 specific mistakes candidates make in this round at this type of company.
-    - howToShowUpStrong: 3 specific things that make candidates stand out in this round.
-    - interviewStages: The full interview process as 3-6 stages. For each: stage (name like "Phone Screen", "Technical", "Onsite Panel"), durationMinutes (estimated length), focus (1-sentence description of what's evaluated), order (1-based sequence).` : "Do NOT include a roundExpectations section."}
+QUESTIONS TO ASK: 5 sharp questions that signal deep thinking about ${inputs.companyName}'s real strategic situation. At least one must probe process maturity. At least one must probe coherence between stated and revealed strategy. No MBA jargon.
 
-    QUESTIONS TO ASK: 5 sharp questions for the candidate to ask the interviewer that signal they've thought deeply about ${inputs.companyName}'s real strategic situation. At least one must probe the system/process maturity of the organization. At least one must probe the coherence between stated and revealed strategy. All must be translated into the natural language of the role — no MBA jargon.
+${tier === "pro" ? `RECOMMENDED READING:
+3-5 specific resources for genuine insight into ${inputs.companyName}'s current situation. Use Google Search to find actual recent articles, earnings calls, press releases, or industry reports.
+For each: title (specific) and why (what insight it gives that generic research won't, 1-2 sentences).` : "Do NOT include recommendedReading."}
 
-    RECOMMENDED READING:
-    3-5 specific resources that would give the candidate genuine insight into ${inputs.companyName}'s current strategic situation. Use Google Search to find actual recent articles, earnings call transcripts, press releases, or industry reports. For each:
-    - title: The specific resource (article title, report name, or precise description if exact title unknown)
-    - why: Why this specific resource matters for this interview — what insight it gives that generic research won't. 1-2 sentences.
+${tier === "pro" ? `GAP ANALYSIS:
+Rate 5-6 key competency dimensions for this role. For each:
+- dimension, roleRequirement (1-10), candidateTypical (1-10).
+The gap reveals where preparation matters most.` : "Do NOT include gapAnalysis."}
 
-    ${tier === "pro" ? `GAP ANALYSIS:
-    Rate 5-6 key competency dimensions for this role. For each:
-    - dimension: The competency name (e.g., "Technical Depth", "Leadership", "Domain Knowledge", "Communication", "Cross-Functional Influence", "Strategic Thinking")
-    - roleRequirement: How critical this dimension is for the role (1-10)
-    - candidateTypical: How strong a typical candidate in the pool would be (1-10)
-    Base these on the JD and company analysis. The gap between roleRequirement and candidateTypical reveals where preparation matters most.` : "Do NOT include gapAnalysis."}
+BLIND SPOTS: 1-3 honest flags about where data was thin, the JD was vague, or the analysis is speculative.
+</output_sections>
+</instructions>
 
-    BLIND SPOTS: 1-3 honest flags about where data was thin, the JD was vague, or the analysis is speculative.
-
-    Keep the tone direct, specific, and confident. Cut all filler. Every sentence should be load-bearing.
-
-    FORMATTING RULES: Do not use inline citation numbers, footnotes, or reference markers (e.g. [1], [2], (1)) anywhere in the output. Write in clean prose and bullet points only.
-  `;
+<task>
+Generate a strategic interview prep brief for a ${inputs.jobTitle} candidate interviewing at ${inputs.companyName}. Return valid JSON matching the schema.
+</task>`;
 
   const response = await ai.models.generateContent({
     model: "gemini-3.1-pro-preview",
@@ -454,42 +477,53 @@ export async function generateBridgingAnalysis(
   const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
   const ai = new GoogleGenAI({ apiKey });
 
-  const prompt = `You are a sharp industry analyst reviewing a candidate's resume against a company intelligence brief.
-Your job: produce bridging analysis that sounds like insider knowledge from someone who deeply understands the competitive dynamics of this industry — not career advice.
-
-COMPANY INTELLIGENCE BRIEF:
+  const prompt = `<documents>
+<document index="1">
+<source>company_intelligence_brief</source>
+<document_content>
 ${JSON.stringify(brief, null, 2)}
-
-CANDIDATE RESUME TEXT:
+</document_content>
+</document>
+<document index="2">
+<source>candidate_resume</source>
+<document_content>
 ${resumeText}
+</document_content>
+</document>
+</documents>
 
----
+<instructions>
+You are a sharp industry analyst reviewing a candidate's resume against a company intelligence brief.
 
-STRUCTURAL CONSTRAINT: Every output item must reference BOTH:
+<constraint name="structural">
+Every output item must reference BOTH:
 (a) A specific piece of resume evidence (role title, project, metric, or outcome), AND
 (b) A specific company or role need drawn directly from this brief.
-
 Any item that references only one side is invalid output.
+</constraint>
 
-VOICE RULE: Write like a well-connected industry insider giving a friend the real read on their positioning — not a career coach, not a textbook. You understand why this company needs this role right now, what competitive pressures are driving the hire, and where the candidate's background gives them an edge (or doesn't).
+<constraint name="voice">
+Write like a well-connected industry insider giving a friend the real read on their positioning — not a career coach, not a textbook. You understand why this company needs this role right now, what competitive pressures are driving the hire, and where the candidate's background gives them an edge (or doesn't). Never name academic frameworks.
+</constraint>
 
-BAD: "Leverage your transferable skills in cross-functional environments."
-BAD: "This aligns with the threat of new entrants in the market." (no frameworks jargon)
-GOOD: "They're hiring this role because [competitor] just launched [X] and they're playing catch-up — your experience doing [Y] at [Company] means you've already solved the exact problem they're scrambling to staff for."
-GOOD: "The real reason this mandate matters: their clients can get this analysis from [alternative] now, so the bar for what counts as 'value-add' just went up. Your [specific work] is proof you operate above that bar."
+<examples>
+<example name="bad_career_coach">"Leverage your transferable skills in cross-functional environments."</example>
+<example name="bad_framework_jargon">"This aligns with the threat of new entrants in the market."</example>
+<example name="good_insider">"They're hiring this role because [competitor] just launched [X] and they're playing catch-up — your experience doing [Y] at [Company] means you've already solved the exact problem they're scrambling to staff for."</example>
+<example name="good_dynamic">"The real reason this mandate matters: their clients can get this analysis from [alternative] now, so the bar for what counts as 'value-add' just went up. Your [specific work] is proof you operate above that bar."</example>
+</examples>
 
-COMPETITIVE DYNAMICS LENS (use implicitly, never name these frameworks):
-For each mandate bridge, think through:
+<context name="competitive_dynamics_lens">
+For each mandate bridge, think through (implicitly — never name these):
 - Why does this company need this capability NOW? What competitive pressure, market shift, or client demand is driving it?
 - What alternatives exist? (competitors, automation, in-house workarounds, clients doing it themselves)
 - Who has leverage in this relationship — the company, their clients, their suppliers, or new players entering?
 - What would happen if they DON'T fill this role well? What erodes?
 - Is this a defend-the-moat hire or a capture-new-ground hire?
+</context>
+</instructions>
 
-Weave these dynamics into the bridge and competitiveDynamic fields naturally. The candidate should walk away understanding the BUSINESS REASON their experience matters — not just the skills match.
-
----
-
+<task>
 TASK 1 — MANDATE BRIDGES
 For each of the following from the brief, find the closest matching experience in the resume:
 - roleIntelligence.coreMandate
@@ -497,40 +531,27 @@ For each of the following from the brief, find the closest matching experience i
 
 For each match, output:
 - mandate: The specific item from the brief (quoted exactly)
-- resumeEvidence: The single sharpest proof point from their resume — one specific metric, project name, or outcome. Max 25 words. Do NOT copy-paste a full resume bullet. Extract the core.
-- bridge: The precise connection. Format: "Your [X] at [Company] maps to their need for [Y] because [concrete reason rooted in competitive dynamics]."
-- talkingPoint: One sentence, max 20 words, that the candidate can say OUT LOUD in the interview. Written in first person. Not a description — an actual utterance.
-- matchStrength: "strong" if the resume shows direct, proven experience with measurable outcomes. "partial" if the experience is adjacent or the evidence is thin. "gap" if this is a real stretch or the resume has nothing close.
-- competitiveDynamic: One sentence explaining WHY this mandate exists from a business/competitive standpoint — what market pressure, client demand, or competitive threat makes this capability non-negotiable right now. Sound like someone who covers this industry, not someone reading a job description.
+- resumeEvidence: The single sharpest proof point — one specific metric, project name, or outcome. Max 25 words. Do NOT copy-paste a full resume bullet.
+- bridge: "Your [X] at [Company] maps to their need for [Y] because [concrete reason rooted in competitive dynamics]."
+- talkingPoint: One sentence, max 20 words, that the candidate can say OUT LOUD. First person. An actual utterance.
+- matchStrength: "strong" (direct proven experience with measurable outcomes), "partial" (adjacent or thin evidence), "gap" (real stretch or nothing close)
+- competitiveDynamic: One sentence on WHY this mandate exists from a business/competitive standpoint. Sound like someone who covers this industry.
 
 TASK 2 — PERSONALIZED ROUND STRENGTHS
-Write exactly 3 items replacing the generic roundExpectations.howToShowUpStrong with resume-grounded tactics.
-
-Each item must:
+Write exactly 3 resume-grounded tactics replacing generic howToShowUpStrong. Each must:
 - Name a specific resume experience
-- Connect it to what this round is evaluating per the brief's roundExpectations context
-- Give a tactical instruction: what to open with, what to lead with, what to say when a specific topic surfaces
-- Reflect understanding of why the interviewer cares about this (what competitive/business pressure makes this question important)
+- Connect to what this round evaluates per the brief's roundExpectations
+- Give a tactical instruction: what to open with, lead with, or say when a topic surfaces
+- Reflect why the interviewer cares (what business pressure makes this important)
 
 TASK 3 — CANDIDATE-SPECIFIC GAPS
-Using roleIntelligence.commonFailureModes and roundExpectations.whatTripsPeopleUp as the lens:
-Identify 1-3 things the role actually needs that are thin or absent in this resume.
+Using roleIntelligence.commonFailureModes and roundExpectations.whatTripsPeopleUp as the lens, identify 1-3 gaps. For each:
+- State plainly what the role needs that the resume doesn't demonstrate
+- Explain the business reason this gap matters ("without X, the team can't do Y, which matters because Z")
+- Give concrete interview mitigation: exact framing or story structure. Not "brush up on X." The actual words.
 
-For each gap:
-- State it plainly: what the role needs that this resume doesn't demonstrate clearly
-- Explain the business reason this gap matters (not "they want X skill" but "without X, the team can't do Y, which matters because Z competitive pressure")
-- Give a concrete interview mitigation: the exact framing or story structure the candidate should use when this gap surfaces. Not "brush up on X." The actual words and approach.
-
----
-
-Return valid JSON matching this schema exactly:
-{
-  "mandateBridges": [
-    { "mandate": string, "resumeEvidence": string, "bridge": string, "talkingPoint": string, "matchStrength": "strong" | "partial" | "gap", "competitiveDynamic": string }
-  ],
-  "howToShowUpStrong": [string, string, string],
-  "blindSpots": [string]
-}`;
+Return valid JSON matching the schema.
+</task>`;
 
   const response = await ai.models.generateContent({
     model: "gemini-3.1-pro-preview",
