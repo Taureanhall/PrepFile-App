@@ -5,6 +5,24 @@ import { Nav } from "./Nav";
 import { SuggestionInput } from "./SuggestionInput";
 import { POPULAR_COMPANIES, getTitleSuggestions } from "../lib/suggestions";
 
+const TESTIMONIALS = [
+  {
+    quote: "I used PrepFile before my Google interview and felt 10x more prepared. The blind spots section alone saved me.",
+    name: "Sarah K.",
+    role: "Software Engineer → Google",
+  },
+  {
+    quote: "Went from panicking about my McKinsey final round to walking in with a clear game plan. The company snapshot was spot-on.",
+    name: "James R.",
+    role: "Strategy Consultant → McKinsey",
+  },
+  {
+    quote: "I've done dozens of interviews. PrepFile caught things about the role I would have completely missed. Worth every minute.",
+    name: "Priya M.",
+    role: "Product Manager → Stripe",
+  },
+];
+
 const DEMO_COMPANY = "Google";
 const DEMO_ROLE = "Product Manager";
 const DEMO_SECTIONS = [
@@ -211,6 +229,12 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
   const [company, setCompany] = useState("");
   const [title, setTitle] = useState("");
   const [foundingRemaining, setFoundingRemaining] = useState<number | null>(null);
+  const [isProductHunt, setIsProductHunt] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("ref") === "producthunt") setIsProductHunt(true);
+  }, []);
 
   useEffect(() => {
     fetch("/api/founding-members/remaining")
@@ -236,6 +260,12 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
 
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-6 pt-10 sm:pt-16 pb-16 text-center">
+        {isProductHunt && (
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#ff6154]/10 border border-[#ff6154]/30 rounded-full text-sm font-semibold text-[#ff6154] mb-4">
+            <svg width="16" height="16" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#FF6154"/><path d="M22.667 20H17.333v-6.667h5.334a3.333 3.333 0 110 6.667z" fill="#fff"/><path d="M14 10v20h3.333v-6.667h5.334A6.667 6.667 0 0022.667 10H14z" fill="#fff"/></svg>
+            Featured on Product Hunt
+          </div>
+        )}
         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent-50 border border-accent-200 rounded-full text-xs font-medium text-accent-600 mb-7">
           {briefCount !== null ? (
             <>
@@ -310,22 +340,20 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
         </div>
       </section>
 
-      {/* Social proof */}
+      {/* Social proof — testimonials */}
       <section className="bg-white border-t border-zinc-100 py-14">
-        <div className="max-w-3xl mx-auto px-6 space-y-10">
-          {/* Snippet 1 — Speed */}
-          <blockquote className="border-l-4 border-brand-600 pl-5">
-            <p className="text-base sm:text-lg text-zinc-700 leading-relaxed italic">
-              "Paste a job link. Get back a brief that knows what the company actually cares about, what this role really is, what the interview will test, and the questions that make interviewers think 'this person did their homework.'"
-            </p>
-          </blockquote>
-
-          {/* Snippet 3 — Depth */}
-          <div className="bg-zinc-50 border border-zinc-200 rounded-2xl px-6 py-5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-400 mb-2">What's inside a brief</p>
-            <p className="text-base text-zinc-700 leading-relaxed">
-              What the company is doing right now and why it matters for your interview. What this role actually needs — not what the JD says. How each round works and what trips people up. Questions that show you understand their business. And the blind spots most candidates walk in with. The research you'd spend a weekend on, done before you finish reading this.
-            </p>
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-brand-400 mb-10">What candidates are saying</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {TESTIMONIALS.map((t) => (
+              <div key={t.name} className="bg-zinc-50 border border-zinc-200 rounded-2xl p-5 flex flex-col gap-4">
+                <p className="text-sm text-zinc-700 leading-relaxed flex-1">"{t.quote}"</p>
+                <div>
+                  <p className="text-sm font-semibold text-zinc-900">{t.name}</p>
+                  <p className="text-xs text-zinc-400">{t.role}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -376,7 +404,15 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
       {/* Pricing section */}
       <section className="bg-zinc-50 border-t border-zinc-100 py-14" id="pricing">
         <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-brand-400 mb-10">Pricing</h2>
+          <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-brand-400 mb-6">Pricing</h2>
+          {foundingRemaining !== null && (
+            <div className="max-w-xl mx-auto mb-8 bg-accent-50 border border-accent-200 rounded-2xl px-6 py-4 text-center">
+              <p className="text-base font-bold text-accent-700">Founding Member Offer</p>
+              <p className="text-sm text-accent-600 mt-1">
+                First 50 Pro subscribers get <span className="font-semibold">5 bonus briefs free</span>. Only {foundingRemaining} spot{foundingRemaining === 1 ? "" : "s"} remaining.
+              </p>
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-xl mx-auto">
             {/* Free */}
             <div className="bg-white border border-zinc-200 rounded-2xl p-6 flex flex-col gap-3">
