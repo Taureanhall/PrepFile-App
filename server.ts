@@ -20,6 +20,8 @@ import {
   getUserSubscription,
   upsertSubscription,
   usePackBrief,
+  getProSubscriberCount,
+  applyFoundingMemberBonus,
   getBriefCountForUser,
   hasReceivedOnboardingEmail,
   markOnboardingEmailSent,
@@ -122,6 +124,14 @@ async function startServer() {
 
       if (product === "pro") {
         upsertSubscription(userId, "pro", session.customer, session.subscription);
+        // Founding member bonus: first 50 Pro subscribers get 5 bonus briefs
+        const FOUNDING_MEMBER_LIMIT = 50;
+        const FOUNDING_BONUS_BRIEFS = 5;
+        const proCount = getProSubscriberCount();
+        if (proCount <= FOUNDING_MEMBER_LIMIT) {
+          applyFoundingMemberBonus(userId, FOUNDING_BONUS_BRIEFS);
+          console.log(`[STRIPE] Founding member bonus applied to user ${userId} (Pro subscriber #${proCount})`);
+        }
       } else if (product === "pack") {
         upsertSubscription(userId, "pack", session.customer, null, PACK_BRIEF_COUNT);
       }
@@ -409,6 +419,14 @@ async function startServer() {
   app.get("/api/stats", (_req, res) => {
     const totalBriefs = getTotalBriefCount();
     res.json({ totalBriefs });
+  });
+
+  // Founding member spots remaining — public, no auth required
+  app.get("/api/founding-members/remaining", (_req, res) => {
+    const TOTAL = 50;
+    const taken = getProSubscriberCount();
+    const remaining = Math.max(0, TOTAL - taken);
+    res.json({ total: TOTAL, taken, remaining });
   });
 
   // Auth: get current user

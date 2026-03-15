@@ -38,6 +38,14 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
   const [variant, setVariant] = useState<LandingVariant>(landingBaseline);
   const [company, setCompany] = useState("");
   const [title, setTitle] = useState("");
+  const [foundingRemaining, setFoundingRemaining] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/founding-members/remaining")
+      .then((r) => r.json())
+      .then((data) => { if (data.remaining > 0) setFoundingRemaining(data.remaining); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const v = pickVariant();
@@ -180,6 +188,60 @@ export function LandingPage({ onGetStarted, briefCount = null }: LandingPageProp
                 <p className="text-sm text-zinc-500 leading-relaxed">{body}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing section */}
+      <section className="bg-zinc-50 border-t border-zinc-100 py-14" id="pricing">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-brand-400 mb-10">Pricing</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-xl mx-auto">
+            {/* Free */}
+            <div className="bg-white border border-zinc-200 rounded-2xl p-6 flex flex-col gap-3">
+              <div>
+                <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-1">Get started</div>
+                <div className="text-lg font-bold text-zinc-900">Free</div>
+                <div className="text-3xl font-bold text-zinc-900 mt-1">$0<span className="text-base font-normal text-zinc-500"> forever</span></div>
+              </div>
+              <ul className="text-sm text-zinc-600 space-y-1 flex-1">
+                <li>✓ 3 full briefs</li>
+                <li>✓ No credit card required</li>
+              </ul>
+              <button
+                onClick={() => onGetStarted()}
+                className="w-full py-2.5 bg-white text-zinc-900 text-sm font-medium rounded-lg border border-zinc-200 hover:bg-zinc-50 transition-colors"
+              >
+                Get started free
+              </button>
+            </div>
+
+            {/* Pro */}
+            <div className="bg-white border-2 border-brand-600 rounded-2xl p-6 flex flex-col gap-3">
+              <div>
+                <div className="text-xs font-semibold text-accent-500 uppercase tracking-wide mb-1">Most popular</div>
+                <div className="text-lg font-bold text-zinc-900">PrepFile Pro</div>
+                <div className="text-3xl font-bold text-zinc-900 mt-1">$14.99<span className="text-base font-normal text-zinc-500">/mo</span></div>
+                {foundingRemaining !== null && (
+                  <p className="mt-2 text-xs text-accent-600 font-medium">
+                    🎉 Only {foundingRemaining} founding member spot{foundingRemaining === 1 ? "" : "s"} left — first 50 get 5 extra briefs free
+                  </p>
+                )}
+              </div>
+              <ul className="text-sm text-zinc-600 space-y-1 flex-1">
+                <li>✓ Unlimited full briefs</li>
+                <li>✓ Visual analytics & gap charts</li>
+                <li>✓ Resume match & blind spots</li>
+                <li>✓ Brief history saved</li>
+                <li>✓ Cancel anytime</li>
+              </ul>
+              <button
+                onClick={() => onGetStarted()}
+                className="w-full py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
+              >
+                Get Pro
+              </button>
+            </div>
           </div>
         </div>
       </section>
